@@ -1,170 +1,130 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+import datetime
+from fpdf2 import FPDF  # ¡USAMOS FPDF2!
 import os
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-import io
-import base64
 
 st.set_page_config(page_title="Behavioral Intelligence", layout="centered")
 
-st.title("Behavioral Intelligence")
-st.subheader("Evaluación de Riesgo y Reintegración Asistida por IA")
+st.title("Sistema BIAS – Evaluación Conductual")
 
-st.markdown("Este sistema permite valorar perfiles de forma integral y generar análisis éticos, humanos y contextualizados, con especial atención a procesos de libertad condicional y reinserción.")
+# Crear formulario
+with st.form(key="formulario"):
+    nombre = st.text_input("Nombre del evaluado")
+    edad = st.number_input("Edad", min_value=0, max_value=120, step=1)
+    sexo = st.selectbox("Sexo", ["Masculino", "Femenino", "Otro"])
+    delito = st.selectbox("Tipo de delito", [
+        "Violencia de género", "Delito sexual", "Tráfico", "Agresión física",
+        "Robo", "Vandalismo", "Violencia filioparental", "Otro"
+    ])
+    reincidencia = st.checkbox("¿Tiene antecedentes o reincidencia?")
+    impulsividad = st.checkbox("¿Se observan conductas impulsivas?")
+    conciencia_dano = st.selectbox("Conciencia sobre el daño causado", [
+        "Alta", "Media", "Baja", "Nula"
+    ])
+    red_apoyo = st.selectbox("Red de apoyo actual", [
+        "Familiar estable", "Parcial", "Inexistente"
+    ])
+    estabilidad = st.selectbox("Estabilidad residencial", [
+        "Alta", "Media", "Baja"
+    ])
+    empleo = st.selectbox("Situación laboral", [
+        "Trabajo estable", "Trabajo precario", "Desempleado", "Estudiante"
+    ])
+    consumo = st.selectbox("Consumo de sustancias", [
+        "No", "Ocasional", "Habitual", "Desconocido"
+    ])
+    fecha = st.date_input("Fecha de evaluación", value=datetime.date.today())
+    observaciones = st.text_area("Observaciones adicionales")
 
-# === Formulario ===
-nombre = st.text_input("Nombre del caso evaluado:")
-edad = st.slider("Edad", 10, 80, 30)
-empatia = st.slider("Empatía percibida (0–10)", 0, 10, 5)
+    submit = st.form_submit_button("Generar informe")
 
-antecedentes = st.radio("¿Ha habido antecedentes violentos?", ["Sí", "No"])
-impulsividad = st.slider("Nivel de impulsividad (0–10)", 0, 10, 5)
-apoyo = st.radio("¿Tiene red de apoyo?", ["Sí", "No"])
-sustancias = st.radio("¿Consumo de sustancias?", ["Sí", "No"])
-introspeccion = st.slider("Capacidad de introspección (0–10)", 0, 10, 5)
-diagnostico = st.text_input("Diagnóstico psiquiátrico actual (si lo hay):")
+# Función para estimar nivel de riesgo
+def calcular_riesgo():
+    puntuacion = 0
+    if reincidencia:
+        puntuacion += 2
+    if impulsividad:
+        puntuacion += 1
+    if conciencia_dano in ["Baja", "Nula"]:
+        puntuacion += 2
+    if red_apoyo == "Inexistente":
+        puntuacion += 2
+    if estabilidad == "Baja":
+        puntuacion += 1
+    if consumo in ["Habitual"]:
+        puntuacion += 1
 
-sesiones = st.slider("Sesiones terapéuticas por mes", 0, 12, 2)
-situacion_familiar = st.selectbox(
-    "Situación familiar actual",
-    ["Vive con familia", "Vive solo/a", "Situación conflictiva"]
-)
-acceso_armas = st.radio("¿Acceso a armas?", ["Sí", "No"])
-autolitico = st.radio("¿Historial de intentos autolíticos?", ["Sí", "No"])
-motivacion = st.slider("Motivación al cambio (0–10)", 0, 10, 5)
-juicios = st.radio("¿Juicios en curso o medidas legales activas?", ["Sí", "No"])
-contexto = st.text_input("Contexto laboral o educativo:")
-
-tipo_delito = st.selectbox(
-    "Tipo de delito principal",
-    [
-        "Violencia de género",
-        "Violencia familiar no pareja",
-        "Delito sexual",
-        "Delito contra la propiedad",
-        "Delito contra la vida",
-        "Amenazas o coacciones",
-        "Tráfico o tenencia de drogas",
-        "Otro / sin especificar"
-    ]
-)
-
-# === Evaluación del perfil ===
-if st.button("Evaluar perfil"):
-    st.success(f"Perfil de {nombre} evaluado con éxito.")
-    st.write("Resumen de datos ingresados:")
-    st.write(f"- Edad: {edad}")
-    st.write(f"- Empatía: {empatia}")
-    st.write(f"- Impulsividad: {impulsividad}")
-    st.write(f"- Red de apoyo: {apoyo}")
-    st.write(f"- Consumo de sustancias: {sustancias}")
-    st.write(f"- Capacidad de introspección: {introspeccion}")
-    st.write(f"- Antecedentes violentos: {antecedentes}")
-    st.write(f"- Diagnóstico: {diagnostico}")
-    st.write(f"- Sesiones/mes: {sesiones}")
-    st.write(f"- Situación familiar: {situacion_familiar}")
-    st.write(f"- Acceso a armas: {acceso_armas}")
-    st.write(f"- Intentos autolíticos: {autolitico}")
-    st.write(f"- Motivación al cambio: {motivacion}")
-    st.write(f"- Juicios o medidas legales: {juicios}")
-    st.write(f"- Contexto laboral/educativo: {contexto}")
-    st.write(f"- Tipo de delito: {tipo_delito}")
-
-    # === Análisis de riesgo ===
-    riesgo = "Bajo"
-
-    if antecedentes == "Sí" or autolitico == "Sí":
-        riesgo = "Moderado"
-
-    if (
-        antecedentes == "Sí"
-        and empatia < 4
-        and impulsividad > 7
-        and sustancias == "Sí"
-        and apoyo == "No"
-        and motivacion < 5
-    ):
-        riesgo = "Alto"
-
-    if tipo_delito == "Delito sexual" and empatia < 4 and introspeccion < 4:
-        riesgo = "Alto"
-
-    if tipo_delito == "Violencia de género" and motivacion < 5 and impulsividad > 7:
-        riesgo = "Alto"
-
-    if tipo_delito == "Tráfico o tenencia de drogas" and sustancias == "Sí" and motivacion < 4:
-        riesgo = "Moderado"
-
-    st.write("---")
-    st.subheader("Análisis del perfil")
-    st.info(f"Nivel de riesgo estimado: **{riesgo}**")
-
-    st.markdown("Este nivel de riesgo se ha calculado con base en las respuestas proporcionadas. Pronto estará disponible una evaluación explicable mediante SHAP y LIME.")
-
-    # === Registro de datos en CSV ===
-    datos = {
-        "fecha_hora": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "nombre": nombre,
-        "edad": edad,
-        "empatia": empatia,
-        "antecedentes": antecedentes,
-        "impulsividad": impulsividad,
-        "apoyo": apoyo,
-        "sustancias": sustancias,
-        "introspeccion": introspeccion,
-        "diagnostico": diagnostico,
-        "sesiones": sesiones,
-        "situacion_familiar": situacion_familiar,
-        "acceso_armas": acceso_armas,
-        "autolitico": autolitico,
-        "motivacion": motivacion,
-        "juicios": juicios,
-        "contexto": contexto,
-        "tipo_delito": tipo_delito,
-        "riesgo_estimado": riesgo
-    }
-
-    df_nuevo = pd.DataFrame([datos])
-    ruta_archivo = "registros_perfiles.csv"
-
-    if os.path.exists(ruta_archivo):
-        df_existente = pd.read_csv(ruta_archivo)
-        df_actualizado = pd.concat([df_existente, df_nuevo], ignore_index=True)
-        df_actualizado.to_csv(ruta_archivo, index=False)
+    if puntuacion >= 6:
+        return "ALTO"
+    elif puntuacion >= 3:
+        return "MEDIO"
+    elif puntuacion >= 1:
+        return "BAJO"
     else:
-        df_nuevo.to_csv(ruta_archivo, index=False)
+        return "NO CONCLUYENTE"
 
-    st.success("✅ Datos guardados correctamente en 'registros_perfiles.csv'")
+# Función para sugerir programa
+def sugerir_programa(riesgo, delito):
+    if riesgo == "ALTO":
+        return "Intervención intensiva con seguimiento clínico y social"
+    elif riesgo == "MEDIO":
+        if "género" in delito.lower():
+            return "PRIA-MA – Programa de Reeducación para Agresores"
+        elif "sexual" in delito.lower():
+            return "Grupo terapéutico para delitos sexuales con evaluación continua"
+        elif "tráfico" in delito.lower():
+            return "Programa de deshabituación y orientación laboral"
+        else:
+            return "Programa general de regulación emocional y control de impulsos"
+    elif riesgo == "BAJO":
+        return "Reinserción sociolaboral con seguimiento puntual"
+    else:
+        return "Evaluación no concluyente – se requiere revisión profesional"
 
-    # === Generar informe PDF ===
-    nombre_archivo = f"informe_{nombre.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
+# Función para generar PDF
+def generar_pdf(nombre, riesgo, programa, evaluador, privado=False):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
 
-    width, height = A4
-    line_height = 20
-    y = height - 50
+    if privado:
+        pdf.set_title("Informe Privado BIAS")
+        pdf.cell(200, 10, txt="Informe de puntuación – Uso interno", ln=True, align="C")
+        pdf.cell(200, 10, txt=f"Nombre: {nombre}", ln=True)
+        pdf.cell(200, 10, txt=f"Nivel de riesgo estimado: {riesgo}", ln=True)
+        pdf.cell(200, 10, txt=f"Fecha: {datetime.date.today()}", ln=True)
+        pdf.cell(200, 10, txt=f"Evaluador: {evaluador}", ln=True)
+        pdf.cell(200, 10, txt="Este documento no debe compartirse fuera del equipo técnico.", ln=True)
+        nombre_archivo = f"informe_privado_{nombre}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    else:
+        pdf.set_title("Informe Conductual BIAS")
+        pdf.cell(200, 10, txt="Informe conductual y programa sugerido", ln=True, align="C")
+        pdf.cell(200, 10, txt=f"Nombre: {nombre}", ln=True)
+        pdf.cell(200, 10, txt=f"Nivel de riesgo: {riesgo}", ln=True)
+        pdf.cell(200, 10, txt=f"Programa recomendado: {programa}", ln=True)
+        pdf.cell(200, 10, txt=f"Fecha: {datetime.date.today()}", ln=True)
+        pdf.cell(200, 10, txt="Este informe debe ser validado por el equipo profesional antes de enviarse.", ln=True)
+        nombre_archivo = f"informe_conductual_{nombre}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
 
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, y, "Informe de Evaluación Conductual Asistida por IA")
-    y -= 30
+    ruta = os.path.join(os.getcwd(), nombre_archivo)
+    pdf.output(ruta)
+    return ruta
 
-    c.setFont("Helvetica", 12)
-    for clave, valor in datos.items():
-        c.drawString(50, y, f"{clave.replace('_', ' ').capitalize()}: {valor}")
-        y -= line_height
-        if y < 60:
-            c.showPage()
-            y = height - 50
-            c.setFont("Helvetica", 12)
+# Acción al enviar
+if submit:
+    riesgo = calcular_riesgo()
+    programa = sugerir_programa(riesgo, delito)
 
-    c.showPage()
-    c.save()
-    pdf_data = buffer.getvalue()
-    buffer.close()
+    st.success(f"Nivel de riesgo: {riesgo}")
+    st.info(f"Programa sugerido: {programa}")
 
-    b64_pdf = base64.b64encode(pdf_data).decode('utf-8')
-    href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="{nombre_archivo}">📥 Descargar informe PDF</a>'
-    st.markdown(href, unsafe_allow_html=True)
+    # Generar PDFs
+    path_privado = generar_pdf(nombre, riesgo, programa, "Analista BIAS", privado=True)
+    path_publico = generar_pdf(nombre, riesgo, programa, "Analista BIAS", privado=False)
+
+    with open(path_privado, "rb") as file:
+        st.download_button("Descargar informe privado", file, file_name=os.path.basename(path_privado))
+
+    with open(path_publico, "rb") as file:
+        st.download_button("Descargar informe genérico", file, file_name=os.path.basename(path_publico))
