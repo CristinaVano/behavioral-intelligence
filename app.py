@@ -310,7 +310,7 @@ if submit:
 
 
 
-     st.download_button(
+    st.download_button(
             label="Descargar informe completo (PDF)",
             data=file,
             file_name=nombre_archivo,
