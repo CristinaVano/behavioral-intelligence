@@ -272,11 +272,17 @@ if submit:
     pdf.output(nombre_archivo)
 
     with open(nombre_archivo, "rb") as file:
+    st.download_button(
+        label="Descargar informe completo (PDF)",
+        data=file,
+        file_name=nombre_archivo,
+        mime="application/pdf"
+    )
 
-    # Informe privado (uso interno)
-    pdf_privado = FPDF()
-    pdf_privado.add_page()
-    pdf_privado.set_font("Arial", size=12)
+# Informe privado (uso interno)
+pdf_privado = FPDF()
+pdf_privado.add_page()
+pdf_privado.set_font("Arial", size=12)
     pdf_privado.cell(200, 10, txt="Informe Privado – Análisis Interno BIAS", ln=True, align="C")
     pdf_privado.ln(10)
     pdf_privado.cell(200, 10, txt=f"Nombre del evaluado: {nombre}", ln=True)
