@@ -32,12 +32,11 @@ with st.form(key="formulario"):
     consumo = st.selectbox("Consumo de sustancias", [
         "No", "Ocasional", "Habitual", "Desconocido"
     ])
-    libertad = st.selectbox("Situación judicial", [
-        "En libertad", "Cumpliendo condena"
+    libertad = st.selectbox("¿Está en libertad o cumpliendo condena?", [
+        "Libertad", "Condena"
     ])
-    medicacion = st.selectbox("Tratamiento farmacológico actual", [
-        "Ninguno", "Estabilizadores del estado de ánimo", "Antipsicóticos",
-        "Ansiolíticos", "Antidepresivos", "Desconocido"
+    medicacion = st.selectbox("Tipo de medicación (si procede)", [
+        "Ninguna", "Antipsicóticos", "Antidepresivos", "Estabilizadores del ánimo", "Ansiolíticos", "Otro"
     ])
     observaciones = st.text_area("Observaciones adicionales")
     fecha = st.date_input("Fecha de evaluación", value=datetime.date.today())
@@ -45,72 +44,58 @@ with st.form(key="formulario"):
     submit = st.form_submit_button("Generar informe")
 
 if submit:
-    riesgo = "Alto" if reincidencia and impulsividad else "Medio" if impulsividad else "Bajo"
-
-    if riesgo == "Alto":
-        recomendacion = "Intervención clínica prioritaria"
-    elif riesgo == "Medio":
-        recomendacion = "Programa mixto de regulación e inserción"
-    else:
-        recomendacion = "Derivación a programas sociales"
-
-    data = {
-        "Nombre": nombre,
-        "Edad": edad,
-        "Sexo": sexo,
-        "Delito": delito,
-        "Riesgo": riesgo,
-        "Red de apoyo": red_apoyo,
-        "Empleo": empleo,
-        "Estabilidad": estabilidad,
-        "Consumo": consumo,
-        "Conciencia": conciencia_dano,
-        "Observaciones": observaciones,
-        "Recomendación": recomendacion,
-        "Situación judicial": libertad,
-        "Tratamiento actual": medicacion,
-        "Fecha": fecha.strftime("%Y-%m-%d")
-    }
-
-    df = pd.DataFrame([data])
-    if not os.path.exists("registros_perfiles.csv"):
-        df.to_csv("registros_perfiles.csv", index=False)
-    else:
-        df.to_csv("registros_perfiles.csv", mode="a", header=False, index=False)
-
+    # Informe público
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Informe de Evaluación Conductual - BIAS", ln=True)
+    pdf.cell(200, 10, txt="Informe de Evaluación Conductual – BIAS", ln=True, align="C")
+    pdf.ln(10)
     pdf.cell(200, 10, txt=f"Nombre: {nombre}", ln=True)
     pdf.cell(200, 10, txt=f"Edad: {edad}", ln=True)
-    pdf.cell(200, 10, txt=f"Delito: {delito}", ln=True)
-    pdf.cell(200, 10, txt=f"Nivel de riesgo: {riesgo}", ln=True)
-    pdf.cell(200, 10, txt=f"Recomendación: {recomendacion}", ln=True)
-    pdf.cell(200, 10, txt=f"Fecha de evaluación: {fecha.strftime('%Y-%m-%d')}", ln=True)
-    pdf.output(f"informe_{nombre.replace(' ', '_')}.pdf")
+    pdf.cell(200, 10, txt=f"Sexo: {sexo}", ln=True)
+    pdf.cell(200, 10, txt=f"Tipo de delito: {delito}", ln=True)
+    pdf.cell(200, 10, txt=f"Reincidencia: {'Sí' if reincidencia else 'No'}", ln=True)
+    pdf.cell(200, 10, txt=f"Impulsividad: {'Sí' if impulsividad else 'No'}", ln=True)
+    pdf.cell(200, 10, txt=f"Conciencia sobre el daño: {conciencia_dano}", ln=True)
+    pdf.cell(200, 10, txt=f"Red de apoyo: {red_apoyo}", ln=True)
+    pdf.cell(200, 10, txt=f"Estabilidad residencial: {estabilidad}", ln=True)
+    pdf.cell(200, 10, txt=f"Situación laboral: {empleo}", ln=True)
+    pdf.cell(200, 10, txt=f"Consumo de sustancias: {consumo}", ln=True)
+    pdf.cell(200, 10, txt=f"Situación legal: {libertad}", ln=True)
+    pdf.cell(200, 10, txt=f"Tipo de medicación: {medicacion}", ln=True)
+    pdf.cell(200, 10, txt=f"Fecha de evaluación: {fecha}", ln=True)
+    pdf.ln(10)
+    pdf.multi_cell(0, 10, txt=f"Observaciones: {observaciones}")
+    nombre_archivo = f"informe_{nombre.replace(' ', '_')}.pdf"
+    pdf.output(nombre_archivo)
 
-    pdf_priv = FPDF()
-    pdf_priv.add_page()
-    pdf_priv.set_font("Arial", size=12)
-    pdf_priv.cell(200, 10, txt="INFORME PRIVADO - SISTEMA BIAS", ln=True)
-    for key, value in data.items():
-        pdf_priv.cell(200, 10, txt=f"{key}: {value}", ln=True)
-    pdf_priv.output(f"privado_{nombre.replace(' ', '_')}.pdf")
+    # Informe privado (para uso interno)
+    pdf_privado = FPDF()
+    pdf_privado.add_page()
+    pdf_privado.set_font("Arial", size=12)
+    pdf_privado.cell(200, 10, txt="Informe Privado – Uso Interno (Análisis Codificado)", ln=True, align="C")
+    pdf_privado.ln(10)
+    pdf_privado.cell(200, 10, txt=f"Nombre: {nombre}", ln=True)
+    pdf_privado.cell(200, 10, txt=f"Código: {edad}-{sexo[:1]}-{delito[:3]}-{fecha}", ln=True)
+    pdf_privado.multi_cell(0, 10, txt=f"Análisis interno: {observaciones}")
+    nombre_privado = f"privado_{nombre.replace(' ', '_')}.pdf"
+    pdf_privado.output(nombre_privado)
 
     st.success("¡Informe generado correctamente!")
-    with open(f"informe_{nombre.replace(' ', '_')}.pdf", "rb") as file:
-    st.download_button(
-        label="Descargar informe público (PDF)",
-        data=file,
-        file_name=f"informe_{nombre.replace(' ', '_')}.pdf",
-        mime="application/pdf"
-    )
 
-with open(f"privado_{nombre.replace(' ', '_')}.pdf", "rb") as file_priv:
-    st.download_button(
-        label="Descargar informe privado (PDF)",
-        data=file_priv,
-        file_name=f"privado_{nombre.replace(' ', '_')}.pdf",
-        mime="application/pdf"
-    )
+    # Botones de descarga
+    with open(nombre_archivo, "rb") as file:
+        st.download_button(
+            label="Descargar informe público (PDF)",
+            data=file,
+            file_name=nombre_archivo,
+            mime="application/pdf"
+        )
+
+    with open(nombre_privado, "rb") as file_priv:
+        st.download_button(
+            label="Descargar informe privado (PDF)",
+            data=file_priv,
+            file_name=nombre_privado,
+            mime="application/pdf"
+        )
