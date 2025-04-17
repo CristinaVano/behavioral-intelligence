@@ -1,8 +1,9 @@
 import streamlit as st
+st.set_page_config(page_title="Behavioral Intelligence", layout="centered")
+
 import datetime
 from fpdf import FPDF
 
-st.set_page_config(page_title="Behavioral Intelligence", layout="centered")
 st.title("Sistema BIAS – Evaluación Conductual")
 
 with st.form("formulario"):
