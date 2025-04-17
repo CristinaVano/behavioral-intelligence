@@ -99,3 +99,18 @@ if submit:
     pdf_priv.output(f"privado_{nombre.replace(' ', '_')}.pdf")
 
     st.success("¡Informe generado correctamente!")
+    with open(f"informe_{nombre.replace(' ', '_')}.pdf", "rb") as file:
+    st.download_button(
+        label="Descargar informe público (PDF)",
+        data=file,
+        file_name=f"informe_{nombre.replace(' ', '_')}.pdf",
+        mime="application/pdf"
+    )
+
+with open(f"privado_{nombre.replace(' ', '_')}.pdf", "rb") as file_priv:
+    st.download_button(
+        label="Descargar informe privado (PDF)",
+        data=file_priv,
+        file_name=f"privado_{nombre.replace(' ', '_')}.pdf",
+        mime="application/pdf"
+    )
