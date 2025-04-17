@@ -295,6 +295,10 @@ if submit:
 
     nombre_privado = f"privado_{nombre.replace(' ', '_')}.pdf"
     pdf_privado.output(nombre_privado)
+    
+    
+    
+    
     with open(nombre_privado, "rb") as file_priv:
     st.download_button(
         label="Descargar informe privado (PDF)",
