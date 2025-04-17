@@ -116,7 +116,7 @@ pdf.multi_cell(0, 10, txt=texto_social)
 pdf.output(nombre_archivo)
 
     # Informe privado (para uso interno)
-    pdf_privado = FPDF()
+pdf_privado = FPDF()
     pdf_privado.add_page()
     pdf_privado.set_font("Arial", size=12)
     pdf_privado.cell(200, 10, txt="Informe Privado – Uso Interno (Análisis Codificado)", ln=True, align="C")
@@ -145,4 +145,3 @@ pdf.output(nombre_archivo)
             file_name=nombre_privado,
             mime="application/pdf"
         )
-
