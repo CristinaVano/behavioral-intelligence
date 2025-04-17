@@ -281,9 +281,9 @@ if submit:
         file_name=nombre_privado,
         mime="application/pdf"
     )
-
-
-
+    
+    
+    
     
     # Informe privado (uso interno)
     pdf_privado = FPDF()
