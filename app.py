@@ -117,15 +117,15 @@ pdf.output(nombre_archivo)
 
     # Informe privado (para uso interno)
 pdf_privado = FPDF()
-    pdf_privado.add_page()
-    pdf_privado.set_font("Arial", size=12)
-    pdf_privado.cell(200, 10, txt="Informe Privado – Uso Interno (Análisis Codificado)", ln=True, align="C")
-    pdf_privado.ln(10)
-    pdf_privado.cell(200, 10, txt=f"Nombre: {nombre}", ln=True)
-    pdf_privado.cell(200, 10, txt=f"Código: {edad}-{sexo[:1]}-{delito[:3]}-{fecha}", ln=True)
-    pdf_privado.multi_cell(0, 10, txt=f"Análisis interno: {observaciones}")
+pdf_privado.add_page()
+pdf_privado.set_font("Arial", size=12)
+pdf_privado.cell(200, 10, txt="Informe Privado – Uso Interno (Análisis Codificado)", ln=True, align="C")
+pdf_privado.ln(10)
+pdf_privado.cell(200, 10, txt=f"Nombre: {nombre}", ln=True)
+pdf_privado.cell(200, 10, txt=f"Código: {edad}-{sexo[:1]}-{delito[:3]}-{fecha}", ln=True)
+pdf_privado.multi_cell(0, 10, txt=f"Análisis interno: {observaciones}")
     nombre_privado = f"privado_{nombre.replace(' ', '_')}.pdf"
-    pdf_privado.output(nombre_privado)
+pdf_privado.output(nombre_privado)
 
     st.success("¡Informe generado correctamente!")
 
@@ -145,3 +145,4 @@ pdf_privado = FPDF()
             file_name=nombre_privado,
             mime="application/pdf"
         )
+
