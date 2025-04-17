@@ -271,17 +271,6 @@ if submit:
     nombre_archivo = f"informe_{nombre.replace(' ', '_')}.pdf"
     pdf.output(nombre_archivo)
 
-
-
-    
-    with open(nombre_privado, "rb") as file_priv:
-    st.download_button(
-        label="Descargar informe privado (PDF)",
-        data=file_priv,
-        file_name=nombre_privado,
-        mime="application/pdf"
-    )
-    
     
     
     
@@ -305,6 +294,13 @@ if submit:
 
     nombre_privado = f"privado_{nombre.replace(' ', '_')}.pdf"
     pdf_privado.output(nombre_privado)
+    with open(nombre_privado, "rb") as file_priv:
+    st.download_button(
+        label="Descargar informe privado (PDF)",
+        data=file_priv,
+        file_name=nombre_privado,
+        mime="application/pdf"
+    )
 
     with open(nombre_privado, "rb") as file_priv:
         st.download_button(
