@@ -300,17 +300,17 @@ if submit:
     
     
     with open(nombre_privado, "rb") as file_priv:
-    st.download_button(
+        st.download_button(
         label="Descargar informe privado (PDF)",
         data=file_priv,
         file_name=nombre_privado,
         mime="application/pdf"
-    )
+        )
 
 
 
 
-    st.download_button(
+        st.download_button(
             label="Descargar informe completo (PDF)",
             data=file,
             file_name=nombre_archivo,
