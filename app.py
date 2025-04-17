@@ -292,6 +292,7 @@ if submit:
     pdf_privado.ln(5)
     pdf_privado.multi_cell(0, 10, txt=generar_texto_intervenciones_sociales(grupo, contexto))
 
+
     nombre_privado = f"privado_{nombre.replace(' ', '_')}.pdf"
     pdf_privado.output(nombre_privado)
     with open(nombre_privado, "rb") as file_priv:
@@ -302,15 +303,10 @@ if submit:
         mime="application/pdf"
     )
 
-    with open(nombre_privado, "rb") as file_priv:
-        st.download_button(
-            label="Descargar informe privado (PDF)",
-            data=file_priv,
-            file_name=nombre_privado,
-            mime="application/pdf"
-        )
 
-        st.download_button(
+
+
+     st.download_button(
             label="Descargar informe completo (PDF)",
             data=file,
             file_name=nombre_archivo,
