@@ -282,6 +282,9 @@ if submit:
         mime="application/pdf"
     )
 
+
+
+    
     # Informe privado (uso interno)
     pdf_privado = FPDF()
     pdf_privado.add_page()
