@@ -41,6 +41,42 @@ with st.form(key="formulario"):
     observaciones = st.text_area("Observaciones adicionales")
     fecha = st.date_input("Fecha de evaluación", value=datetime.date.today())
 
+    
+# BASE DE DATOS CLÍNICA Y SOCIAL
+bias_interventions_clinicas = [
+    {"nombre": "Terapia Dialéctico-Conductual (DBT)", "grupo_destinatario": "Adolescentes y adultos", "diagnostico": "Trastorno Límite de la Personalidad (TLP)", "modalidad": "Individual + grupal", "duracion_estimada": "Mínimo 6 meses", "medicacion": "ISRS, estabilizadores, antipsicóticos", "observaciones": "Evaluar riesgo suicida, requiere vínculo fuerte"},
+    {"nombre": "Terapia de exposición (TOC)", "grupo_destinatario": "Adultos", "diagnostico": "Trastorno Obsesivo-Compulsivo", "modalidad": "Individual", "duracion_estimada": "12-20 sesiones", "medicacion": "ISRS, clomipramina", "observaciones": "No iniciar sin motivación adecuada"}
+]
+
+bias_interventions_sociales = [
+    {"nombre": "Grupos de empoderamiento y autonomía", "grupo_destinatario": "Mujeres adultas", "contexto": "Libertad", "modalidad": "Grupal", "duracion_estimada": "Variable", "observaciones": "Refuerzo de autoestima y toma de decisiones"},
+    {"nombre": "Terapia familiar estructurada", "grupo_destinatario": "Adolescentes varones", "contexto": "Libertad", "modalidad": "Familiar", "duracion_estimada": "3-6 meses", "observaciones": "Rediseño de roles parentales y regulación emocional"}
+]
+
+def filtrar_intervenciones_clinicas(medicacion):
+    return [i for i in bias_interventions_clinicas if medicacion.lower() in i["medicacion"].lower() or medicacion == "Otro"]
+
+def filtrar_intervenciones_sociales(grupo, contexto):
+    return [i for i in bias_interventions_sociales if i["grupo_destinatario"] == grupo and i["contexto"] == contexto]
+
+def generar_texto_intervenciones_clinicas(medicacion):
+    intervenciones = filtrar_intervenciones_clinicas(medicacion)
+    if not intervenciones:
+        return "No se identificaron intervenciones clínicas relevantes."
+    texto = "Intervenciones clínicas sugeridas:\n\n"
+    for i in intervenciones:
+        texto += f"{i['nombre']}\n- Modalidad: {i['modalidad']}\n- Duración: {i['duracion_estimada']}\n- Observaciones: {i['observaciones']}\n\n"
+    return texto.strip()
+
+def generar_texto_intervenciones_sociales(grupo, contexto):
+    intervenciones = filtrar_intervenciones_sociales(grupo, contexto)
+    if not intervenciones:
+        return "No se identificaron intervenciones sociales relevantes."
+    texto = "Intervenciones sociales sugeridas:\n\n"
+    for i in intervenciones:
+        texto += f"{i['nombre']}\n- Modalidad: {i['modalidad']}\n- Duración: {i['duracion_estimada']}\n- Observaciones: {i['observaciones']}\n\n"
+    return texto.strip()
+
     submit = st.form_submit_button("Generar informe")
 
 if submit:
@@ -67,7 +103,17 @@ if submit:
     pdf.ln(10)
     pdf.multi_cell(0, 10, txt=f"Observaciones: {observaciones}")
     nombre_archivo = f"informe_{nombre.replace(' ', '_')}.pdf"
-    pdf.output(nombre_archivo)
+    pdf.ln(10)
+pdf.set_font("Arial", style="B", size=12)
+pdf.cell(200, 10, txt="Recomendaciones del sistema BIAS", ln=True)
+pdf.set_font("Arial", style="", size=11)
+texto_clinico = generar_texto_intervenciones_clinicas(medicacion)
+pdf.multi_cell(0, 10, txt=texto_clinico)
+
+texto_social = generar_texto_intervenciones_sociales(grupo, libertad)
+pdf.multi_cell(0, 10, txt=texto_social)
+
+pdf.output(nombre_archivo)
 
     # Informe privado (para uso interno)
     pdf_privado = FPDF()
@@ -99,3 +145,4 @@ if submit:
             file_name=nombre_privado,
             mime="application/pdf"
         )
+
