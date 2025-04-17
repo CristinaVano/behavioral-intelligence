@@ -270,15 +270,15 @@ if submit:
 
     nombre_archivo = f"informe_{nombre.replace(' ', '_')}.pdf"
     pdf.output(nombre_archivo)
+
+
+
     
-    
-    
-    
-    with open(nombre_archivo, "rb") as file:
+    with open(nombre_privado, "rb") as file_priv:
     st.download_button(
-        label="Descargar informe completo (PDF)",
-        data=file,
-        file_name=nombre_archivo,
+        label="Descargar informe privado (PDF)",
+        data=file_priv,
+        file_name=nombre_privado,
         mime="application/pdf"
     )
 
