@@ -54,7 +54,7 @@ with st.form(key='evaluation_form'):
 
     if submit_button:
         # Verificar usuario y contraseña
-        if usuario in usuarios['Usuario'].values and contrasena == usuarios.loc[usuarios['Usuario'] == usuario, 'Contraseña'].values[0]:
+        if usuario in ['JuanCarlos_bias', 'Cristina_bias'] and contrasena == 'admin_bias':
             st.success("¡Acceso permitido! Bienvenido/a.")
             
             # Evaluación de radicalización
@@ -172,11 +172,11 @@ with st.form(key='evaluation_form'):
                 pdf.cell(200, 10, txt=f"Perfil psicológico: {perfil_psicologico}", ln=True)
                 pdf.cell(200, 10, txt=f"Historial clínico: {historial_clinico}", ln=True)
                 pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
-                pdf.output("Informe_BIAS.pdf")
+                pdf.output("/mnt/data/Informe_BIAS.pdf")
 
                 st.download_button(
                     label="Descargar Informe PDF",
-                    data=open("Informe_BIAS.pdf", "rb").read(),
+                    data=open("/mnt/data/Informe_BIAS.pdf", "rb").read(),
                     file_name="Informe_BIAS.pdf",
                     mime="application/pdf"
                 )
