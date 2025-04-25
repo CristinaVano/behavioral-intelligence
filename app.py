@@ -54,7 +54,7 @@ with st.form(key='evaluation_form'):
 
     if submit_button:
         # Verificar usuario y contraseña
-        if usuario in ['JuanCarlos_bias', 'Cristina_bias'] and contrasena == 'admin_bias':
+        if usuario in usuarios['Usuario'].values and contrasena == usuarios.loc[usuarios['Usuario'] == usuario, 'Contraseña'].values[0]:
             st.success("¡Acceso permitido! Bienvenido/a.")
             
             # Evaluación de radicalización
