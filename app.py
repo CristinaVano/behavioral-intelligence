@@ -1,4 +1,3 @@
-
 import streamlit as st
 from datetime import datetime
 import pandas as pd
@@ -6,6 +5,18 @@ from fpdf import FPDF
 
 # Configurar la app
 st.set_page_config(page_title="BIAS – Prevención del Terrorismo", page_icon="🔒", layout="centered")
+
+# Cambiar el fondo a blanco
+st.markdown("""
+    <style>
+        .css-18e3th9 {
+            background-color: white;
+        }
+        .css-1v0mbdj {
+            background-color: white;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # Selección de idioma
 idioma = st.selectbox("Selecciona tu idioma", ("Español", "Inglés", "Árabe", "Francés"))
