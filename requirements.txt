@@ -1,5 +1,0 @@
-streamlit
-fpdf
-pandas
-scikit-learn
-numpy
