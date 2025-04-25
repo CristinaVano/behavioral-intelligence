@@ -1,4 +1,3 @@
-
 import streamlit as st
 from datetime import datetime
 import pandas as pd
@@ -72,7 +71,16 @@ with st.form(key='evaluation_form'):
             rasgos_personalidad = st.multiselect("Rasgos de personalidad", 
                 ["Paranoide", "Antisocial", "Sadomasoquista", "Impulsivo", "Emocionalmente inestable", 
                 "Dependiente", "Evitativo"])
-            
+
+            # Nuevo campo para religión
+            inclinacion_religiosa = st.selectbox("Inclinación religiosa", ("Católico", "Musulmán", "Ateo", "Judío", "Budista", "Conservador", "Liberal", "Otro"))
+
+            # Sección de comentarios adicionales
+            st.subheader("Comentarios adicionales")
+            perfil_psicologico = st.text_area("Perfil psicológico completo")
+            historial_clinico = st.text_area("Historial clínico completo")
+            comentarios_adicionales = st.text_area("Comentarios adicionales")
+
             submit_evaluation_button = st.form_submit_button(label='Generar Informe')
 
             if submit_evaluation_button:
@@ -136,7 +144,11 @@ with st.form(key='evaluation_form'):
                 st.write(f"**Consumo de sustancias:** {', '.join(consumo_sustancias)}")
                 st.write(f"**País de origen:** {pais_origen}")
                 st.write(f"**Ciudad de origen:** {ciudad_origen}")
+                st.write(f"**Inclinación religiosa:** {inclinacion_religiosa}")
                 st.write(f"**Nivel de riesgo de radicalización:** **{nivel_riesgo}**")
+                st.write(f"**Perfil psicológico:** {perfil_psicologico}")
+                st.write(f"**Historial clínico:** {historial_clinico}")
+                st.write(f"**Comentarios adicionales:** {comentarios_adicionales}")
 
                 st.subheader("Notas preliminares:")
                 if nivel_riesgo == "ALTO":
@@ -160,7 +172,11 @@ with st.form(key='evaluation_form'):
                 pdf.cell(200, 10, txt=f"Consumo de sustancias: {', '.join(consumo_sustancias)}", ln=True)
                 pdf.cell(200, 10, txt=f"País de origen: {pais_origen}", ln=True)
                 pdf.cell(200, 10, txt=f"Ciudad de origen: {ciudad_origen}", ln=True)
+                pdf.cell(200, 10, txt=f"Inclinación religiosa: {inclinacion_religiosa}", ln=True)
                 pdf.cell(200, 10, txt=f"Nivel de riesgo de radicalización: {nivel_riesgo}", ln=True)
+                pdf.cell(200, 10, txt=f"Perfil psicológico: {perfil_psicologico}", ln=True)
+                pdf.cell(200, 10, txt=f"Historial clínico: {historial_clinico}", ln=True)
+                pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
                 pdf.output("Informe_BIAS.pdf")
 
                 st.download_button(
