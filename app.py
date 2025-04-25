@@ -54,45 +54,73 @@ with st.form(key='evaluation_form'):
 
     if submit_button:
         # Verificar usuario y contraseña
-        if usuario in usuarios['Usuario'].values and contrasena == usuarios.loc[usuarios['Usuario'] == usuario, 'Contraseña'].values[0]:
+        if usuario in ['JuanCarlos_bias', 'Cristina_bias'] and contrasena == 'admin_bias':
             st.success("¡Acceso permitido! Bienvenido/a.")
             
             # Evaluación de radicalización
             edad = st.slider("Edad", 12, 80, 25)
             genero = st.selectbox("Género", ("Masculino", "Femenino", "Otro", "Prefiero no decirlo"))
-            entorno_social = st.selectbox("Entorno social actual", ("Integrado", "Aislado", "Radicalizado", "Sin información"))
-            antecedentes_penales = st.radio("Antecedentes penales por delitos violentos", ("Sí", "No"))
-            antecedentes_terrorismo = st.radio("Antecedentes relacionados con terrorismo", ("Sí", "No"))
-            discursos_odio = st.radio("Evidencias de discursos de odio", ("Sí", "No"))
-            viajes_zonas_conflictivas = st.radio("Viajes recientes a zonas de conflicto", ("Sí", "No"))
-            indicadores_psicologicos = st.radio("Indicadores psicológicos preocupantes", ("Sí", "No"))
-            participacion_grupos = st.radio("Participación en grupos extremistas", ("Sí", "No"))
-
+            nivel_estudios = st.selectbox("Nivel de estudios", ("Secundaria", "Bachillerato", "Grado", "Máster", "Doctorado"))
+            consumo_sustancias = st.multiselect("Consumo de sustancias", ("Alcohol", "Tabaco", "Drogas recreativas", "Cocaína", "Heroína"))
+            pais_origen = st.text_input("País de origen")
+            ciudad_origen = st.text_input("Ciudad de origen")
+            antecedentes_penales = st.multiselect("Antecedentes penales", 
+                ["Robo", "Homicidio", "Fraude", "Extorsión", "Violencia de género", "Delitos informáticos", 
+                "Vandalismo", "Acusaciones falsas", "Amenazas", "Violación", "Terrorismo", "Tráfico de drogas", 
+                "Secuestro", "Delitos fiscales", "Blanqueo de dinero"])
+            rasgos_personalidad = st.multiselect("Rasgos de personalidad", 
+                ["Paranoide", "Antisocial", "Sadomasoquista", "Impulsivo", "Emocionalmente inestable", 
+                "Dependiente", "Evitativo"])
+            
             submit_evaluation_button = st.form_submit_button(label='Generar Informe')
 
             if submit_evaluation_button:
                 riesgo = 0
-                if entorno_social == "Radicalizado":
+                # Puntuar según las respuestas
+                if nivel_estudios == "Secundaria":
+                    riesgo += 1
+                elif nivel_estudios == "Bachillerato":
                     riesgo += 2
-                elif entorno_social == "Aislado":
-                    riesgo += 1
-                if antecedentes_penales == "Sí":
-                    riesgo += 1
-                if antecedentes_terrorismo == "Sí":
+                elif nivel_estudios == "Grado":
                     riesgo += 3
-                if discursos_odio == "Sí":
-                    riesgo += 2
-                if viajes_zonas_conflictivas == "Sí":
-                    riesgo += 2
-                if indicadores_psicologicos == "Sí":
+                elif nivel_estudios == "Máster":
+                    riesgo += 4
+                elif nivel_estudios == "Doctorado":
+                    riesgo += 5
+
+                if "Alcohol" in consumo_sustancias:
                     riesgo += 1
-                if participacion_grupos == "Sí":
+                if "Tabaco" in consumo_sustancias:
+                    riesgo += 1
+                if "Drogas recreativas" in consumo_sustancias:
+                    riesgo += 2
+                if "Cocaína" in consumo_sustancias or "Heroína" in consumo_sustancias:
                     riesgo += 3
 
+                if "Robo" in antecedentes_penales:
+                    riesgo += 2
+                if "Homicidio" in antecedentes_penales:
+                    riesgo += 3
+                if "Violencia de género" in antecedentes_penales:
+                    riesgo += 3
+
+                if "Paranoide" in rasgos_personalidad:
+                    riesgo += 2
+                if "Antisocial" in rasgos_personalidad:
+                    riesgo += 3
+                if "Sadomasoquista" in rasgos_personalidad:
+                    riesgo += 1
+                if "Impulsivo" in rasgos_personalidad:
+                    riesgo += 2
+                if "Emocionalmente inestable" in rasgos_personalidad:
+                    riesgo += 3
+                if "Dependiente" in rasgos_personalidad or "Evitativo" in rasgos_personalidad:
+                    riesgo += 2
+
                 # Evaluar nivel de riesgo
-                if riesgo >= 8:
+                if riesgo >= 15:
                     nivel_riesgo = "ALTO"
-                elif riesgo >= 4:
+                elif riesgo >= 10:
                     nivel_riesgo = "MODERADO"
                 else:
                     nivel_riesgo = "BAJO"
@@ -103,7 +131,10 @@ with st.form(key='evaluation_form'):
                 st.write(f"**Fecha de evaluación:** {datetime.now().strftime('%d/%m/%Y %H:%M')}")
                 st.write(f"**Edad:** {edad}")
                 st.write(f"**Género:** {genero}")
-                st.write(f"**Entorno social:** {entorno_social}")
+                st.write(f"**Nivel de estudios:** {nivel_estudios}")
+                st.write(f"**Consumo de sustancias:** {', '.join(consumo_sustancias)}")
+                st.write(f"**País de origen:** {pais_origen}")
+                st.write(f"**Ciudad de origen:** {ciudad_origen}")
                 st.write(f"**Nivel de riesgo de radicalización:** **{nivel_riesgo}**")
 
                 st.subheader("Notas preliminares:")
@@ -124,7 +155,10 @@ with st.form(key='evaluation_form'):
                 pdf.cell(200, 10, txt=f"Fecha de evaluación: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True)
                 pdf.cell(200, 10, txt=f"Edad: {edad}", ln=True)
                 pdf.cell(200, 10, txt=f"Género: {genero}", ln=True)
-                pdf.cell(200, 10, txt=f"Entorno social: {entorno_social}", ln=True)
+                pdf.cell(200, 10, txt=f"Nivel de estudios: {nivel_estudios}", ln=True)
+                pdf.cell(200, 10, txt=f"Consumo de sustancias: {', '.join(consumo_sustancias)}", ln=True)
+                pdf.cell(200, 10, txt=f"País de origen: {pais_origen}", ln=True)
+                pdf.cell(200, 10, txt=f"Ciudad de origen: {ciudad_origen}", ln=True)
                 pdf.cell(200, 10, txt=f"Nivel de riesgo de radicalización: {nivel_riesgo}", ln=True)
                 pdf.output("Informe_BIAS.pdf")
 
