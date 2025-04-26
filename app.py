@@ -187,7 +187,7 @@ if st.session_state['usuario_autenticado']:
             pdf.cell(200, 10, txt=f"Historial clínico: {historial_clinico}", ln=True)
             pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
 
-            # Guardar el PDF en la carpeta correcta para que se descargue
+            # Guardar el PDF en una ruta accesible para descarga
             pdf_output_path = "/mnt/data/Informe_BIAS.pdf"
             pdf.output(pdf_output_path)
 
