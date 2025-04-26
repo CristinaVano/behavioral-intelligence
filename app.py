@@ -200,4 +200,4 @@ if st.session_state['usuario_autenticado']:
                 file_name="Informe_BIAS.pdf",
                 mime="application/pdf"
             )
-``
+
