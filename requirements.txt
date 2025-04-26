@@ -1,6 +1,4 @@
-
-streamlit
-fpdf
+reportlab==3.5.67
 pandas
-numpy
-scikit-learn
+fpdf
+streamlit
