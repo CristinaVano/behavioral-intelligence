@@ -1,7 +1,8 @@
 import streamlit as st
 from datetime import datetime
 import pandas as pd
-from fpdf import FPDF
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 import io
 
 # Configurar la app
