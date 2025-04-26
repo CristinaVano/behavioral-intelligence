@@ -186,14 +186,16 @@ if st.session_state['usuario_autenticado']:
             pdf.cell(200, 10, txt=f"Perfil psicológico: {perfil_psicologico}", ln=True)
             pdf.cell(200, 10, txt=f"Historial clínico: {historial_clinico}", ln=True)
             pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
-            
-            # Guardar el PDF y permitir la descarga
+
+            # Guardar el PDF en la carpeta correcta para que se descargue
             pdf_output_path = "Informe_BIAS.pdf"
             pdf.output(pdf_output_path)
 
-            st.download_button(
-                label="Descargar Informe PDF",
-                data=open(pdf_output_path, "rb").read(),
-                file_name="Informe_BIAS.pdf",
-                mime="application/pdf"
-            )
+            # Cambiar la ruta para asegurarnos de que se pueda descargar
+            with open(pdf_output_path, "rb") as f:
+                st.download_button(
+                    label="Descargar Informe PDF",
+                    data=f.read(),
+                    file_name="Informe_BIAS.pdf",
+                    mime="application/pdf"
+                )
