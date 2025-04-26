@@ -2,7 +2,6 @@ import streamlit as st
 from datetime import datetime
 import pandas as pd
 from fpdf import FPDF
-import os
 
 # Configurar la app
 st.set_page_config(page_title="BIAS – Prevención del Terrorismo", page_icon="🔒", layout="centered")
@@ -191,7 +190,7 @@ if st.session_state['usuario_autenticado']:
             # Ruta donde se guarda el PDF (/mnt/data/)
             pdf_output_path = "/mnt/data/Informe_BIAS.pdf"
             
-            # Guardar el PDF en /mnt/data/
+            # Guardar el PDF en /mnt/data/ (no es necesario crear el directorio)
             pdf.output(pdf_output_path)
 
             # Cambiar la ruta para asegurarnos de que se pueda descargar
