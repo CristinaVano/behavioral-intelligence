@@ -190,7 +190,10 @@ if st.session_state['usuario_autenticado']:
             pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
 
             # Guardar el PDF en memoria usando BytesIO
-            pdf_output.seek(0)
+            pdf.output(pdf_output)
+
+            # Hacer que el archivo esté disponible para descargar
+            pdf_output.seek(0)  # Resetear el puntero del archivo
             st.download_button(
                 label="Descargar Informe PDF",
                 data=pdf_output,
