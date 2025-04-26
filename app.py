@@ -1,8 +1,7 @@
 import streamlit as st
 from datetime import datetime
 import pandas as pd
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from fpdf import FPDF
 import io
 
 # Configurar la app
@@ -170,30 +169,30 @@ if st.session_state['usuario_autenticado']:
             else:
                 st.info("Seguimiento habitual. Reevaluar en caso de cambios de conducta.")
             
-            # Generar PDF de informe usando ReportLab en memoria (sin `FPDF`)
+            # Generar PDF de informe usando FPDF en memoria (sin `reportlab`)
             pdf_output = io.BytesIO()
-            
-            # Crear PDF con ReportLab
-            c = canvas.Canvas(pdf_output, pagesize=letter)
-            c.setFont("Helvetica", 12)
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font('Arial', 'B', 16)
+            pdf.cell(200, 10, txt="Informe Preliminar de Riesgo", ln=True, align='C')
+            pdf.ln(10)
+            pdf.set_font('Arial', '', 12)
+            pdf.cell(200, 10, txt=f"Fecha de evaluación: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True)
+            pdf.cell(200, 10, txt=f"Edad: {edad}", ln=True)
+            pdf.cell(200, 10, txt=f"Género: {genero}", ln=True)
+            pdf.cell(200, 10, txt=f"Nivel de estudios: {nivel_estudios}", ln=True)
+            pdf.cell(200, 10, txt=f"Consumo de sustancias: {', '.join(consumo_sustancias)}", ln=True)
+            pdf.cell(200, 10, txt=f"País de origen: {pais_origen}", ln=True)
+            pdf.cell(200, 10, txt=f"Ciudad de origen: {ciudad_origen}", ln=True)
+            pdf.cell(200, 10, txt=f"Nivel de riesgo de radicalización: {nivel_riesgo}", ln=True)
+            pdf.cell(200, 10, txt=f"Perfil psicológico: {perfil_psicologico}", ln=True)
+            pdf.cell(200, 10, txt=f"Historial clínico: {historial_clinico}", ln=True)
+            pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
 
-            # Agregar texto al PDF
-            c.drawString(100, 750, f"Fecha de evaluación: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-            c.drawString(100, 730, f"Edad: {edad}")
-            c.drawString(100, 710, f"Género: {genero}")
-            c.drawString(100, 690, f"Nivel de estudios: {nivel_estudios}")
-            c.drawString(100, 670, f"Consumo de sustancias: {', '.join(consumo_sustancias)}")
-            c.drawString(100, 650, f"País de origen: {pais_origen}")
-            c.drawString(100, 630, f"Ciudad de origen: {ciudad_origen}")
-            c.drawString(100, 610, f"Nivel de riesgo de radicalización: {nivel_riesgo}")
-            c.drawString(100, 590, f"Perfil psicológico: {perfil_psicologico}")
-            c.drawString(100, 570, f"Historial clínico: {historial_clinico}")
-            c.drawString(100, 550, f"Comentarios adicionales: {comentarios_adicionales}")
+            # Guardar el PDF en memoria usando BytesIO
+            pdf.output(pdf_output)
 
-            # Guardar PDF en memoria
-            c.save()
-
-            # Asegurarse de que se pueda descargar
+            # Hacer que el archivo esté disponible para descargar
             pdf_output.seek(0)  # Resetear el puntero del archivo
             st.download_button(
                 label="Descargar Informe PDF",
