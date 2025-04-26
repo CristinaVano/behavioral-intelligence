@@ -188,15 +188,13 @@ if st.session_state['usuario_autenticado']:
             pdf.cell(200, 10, txt=f"Historial clínico: {historial_clinico}", ln=True)
             pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
 
-            # Verifica si la ruta existe y guarda el PDF
+            # Ruta donde se guarda el PDF (/mnt/data/)
             pdf_output_path = "/mnt/data/Informe_BIAS.pdf"
-            if not os.path.exists(pdf_output_path):
-                os.makedirs(os.path.dirname(pdf_output_path), exist_ok=True)
-
+            
             # Guardar el PDF en /mnt/data/
             pdf.output(pdf_output_path)
 
-            # Descargar el archivo PDF
+            # Cambiar la ruta para asegurarnos de que se pueda descargar
             with open(pdf_output_path, "rb") as f:
                 st.download_button(
                     label="Descargar Informe PDF",
