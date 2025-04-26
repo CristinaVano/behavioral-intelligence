@@ -169,7 +169,7 @@ if st.session_state['usuario_autenticado']:
             else:
                 st.info("Seguimiento habitual. Reevaluar en caso de cambios de conducta.")
             
-            # Generar PDF de informe
+            # Generar PDF de informe usando BytesIO para guardar en memoria
             pdf = FPDF()
             pdf.add_page()
             pdf.set_font('Arial', 'B', 16)
@@ -188,10 +188,9 @@ if st.session_state['usuario_autenticado']:
             pdf.cell(200, 10, txt=f"Historial clínico: {historial_clinico}", ln=True)
             pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
 
-            # Guardar el PDF en /mnt/data/
-            pdf_output_path = "/mnt/data/Informe_BIAS.pdf"
-            pdf.output(pdf_output_path)
+            # Guardar el PDF en memoria
+            pdf_output = io.BytesIO()
+            pdf.output(pdf_output)
 
-            # Cambiar la ruta para asegurarnos de que se pueda descargar
-            with open(pdf_output_path, "rb") as f:
-                st.download_button
+            # Asegurar que se puede descargar
+            pdf_output.seek(0)  # Resetear el puntero de archivo
