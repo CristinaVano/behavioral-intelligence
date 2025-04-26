@@ -169,33 +169,33 @@ if st.session_state['usuario_autenticado']:
                 st.info("Seguimiento habitual. Reevaluar en caso de cambios de conducta.")
             
             # Generar PDF de informe
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font('Arial', 'B', 16)
-            pdf.cell(200, 10, txt="Informe Preliminar de Riesgo", ln=True, align='C')
-            pdf.ln(10)
-            pdf.set_font('Arial', '', 12)
-            pdf.cell(200, 10, txt=f"Fecha de evaluación: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True)
-            pdf.cell(200, 10, txt=f"Edad: {edad}", ln=True)
-            pdf.cell(200, 10, txt=f"Género: {genero}", ln=True)
-            pdf.cell(200, 10, txt=f"Nivel de estudios: {nivel_estudios}", ln=True)
-            pdf.cell(200, 10, txt=f"Consumo de sustancias: {', '.join(consumo_sustancias)}", ln=True)
-            pdf.cell(200, 10, txt=f"País de origen: {pais_origen}", ln=True)
-            pdf.cell(200, 10, txt=f"Ciudad de origen: {ciudad_origen}", ln=True)
-            pdf.cell(200, 10, txt=f"Nivel de riesgo de radicalización: {nivel_riesgo}", ln=True)
-            pdf.cell(200, 10, txt=f"Perfil psicológico: {perfil_psicologico}", ln=True)
-            pdf.cell(200, 10, txt=f"Historial clínico: {historial_clinico}", ln=True)
-            pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font('Arial', 'B', 16)
+pdf.cell(200, 10, txt="Informe Preliminar de Riesgo", ln=True, align='C')
+pdf.ln(10)
+pdf.set_font('Arial', '', 12)
+pdf.cell(200, 10, txt=f"Fecha de evaluación: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True)
+pdf.cell(200, 10, txt=f"Edad: {edad}", ln=True)
+pdf.cell(200, 10, txt=f"Género: {genero}", ln=True)
+pdf.cell(200, 10, txt=f"Nivel de estudios: {nivel_estudios}", ln=True)
+pdf.cell(200, 10, txt=f"Consumo de sustancias: {', '.join(consumo_sustancias)}", ln=True)
+pdf.cell(200, 10, txt=f"País de origen: {pais_origen}", ln=True)
+pdf.cell(200, 10, txt=f"Ciudad de origen: {ciudad_origen}", ln=True)
+pdf.cell(200, 10, txt=f"Nivel de riesgo de radicalización: {nivel_riesgo}", ln=True)
+pdf.cell(200, 10, txt=f"Perfil psicológico: {perfil_psicologico}", ln=True)
+pdf.cell(200, 10, txt=f"Historial clínico: {historial_clinico}", ln=True)
+pdf.cell(200, 10, txt=f"Comentarios adicionales: {comentarios_adicionales}", ln=True)
 
-            # Guardar el PDF en una ruta accesible para descarga
-            pdf_output_path = "/mnt/data/Informe_BIAS.pdf"
-            pdf.output(pdf_output_path)
+# Guardar el PDF en la ruta correcta (/mnt/data/)
+pdf_output_path = "/mnt/data/Informe_BIAS.pdf"
+pdf.output(pdf_output_path)
 
-            # Cambiar la ruta para asegurarnos de que se pueda descargar
-            with open(pdf_output_path, "rb") as f:
-                st.download_button(
-                    label="Descargar Informe PDF",
-                    data=f.read(),
-                    file_name="Informe_BIAS.pdf",
-                    mime="application/pdf"
-                )
+# Descargar el archivo PDF
+with open(pdf_output_path, "rb") as f:
+    st.download_button(
+        label="Descargar Informe PDF",
+        data=f.read(),
+        file_name="Informe_BIAS.pdf",
+        mime="application/pdf"
+    )
