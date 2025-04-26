@@ -1,8 +1,7 @@
 import streamlit as st
 from datetime import datetime
 import pandas as pd
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from fpdf import FPDF
 import io
 
 # Configurar la app
@@ -170,7 +169,7 @@ if st.session_state['usuario_autenticado']:
             else:
                 st.info("Seguimiento habitual. Reevaluar en caso de cambios de conducta.")
             
-            # Generar PDF de informe usando ReportLab en memoria (sin `FPDF`)
+            # Crear el PDF usando ReportLab en memoria
             pdf_output = io.BytesIO()
             
             # Crear PDF con ReportLab
