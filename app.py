@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime
 import pandas as pd
 from fpdf import FPDF
+import os
 
 # Configurar la app
 st.set_page_config(page_title="BIAS – Prevención del Terrorismo", page_icon="🔒", layout="centered")
