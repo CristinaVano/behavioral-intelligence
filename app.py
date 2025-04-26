@@ -191,7 +191,7 @@ if st.session_state['usuario_autenticado']:
             pdf_output_path = "/mnt/data/Informe_BIAS.pdf"
             pdf.output(pdf_output_path)
 
-            # Cambiar la ruta para asegurarnos de que se pueda descargar
+            # Descargar el archivo PDF
             with open(pdf_output_path, "rb") as f:
                 st.download_button(
                     label="Descargar Informe PDF",
