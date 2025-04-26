@@ -169,7 +169,7 @@ if st.session_state['usuario_autenticado']:
             else:
                 st.info("Seguimiento habitual. Reevaluar en caso de cambios de conducta.")
             
-            # Generar PDF de informe usando FPDF en memoria (sin `reportlab`)
+            # Generar PDF de informe usando FPDF en memoria
             pdf_output = io.BytesIO()
             pdf = FPDF()
             pdf.add_page()
