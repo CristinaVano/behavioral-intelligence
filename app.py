@@ -169,7 +169,7 @@ if st.session_state['usuario_autenticado']:
             else:
                 st.info("Seguimiento habitual. Reevaluar en caso de cambios de conducta.")
             
-            # Generar PDF de informe utilizando BytesIO para guardar en memoria
+            # Generar PDF de informe usando BytesIO para guardar en memoria
             pdf = FPDF()
             pdf.add_page()
             pdf.set_font('Arial', 'B', 16)
