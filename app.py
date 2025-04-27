@@ -497,8 +497,15 @@ def main():
                         'antecedentes_extremismo': antecedentes_extremismo
                     }
 
-                    # Calcular nivel de riesgo
-                    nivel_riesgo = calcular_nivel_riesgo(data, lang)
+                    def calcular_nivel_riesgo(data, lang):
+    puntuacion = 0
+    # Modifica estos valores según necesites
+    if puntuacion > 10:  # Cambia este umbral
+        return lang["high"]
+    elif puntuacion > 5:  # Cambia este umbral
+        return lang["moderate"]
+    else:
+        return lang["low"]
 
                     # Generar recomendaciones
                     recomendaciones = generar_recomendaciones(nivel_riesgo, data, lang)
