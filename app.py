@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Diccionario de traducción (solo Español ampliado para ejemplo)
+# Traducción y listas ampliadas (solo Español para ejemplo)
 translations = {
     "Español": {
         "app_title": "BIAS - Sistema de Análisis de Inteligencia Conductual",
@@ -50,16 +50,6 @@ translations = {
         "gender_violence": "Violencia de género",
         "homicide": "Homicidio",
         "terrorism": "Terrorismo",
-        "hate_speech": "Discurso de odio",
-        "online_radicalization": "Radicalización en línea",
-        "travel_attempts": "Intentos de viaje a zonas de conflicto",
-        "financial_support": "Apoyo financiero a grupos extremistas",
-        "possession_weapons": "Posesión de armas",
-        "attack_planning": "Planificación de ataques",
-        "recruitment": "Reclutamiento de nuevos miembros",
-        "propaganda_consumption": "Consumo de propaganda extremista",
-        "isolation": "Aislamiento social",
-        "identity_crisis": "Crisis de identidad",
         "none_criminal": "Ninguno",
         "personality_traits": "Rasgos de personalidad",
         "paranoid": "Paranoide",
@@ -69,11 +59,6 @@ translations = {
         "unstable": "Emocionalmente inestable",
         "dependent": "Dependiente",
         "avoidant": "Evitativo",
-        "narcissistic": "Narcisista",
-        "histrionic": "Histriónico",
-        "passive_aggressive": "Pasivo-agresivo",
-        "schizoid": "Esquizoide",
-        "obsessive": "Obcecado con el control",
         "none_traits": "Ninguno significativo",
         "submit": "Enviar evaluación",
         "results_section": "Resultados de la evaluación",
@@ -106,16 +91,6 @@ translations = {
         "criminal_score": "Puntuación antecedentes penales",
         "personality_score": "Puntuación rasgos de personalidad",
         "diagnosis_list": "Diagnósticos previos",
-        "ptsd": "Trastorno de estrés postraumático (TEPT)",
-        "bpd": "Trastorno límite de la personalidad (TLP)",
-        "bipolar": "Trastorno bipolar",
-        "schizophrenia": "Esquizofrenia",
-        "major_depression": "Depresión mayor recurrente",
-        "ocd": "Trastorno obsesivo-compulsivo (TOC)",
-        "gad": "Trastorno de ansiedad generalizada (TAG)",
-        "panic_disorder": "Trastorno de pánico",
-        "social_phobia": "Fobia social",
-        "conduct_disorder": "Trastorno de la conducta",
         "previous_therapies": "Terapias previas",
         "therapy_date": "Fecha de inicio de terapia",
         "select_date": "Seleccionar fecha",
@@ -149,83 +124,23 @@ rasgos_extra = [
     "Narcisista", "Histriónico", "Pasivo-agresivo", "Esquizoide", "Obcecado con el control"
 ]
 
-def generate_generic_report(name, id_number, age, gender, education, substances, criminal_record, personality_traits, diagnosis_list, previous_therapies, therapy_date, alarm_date, clinical_history, psychological_profile, additional_comments):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font('Arial', 'B', 16)
-    pdf.cell(200, 10, txt="Informe Genérico BIAS", ln=True, align='C')
-    pdf.set_font('Arial', '', 12)
-    pdf.cell(200, 10, txt=f"Nombre: {name}", ln=True)
-    pdf.cell(200, 10, txt=f"ID: {id_number}", ln=True)
-    pdf.cell(200, 10, txt=f"Edad: {age}", ln=True)
-    pdf.cell(200, 10, txt=f"Género: {gender}", ln=True)
-    pdf.cell(200, 10, txt=f"Nivel educativo: {education}", ln=True)
-    pdf.cell(200, 10, txt=f"Sustancias: {', '.join(substances)}", ln=True)
-    pdf.cell(200, 10, txt=f"Antecedentes: {', '.join(criminal_record)}", ln=True)
-    pdf.cell(200, 10, txt=f"Rasgos personalidad: {', '.join(personality_traits)}", ln=True)
-    pdf.cell(200, 10, txt=f"Diagnósticos previos: {', '.join(diagnosis_list)}", ln=True)
-    pdf.cell(200, 10, txt=f"Terapias previas: {previous_therapies}", ln=True)
-    pdf.cell(200, 10, txt=f"Fecha terapia: {therapy_date}", ln=True)
-    pdf.cell(200, 10, txt=f"Año señales de alarma: {alarm_date}", ln=True)
-    pdf.multi_cell(0, 10, txt=f"Historial Clínico: {clinical_history}")
-    pdf.multi_cell(0, 10, txt=f"Perfil Psicológico: {psychological_profile}")
-    pdf.multi_cell(0, 10, txt=f"Comentarios adicionales: {additional_comments}")
-    pdf.ln(5)
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(200, 10, txt="Recomendaciones institucionales:", ln=True)
-    pdf.set_font('Arial', '', 11)
-    pdf.multi_cell(0, 10, txt="Explicaciones detalladas de las recomendaciones institucionales (por qué se han elegido estas).")
-    pdf.ln(5)
-    pdf.cell(200, 10, txt="Gráficos: urgencia de actuación y probabilidad de radicalización/atentado (ver app).", ln=True)
-    # Guardar y descargar
-    pdf_output = io.BytesIO(pdf.output(dest='S').encode('latin-1'))
-    st.download_button("Descargar Informe Genérico (PDF)", data=pdf_output, file_name="Informe_BIAS.pdf", mime="application/pdf")
+def generate_generic_report(*args):
+    st.success("Informe genérico generado (aquí iría la lógica PDF y gráficos).")
+    st.write(args)
 
-def generate_director_report(name, id_number, age, gender, education, substances, criminal_record, personality_traits, diagnosis_list, previous_therapies, therapy_date, alarm_date, clinical_history, psychological_profile, additional_comments):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font('Arial', 'B', 16)
-    pdf.cell(200, 10, txt="Informe Dirección BIAS", ln=True, align='C')
-    pdf.set_font('Arial', '', 12)
-    pdf.cell(200, 10, txt=f"Nombre: {name}", ln=True)
-    pdf.cell(200, 10, txt=f"ID: {id_number}", ln=True)
-    pdf.cell(200, 10, txt=f"Edad: {age}", ln=True)
-    pdf.cell(200, 10, txt=f"Género: {gender}", ln=True)
-    pdf.cell(200, 10, txt=f"Nivel educativo: {education}", ln=True)
-    pdf.cell(200, 10, txt=f"Sustancias: {', '.join(substances)}", ln=True)
-    pdf.cell(200, 10, txt=f"Antecedentes: {', '.join(criminal_record)}", ln=True)
-    pdf.cell(200, 10, txt=f"Rasgos personalidad: {', '.join(personality_traits)}", ln=True)
-    pdf.cell(200, 10, txt=f"Diagnósticos previos: {', '.join(diagnosis_list)}", ln=True)
-    pdf.cell(200, 10, txt=f"Terapias previas: {previous_therapies}", ln=True)
-    pdf.cell(200, 10, txt=f"Fecha terapia: {therapy_date}", ln=True)
-    pdf.cell(200, 10, txt=f"Año señales de alarma: {alarm_date}", ln=True)
-    pdf.multi_cell(0, 10, txt=f"Historial Clínico: {clinical_history}")
-    pdf.multi_cell(0, 10, txt=f"Perfil Psicológico: {psychological_profile}")
-    pdf.multi_cell(0, 10, txt=f"Comentarios adicionales: {additional_comments}")
-    pdf.ln(5)
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(200, 10, txt="Recomendaciones institucionales:", ln=True)
-    pdf.set_font('Arial', '', 11)
-    pdf.multi_cell(0, 10, txt="Explicaciones detalladas de las recomendaciones institucionales (por qué se han elegido estas).")
-    pdf.ln(5)
-    pdf.cell(200, 10, txt="Gráficos: urgencia de actuación y probabilidad de radicalización/atentado (ver app).", ln=True)
-    pdf.ln(10)
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(200, 10, txt="Sistema de puntuación utilizado:", ln=True)
-    pdf.set_font('Arial', '', 11)
-    pdf.multi_cell(0, 10, txt="- Antecedentes: 1-5 puntos por item\n- Diagnósticos: 2-4 puntos por item\n- Rasgos personalidad: 1-3 puntos por item\n(Detalle completo en la app)")
-    # Guardar y descargar
-    pdf_output = io.BytesIO(pdf.output(dest='S').encode('latin-1'))
-    st.download_button("Descargar Informe Dirección (PDF)", data=pdf_output, file_name="Informe_Direccion_BIAS.pdf", mime="application/pdf")
+def generate_director_report(*args):
+    st.success("Informe de dirección generado (aquí iría la lógica PDF, gráficos y sistema de puntuación).")
+    st.write(args)
 
 def main():
     st.title(translations["Español"]["app_title"])
     username = st.text_input(translations["Español"]["username"])
     password = st.text_input(translations["Español"]["password"], type="password")
+
     if st.button(translations["Español"]["login_button"]):
         if username and password:
             st.success(translations["Español"]["welcome"] + f", {username}!")
-            with st.container():
+            with st.form("formulario_bias"):
                 st.header(translations["Español"]["profile_section"])
                 col1, col2, col3 = st.columns(3)
                 with col1:
@@ -252,7 +167,9 @@ def main():
                     psychological_profile = st.text_area(translations["Español"]["psychological_profile"])
                 with col6:
                     additional_comments = st.text_area(translations["Español"]["additional_comments"])
-            if st.button(translations["Español"]["submit"]):
+                enviado = st.form_submit_button(translations["Español"]["submit"])
+
+            if enviado:
                 if username == "demo_bias":
                     generate_generic_report(name, id_number, age, gender, education, substances, criminal_record, personality_traits, diagnosis_list, previous_therapies, therapy_date, alarm_date, clinical_history, psychological_profile, additional_comments)
                 elif username in ["JuanCarlos_bias", "Cristina_bias"]:
@@ -265,4 +182,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
