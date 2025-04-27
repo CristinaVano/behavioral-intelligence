@@ -92,7 +92,7 @@ translations = {
         "substances_score": "Puntuación consumo de sustancias",
         "criminal_score": "Puntuación antecedentes penales",
         "personality_score": "Puntuación rasgos de personalidad",
-        "diagnosis_list": "Diagnósticos previos",
+        "diagnosis_list": "Lista de diagnósticos",
         "previous_therapies": "Terapias anteriores",
         "therapy_date": "Fecha inicio terapia",
         "select_date": "Seleccionar fecha",
@@ -156,17 +156,14 @@ translations = {
         "evaluation_efficiency": "Eficiencia de la Evaluación",
         "evaluation_quality": "Calidad de la Evaluación",
         "evaluation_improvement": "Mejora de la Evaluación",
-        "evaluation_feedback": "Retroalimentación de la Evaluación",
-        "Usuario": "Usuario",
-        "Contraseña": "Contraseña",
-        "Rol": "Rol"
+        "evaluation_feedback": "Retroalimentación de la Evaluación"
     }
 }
 
 def calcular_nivel_riesgo(data, lang):
     # Sistema de puntuación para factores de riesgo
     puntuacion = 0
-
+    
     # Antecedentes penales (0-5 puntos)
     antecedentes_graves = ["Homicidio", "Terrorismo", "Violencia de género"]
     for antecedente in data['antecedentes_penales']:
@@ -336,28 +333,36 @@ def generar_pdf(data, nivel_riesgo, recomendaciones, lang):
     return base64.b64encode(pdf_output).decode()
 
 def guardar_registro(data, nivel_riesgo):
-    # Crear DataFrame con los datos
-    df_nuevo = pd.DataFrame({
-        'fecha': [datetime.now()],
-        'nombre': [data['nombre']],
-        'id': [data['numero_identificacion']],
-        'nivel_riesgo': [nivel_riesgo],
-        'edad': [data['edad']],
-        'genero': [data['genero']],
-        'nivel_estudios': [data['nivel_estudios']],
-        'consumo_sustancias': [','.join(data['consumo_sustancias'])],
-        'antecedentes_penales': [','.join(data['antecedentes_penales'])],
-        'rasgos_personalidad': [','.join(data['rasgos_personalidad'])]
-    })
+    try:
+        # Crear DataFrame con los datos
+        registro = {
+            'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'nombre': data['nombre'],
+            'id': data['numero_identificacion'],
+            'nivel_riesgo': nivel_riesgo,
+            'edad': data['edad'],
+            'genero': data['genero'],
+            'nivel_estudios': data['nivel_estudios'],
+            'consumo_sustancias': ','.join(data['consumo_sustancias']) if data['consumo_sustancias'] else '',
+            'antecedentes_penales': ','.join(data['antecedentes_penales']) if data['antecedentes_penales'] else '',
+            'rasgos_personalidad': ','.join(data['rasgos_personalidad']) if data['rasgos_personalidad'] else ''
+        }
 
-    # Guardar en CSV
-    if os.path.exists('registros_perfiles.csv'):
-        df_existente = pd.read_csv('registros_perfiles.csv')
-        df_actualizado = pd.concat([df_existente, df_nuevo], ignore_index=True)
-    else:
-        df_actualizado = df_nuevo
+        # Crear DataFrame con un solo registro
+        df_nuevo = pd.DataFrame([registro])
 
-    df_actualizado.to_csv('registros_perfiles.csv', index=False)
+        # Guardar en CSV
+        if os.path.exists('registros_perfiles.csv'):
+            df_existente = pd.read_csv('registros_perfiles.csv')
+            df_actualizado = pd.concat([df_existente, df_nuevo], ignore_index=True)
+        else:
+            df_actualizado = df_nuevo
+
+        df_actualizado.to_csv('registros_perfiles.csv', index=False)
+        return True
+    except Exception as e:
+        st.error(f"Error al guardar el registro: {str(e)}")
+        return False
 
 def main():
     # Selección de idioma (por ahora solo español)
@@ -499,62 +504,60 @@ def main():
                     recomendaciones = generar_recomendaciones(nivel_riesgo, data, lang)
 
                     # Guardar registro
-                    guardar_registro(data, nivel_riesgo)
+                    if guardar_registro(data, nivel_riesgo):
+                        # Mostrar resultados
+                        st.success(lang["results_section"])
 
-                    # Mostrar resultados
-                    st.success(lang["results_section"])
+                        # Sección de resultados
+                        st.header(lang["results_section"])
 
-                    # Sección de resultados
-                    st.header(lang["results_section"])
+                        # Mostrar nivel de riesgo con formato
+                        st.subheader(lang["risk_level"])
+                        if nivel_riesgo == lang["high"]:
+                            st.error(nivel_riesgo)
+                            st.write(lang["high_explanation"])
+                        elif nivel_riesgo == lang["moderate"]:
+                            st.warning(nivel_riesgo)
+                            st.write(lang["moderate_explanation"])
+                        else:
+                            st.success(nivel_riesgo)
+                            st.write(lang["low_explanation"])
 
-                    # Mostrar nivel de riesgo con formato
-                    st.subheader(lang["risk_level"])
-                    if nivel_riesgo == lang["high"]:
-                        st.error(nivel_riesgo)
-                        st.write(lang["high_explanation"])
-                    elif nivel_riesgo == lang["moderate"]:
-                        st.warning(nivel_riesgo)
-                        st.write(lang["moderate_explanation"])
-                    else:
-                        st.success(nivel_riesgo)
-                        st.write(lang["low_explanation"])
+                        # Mostrar recomendaciones
+                        st.subheader(lang["recommendations"])
 
-                    # Mostrar recomendaciones
-                    st.subheader(lang["recommendations"])
+                        col5, col6 = st.columns(2)
+                        with col5:
+                            if recomendaciones["terapeuticas"]:
+                                st.write(lang["therapy_recs"])
+                                for rec in recomendaciones["terapeuticas"]:
+                                    st.write(f"• {rec}")
 
-                    col5, col6 = st.columns(2)
-                    with col5:
-                        if recomendaciones["terapeuticas"]:
-                            st.write(lang["therapy_recs"])
-                            for rec in recomendaciones["terapeuticas"]:
+                            if recomendaciones["farmacologicas"]:
+                                st.write(lang["medication_recs"])
+                                for rec in recomendaciones["farmacologicas"]:
+                                    st.write(f"• {rec}")
+
+                        with col6:
+                            if recomendaciones["reinsercion"]:
+                                st.write(lang["reintegration_recs"])
+                                for rec in recomendaciones["reinsercion"]:
+                                    st.write(f"• {rec}")
+
+                            if recomendaciones["prevencion"]:
+                                st.write(lang["prevention_recs"])
+                                for rec in recomendaciones["prevencion"]:
+                                    st.write(f"• {rec}")
+
+                        if recomendaciones["urgencia"]:
+                            st.error(lang["urgent_measures"])
+                            for rec in recomendaciones["urgencia"]:
                                 st.write(f"• {rec}")
 
-                        if recomendaciones["farmacologicas"]:
-                            st.write(lang["medication_recs"])
-                            for rec in recomendaciones["farmacologicas"]:
-                                st.write(f"• {rec}")
-
-                    with col6:
-                        if recomendaciones["reinsercion"]:
-                            st.write(lang["reintegration_recs"])
-                            for rec in recomendaciones["reinsercion"]:
-                                st.write(f"• {rec}")
-
-                        if recomendaciones["prevencion"]:
-                            st.write(lang["prevention_recs"])
-                            for rec in recomendaciones["prevencion"]:
-                                st.write(f"• {rec}")
-
-                    if recomendaciones["urgencia"]:
-                        st.error(lang["urgent_measures"])
-                        for rec in recomendaciones["urgencia"]:
-                            st.write(f"• {rec}")
-
-                    # Generar y ofrecer descarga del informe
-                    pdf_b64 = generar_pdf(data, nivel_riesgo, recomendaciones, lang)
-                    href = f'<a href="data:application/pdf;base64,{pdf_b64}" download="informe_BIAS_{data["numero_identificacion"]}.pdf">{lang["download_detailed"]}</a>'
-                    st.markdown(href, unsafe_allow_html=True)
+                        # Generar y ofrecer descarga del informe
+                        pdf_b64 = generar_pdf(data, nivel_riesgo, recomendaciones, lang)
+                        href = f'<a href="data:application/pdf;base64,{pdf_b64}" download="informe_BIAS_{data["numero_identificacion"]}.pdf">{lang["download_detailed"]}</a>'
+                        st.markdown(href, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
-    st.info(f"{lang['login']} para acceder al sistema.")
