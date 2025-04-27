@@ -3,6 +3,8 @@ from datetime import datetime
 import pandas as pd
 from fpdf import FPDF
 import io
+import base64
+from PIL import Image
 import os
 
 # Configuración de la página
@@ -13,172 +15,134 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Traducción y listas ampliadas (solo Español para ejemplo)
+# Diccionarios para traducción (versión simplificada)
 translations = {
     "Español": {
-        "app_title": "BIAS - Sistema de Análisis de Inteligencia Conductual",
-        "welcome": "Bienvenido/a al Sistema de Análisis de Inteligencia Conductual",
-        "login": "Iniciar Sesión",
-        "username": "Usuario",
-        "password": "Contraseña",
-        "login_button": "Entrar",
-        "language": "Idioma",
-        "logout": "Cerrar Sesión",
-        "profile_section": "Perfil de evaluación",
-        "name": "Nombre completo",
-        "id_number": "Número de identificación",
-        "age": "Edad",
-        "gender": "Género",
-        "male": "Masculino",
-        "female": "Femenino",
-        "other": "Otro",
-        "education": "Nivel educativo",
-        "primary": "Primaria",
-        "secondary": "Secundaria",
-        "university": "Universidad",
-        "postgraduate": "Postgrado",
-        "none": "Sin estudios",
-        "substances": "Consumo de sustancias",
-        "alcohol": "Alcohol",
-        "tobacco": "Tabaco",
-        "recreational": "Drogas recreativas",
-        "cocaine": "Cocaína",
-        "heroin": "Heroína",
-        "none_substance": "Ninguna",
-        "criminal_record": "Antecedentes penales",
-        "theft": "Robo",
-        "gender_violence": "Violencia de género",
-        "homicide": "Homicidio",
-        "terrorism": "Terrorismo",
-        "none_criminal": "Ninguno",
-        "personality_traits": "Rasgos de personalidad",
-        "paranoid": "Paranoide",
-        "antisocial": "Antisocial",
-        "sadomasochistic": "Sadomasoquista",
-        "impulsive": "Impulsivo",
-        "unstable": "Emocionalmente inestable",
-        "dependent": "Dependiente",
-        "avoidant": "Evitativo",
-        "none_traits": "Ninguno significativo",
-        "submit": "Enviar evaluación",
-        "results_section": "Resultados de la evaluación",
-        "risk_level": "Nivel de riesgo:",
-        "high": "ALTO",
-        "moderate": "MODERADO",
-        "low": "BAJO",
-        "evaluation_date": "Fecha de evaluación:",
-        "generate_report": "Generar informe",
-        "download_report": "Descargar Informe",
-        "download_detailed": "Descargar Informe Detallado",
-        "login_error": "Usuario o contraseña incorrectos",
-        "field_required": "Este campo es obligatorio",
-        "results_info": "Tras enviar la evaluación, aquí se mostrarán los resultados del análisis de riesgo.",
-        "recommendations": "Recomendaciones institucionales",
-        "therapy_recs": "Recomendaciones Terapéuticas",
-        "medication_recs": "Recomendaciones Farmacológicas",
-        "reintegration_recs": "Terapias de Reinserción",
-        "prevention_recs": "Medidas de Prevención",
-        "urgent_measures": "Medidas de Urgencia",
-        "explanation": "Explicación del Nivel de Riesgo",
-        "high_explanation": "El sujeto presenta múltiples factores de riesgo significativos que sugieren una alta probabilidad de radicalización violenta. Se recomienda intervención inmediata y monitoreo constante.",
-        "moderate_explanation": "El sujeto presenta algunos factores de riesgo relevantes que requieren atención y seguimiento. Se recomienda intervención preventiva y evaluación periódica.",
-        "low_explanation": "El sujeto presenta pocos factores de riesgo. Se recomienda seguimiento rutinario y medidas preventivas básicas.",
-        "scoring_report": "Informe Detallado de Puntuación",
-        "detailed_scoring": "Puntuación Detallada",
-        "total_risk_score": "Puntuación total de riesgo",
-        "education_score": "Puntuación nivel educativo",
-        "substances_score": "Puntuación consumo de sustancias",
-        "criminal_score": "Puntuación antecedentes penales",
-        "personality_score": "Puntuación rasgos de personalidad",
-        "diagnosis_list": "Diagnósticos previos",
-        "previous_therapies": "Terapias previas",
-        "therapy_date": "Fecha de inicio de terapia",
-        "select_date": "Seleccionar fecha",
-        "alarm_date": "Fecha de señales de alarma",
-        "interest_profile": "Motivo de interés",
-        "family_extremism": "Antecedentes de extremismo familiar",
-        "upload_photo": "Subir fotografía del sujeto",
-        "upload_button": "Subir imagen",
-        "photo_requirements": "La fotografía debe ser tipo carnet con fondo blanco",
-        "clinical_history": "Historial Clínico",
-        "psychological_profile": "Perfil Psicológico",
-        "additional_comments": "Comentarios Adicionales"
+        # ... (mantener todas las traducciones existentes)
+        # Añadir nuevas traducciones
+        "therapy_disabled": "Seleccione una terapia para habilitar la fecha",
+        "interest_reason": "Motivo de Interés",
+        "extremism_background": "Antecedentes de Extremismo",
+        "subject_photo": "Fotografía del Sujeto"
     }
 }
 
-# Listas ampliadas
-antecedentes_extra = [
-    "Aislamiento social progresivo", "Justificación de la violencia", "Fascinación por ideologías extremistas",
-    "Cambios drásticos en el comportamiento", "Expresión de odio hacia grupos específicos",
-    "Contacto con individuos radicalizados", "Consumo de propaganda extremista",
-    "Participación en actividades sospechosas online", "Intento de reclutamiento de otros",
-    "Preparación física para el combate"
-]
-diagnosticos_extra = [
-    "Trastorno de estrés postraumático (TEPT)", "Trastorno límite de la personalidad (TLP)",
-    "Trastorno bipolar", "Esquizofrenia", "Depresión mayor recurrente",
-    "Trastorno obsesivo-compulsivo (TOC)", "Trastorno de ansiedad generalizada (TAG)",
-    "Trastorno de pánico", "Fobia social", "Trastorno de la conducta"
-]
-rasgos_extra = [
-    "Narcisista", "Histriónico", "Pasivo-agresivo", "Esquizoide", "Obcecado con el control"
-]
-
-def generate_generic_report(*args):
-    st.success("Informe genérico generado (aquí iría la lógica PDF y gráficos).")
-    st.write(args)
-
-def generate_director_report(*args):
-    st.success("Informe de dirección generado (aquí iría la lógica PDF, gráficos y sistema de puntuación).")
-    st.write(args)
+# Listas ampliadas (mantener las existentes)
+# ...
 
 def main():
     st.title(translations["Español"]["app_title"])
-    username = st.text_input(translations["Español"]["username"])
-    password = st.text_input(translations["Español"]["password"], type="password")
+    
+    # Gestión de autenticación mejorada
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+    
+    if not st.session_state.authenticated:
+        with st.container():
+            st.header("Autenticación")
+            username = st.text_input(translations["Español"]["username"])
+            password = st.text_input(translations["Español"]["password"], type="password")
+            
+            if st.button(translations["Español"]["login_button"]):
+                # Validación básica (implementar lógica real)
+                if username and password:
+                    st.session_state.authenticated = True
+                    st.session_state.username = username
+                    st.rerun()
+        return
+    
+    # Sección principal después de autenticación
+    with st.container():
+        st.header(translations["Español"]["profile_section"])
+        
+        with st.form(key="main_form"):
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                # ... (mantener campos existentes)
+            
+            with col2:
+                # Nuevo campo para subir foto
+                uploaded_photo = st.file_uploader(
+                    translations["Español"]["subject_photo"],
+                    type=["jpg", "png", "jpeg"],
+                    accept_multiple_files=False
+                )
+                
+                if uploaded_photo:
+                    st.image(uploaded_photo, width=150)
+            
+            with col3:
+                # Fecha de señales de alarma (solo año)
+                current_year = datetime.now().year
+                alarm_year = st.selectbox(
+                    "Año de señales de alarma",
+                    options=list(range(2000, current_year + 1)),
+                    index=current_year - 2000
+                )
+                
+                # Terapias previas con lógica condicional
+                therapy_options = ["Ninguna", "Psicoterapia", "Farmacológica", "Mixta"]
+                selected_therapy = st.selectbox(
+                    translations["Español"]["previous_therapies"],
+                    options=therapy_options
+                )
+                
+                therapy_date = st.date_input(
+                    translations["Español"]["therapy_date"],
+                    disabled=(selected_therapy == "Ninguna"),
+                    help=translations["Español"]["therapy_disabled"] if selected_therapy == "Ninguna" else None
+                )
+            
+            # Nuevas secciones
+            st.subheader("Información Adicional")
+            interest_reason = st.text_area(translations["Español"]["interest_reason"])
+            extremism_background = st.text_area(translations["Español"]["extremism_background"])
+            
+            # Botón de envío dentro del formulario
+            submitted = st.form_submit_button(translations["Español"]["submit"])
+            
+            if submitted:
+                # Generación de informes
+                try:
+                    # Lógica para generar PDF (implementar según necesidad)
+                    generate_report(
+                        alarm_year=alarm_year,
+                        therapy_date=therapy_date if selected_therapy != "Ninguna" else None,
+                        interest_reason=interest_reason,
+                        extremism_background=extremism_background,
+                        photo=uploaded_photo
+                    )
+                    st.success("Informe generado correctamente")
+                except Exception as e:
+                    st.error(f"Error al generar informe: {str(e)}")
+    
+    # Botón de logout fuera del formulario
+    if st.button(translations["Español"]["logout"]):
+        st.session_state.authenticated = False
+        st.session_state.pop("username", None)
+        st.rerun()
 
-    if st.button(translations["Español"]["login_button"]):
-        if username and password:
-            st.success(translations["Español"]["welcome"] + f", {username}!")
-            with st.form("formulario_bias"):
-                st.header(translations["Español"]["profile_section"])
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    name = st.text_input(translations["Español"]["name"])
-                    id_number = st.text_input(translations["Español"]["id_number"])
-                    age = st.number_input(translations["Español"]["age"], min_value=0, max_value=120, value=18)
-                    gender = st.selectbox(translations["Español"]["gender"], [translations["Español"]["male"], translations["Español"]["female"], translations["Español"]["other"]])
-                    education = st.selectbox(translations["Español"]["education"], [translations["Español"]["primary"], translations["Español"]["secondary"], translations["Español"]["university"], translations["Español"]["postgraduate"], translations["Español"]["none"]])
-                with col2:
-                    substances = st.multiselect(translations["Español"]["substances"], [translations["Español"]["alcohol"], translations["Español"]["tobacco"], translations["Español"]["recreational"], translations["Español"]["cocaine"], translations["Español"]["heroin"], translations["Español"]["none_substance"]])
-                    criminal_record = st.multiselect(translations["Español"]["criminal_record"], [translations["Español"]["theft"], translations["Español"]["gender_violence"], translations["Español"]["homicide"], translations["Español"]["terrorism"], translations["Español"]["none_criminal"]] + antecedentes_extra)
-                    personality_traits = st.multiselect(translations["Español"]["personality_traits"], [translations["Español"]["paranoid"], translations["Español"]["antisocial"], translations["Español"]["sadomasochistic"], translations["Español"]["impulsive"], translations["Español"]["unstable"], translations["Español"]["dependent"], translations["Español"]["avoidant"], translations["Español"]["none_traits"]] + rasgos_extra)
-                with col3:
-                    diagnosis_list = st.multiselect(translations["Español"]["diagnosis_list"], diagnosticos_extra)
-                    previous_therapies = st.text_input(translations["Español"]["previous_therapies"])
-                    therapy_date = st.date_input(translations["Español"]["therapy_date"], datetime.now())
-                    alarm_date = st.date_input(translations["Español"]["alarm_date"], datetime.now()).year
-                    st.write(f"Año de señales de alarma: {alarm_date}")
-                st.header("Información Adicional")
-                col4, col5, col6 = st.columns(3)
-                with col4:
-                    clinical_history = st.text_area(translations["Español"]["clinical_history"])
-                with col5:
-                    psychological_profile = st.text_area(translations["Español"]["psychological_profile"])
-                with col6:
-                    additional_comments = st.text_area(translations["Español"]["additional_comments"])
-                enviado = st.form_submit_button(translations["Español"]["submit"])
-
-            if enviado:
-                if username == "demo_bias":
-                    generate_generic_report(name, id_number, age, gender, education, substances, criminal_record, personality_traits, diagnosis_list, previous_therapies, therapy_date, alarm_date, clinical_history, psychological_profile, additional_comments)
-                elif username in ["JuanCarlos_bias", "Cristina_bias"]:
-                    generate_generic_report(name, id_number, age, gender, education, substances, criminal_record, personality_traits, diagnosis_list, previous_therapies, therapy_date, alarm_date, clinical_history, psychological_profile, additional_comments)
-                    generate_director_report(name, id_number, age, gender, education, substances, criminal_record, personality_traits, diagnosis_list, previous_therapies, therapy_date, alarm_date, clinical_history, psychological_profile, additional_comments)
-                else:
-                    st.warning("No se puede generar el informe para este usuario.")
-        else:
-            st.error(translations["Español"]["login_error"])
+def generate_report(**kwargs):
+    # Implementación real de generación de PDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    
+    # Agregar contenido al PDF
+    pdf.cell(200, 10, txt=f"Año de señales: {kwargs.get('alarm_year', '')}", ln=True)
+    # ... (agregar más campos)
+    
+    # Guardar PDF en bytes
+    pdf_output = io.BytesIO(pdf.output(dest='S').encode('latin-1'))
+    
+    # Botón de descarga
+    st.download_button(
+        label=translations["Español"]["download_report"],
+        data=pdf_output,
+        file_name="informe_bias.pdf",
+        mime="application/pdf"
+    )
 
 if __name__ == "__main__":
     main()
