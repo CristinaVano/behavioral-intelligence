@@ -61,16 +61,29 @@ def main():
             with col1:
                 # ... (mantener campos existentes)
             
-            with col2:
-                # Nuevo campo para subir foto
-                uploaded_photo = st.file_uploader(
-                    translations["Español"]["subject_photo"],
-                    type=["jpg", "png", "jpeg"],
-                    accept_multiple_files=False
+                        with col2:
+                substances = st.multiselect(
+                    translations["Español"]["substances"], 
+                    [translations["Español"]["alcohol"], translations["Español"]["tobacco"], 
+                     translations["Español"]["recreational"], translations["Español"]["cocaine"], 
+                     translations["Español"]["heroin"], translations["Español"]["none_substance"]]
                 )
-                
-                if uploaded_photo:
-                    st.image(uploaded_photo, width=150)
+                criminal_record = st.multiselect(
+                    translations["Español"]["criminal_record"], 
+                    [translations["Español"]["theft"], translations["Español"]["gender_violence"],
+                     translations["Español"]["homicide"], translations["Español"]["terrorism"], 
+                     translations["Español"]["none_criminal"]] + 
+                    [translations["Español"][item] for item in additional_terrorism_antecedents]
+                )
+                personality_traits = st.multiselect(
+                    translations["Español"]["personality_traits"], 
+                    [translations["Español"]["paranoid"], translations["Español"]["antisocial"],
+                     translations["Español"]["sadomasochistic"], translations["Español"]["impulsive"],
+                     translations["Español"]["unstable"], translations["Español"]["dependent"],
+                     translations["Español"]["avoidant"], translations["Español"]["none_traits"]] + 
+                    [translations["Español"][item] for item in additional_personality_traits]
+                )
+
             
             with col3:
                 # Fecha de señales de alarma (solo año)
