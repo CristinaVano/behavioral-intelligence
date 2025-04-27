@@ -156,49 +156,26 @@ translations = {
         "executive_summary": "Executive Summary",
         "date": "Generation date",
         "analyst": "Responsible/Analyst"
-    },
-    "Français": {
-        "app_title": "BIAS - Système d'Analyse de l'Intelligence Comportementale",
-        "login": "Connexion",
-        "username": "Nom d'utilisateur",
-        "password": "Mot de passe",
-        "logout": "Déconnexion",
-        "submit": "Soumettre l'évaluation",
-        # ... (completa igual que arriba)
-    },
-    "العربية": {
-        "app_title": "بياس - نظام تحليل الذكاء السلوكي",
-        "login": "تسجيل الدخول",
-        "username": "اسم المستخدم",
-        "password": "كلمة المرور",
-        "logout": "تسجيل الخروج",
-        "submit": "إرسال التقييم",
-        # ... (completa igual que arriba)
     }
+    # Añade aquí Francés y Árabe siguiendo el mismo patrón
 }
 
 def get_translation(key):
     return translations[st.session_state.lang][key]
 
-# ============ PDF PROFESIONAL =============
 class ProfessionalPDF(FPDF):
     def __init__(self, lang):
         super().__init__()
         self.lang = lang
         self.set_auto_page_break(auto=True, margin=15)
-        if self.lang == "العربية":
-            self.set_rtl(True)
-            self.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)
-            self.set_font('DejaVu', '', 12)
-        else:
-            self.set_font('Helvetica', '', 12)
+        self.set_font('Helvetica', '', 12)
 
     def cover(self, data):
         self.add_page()
-        self.set_font('Helvetica', 'B', 22) if self.lang != "العربية" else self.set_font('DejaVu', 'B', 22)
+        self.set_font('Helvetica', 'B', 22)
         self.cell(0, 15, get_translation("app_title"), 0, 1, 'C')
         self.ln(12)
-        self.set_font('Helvetica', 'B', 18) if self.lang != "العaria" else self.set_font('DejaVu', 'B', 18)
+        self.set_font('Helvetica', 'B', 18)
         self.cell(0, 12, get_translation("profile_section"), 0, 1, 'C')
         self.ln(10)
         self.set_font('Helvetica', '', 12)
@@ -262,7 +239,6 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 8, "(Gráficos y tablas disponibles en plataforma digital)", 0, 1)
         self.ln(5)
 
-# ============ APP STREAMLIT =============
 def main():
     st.set_page_config(page_title="BIAS", page_icon="🕵️", layout="wide")
     if 'lang' not in st.session_state:
