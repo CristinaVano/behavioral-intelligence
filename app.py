@@ -5,10 +5,9 @@ import io
 import os
 from PIL import Image
 
-# IMPORTANTE: set_page_config DEBE ser lo primero
+# --- CONFIGURACIÓN INICIAL ---
 st.set_page_config(page_title="BIAS", page_icon="🕵️", layout="wide")
 
-# ============ TRADUCCIONES =============
 translations = {
     "Español": {
         "app_title": "BIAS - Sistema de Análisis de Inteligencia Conductual",
@@ -162,14 +161,12 @@ translations = {
         "date": "Generation date",
         "analyst": "Responsible/Analyst"
     }
+    # Añade francés y árabe igual
 }
 
-# Función segura de traducción
 def get_translation(key):
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
-    
-    # Devuelve la clave como valor predeterminado si no existe
     return translations[st.session_state.lang].get(key, key)
 
 class ProfessionalPDF(FPDF):
@@ -177,34 +174,35 @@ class ProfessionalPDF(FPDF):
         super().__init__()
         self.lang = lang
         self.set_auto_page_break(auto=True, margin=15)
-        self.set_font('Helvetica', '', 12)
+        self.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)
+        self.set_font('DejaVu', '', 12)
 
     def cover_page(self, data):
         self.add_page()
-        self.set_font('Helvetica', 'B', 22)
+        self.set_font('DejaVu', 'B', 22)
         self.cell(0, 15, get_translation("app_title"), 0, 1, 'C')
-        self.set_font('Helvetica', 'B', 14)
-        self.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
-        self.cell(0, 10, f"Analista: {data.get('analyst', 'N/A')}", 0, 1, 'R')
+        self.set_font('DejaVu', 'B', 14)
+        self.cell(0, 10, f"{get_translation('date')}: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
+        self.cell(0, 10, f"{get_translation('analyst')}: {data.get('analyst', 'N/A')}", 0, 1, 'R')
         self.ln(5)
-        self.set_font('Helvetica', 'I', 10)
+        self.set_font('DejaVu', 'I', 10)
         self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
         self.ln(10)
         
     def executive_summary(self, summary):
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
-        self.set_font('Helvetica', '', 12)
+        self.set_font('DejaVu', '', 12)
         self.multi_cell(0, 8, summary)
         self.ln(5)
         
     def subject_data_table(self, data):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "DATOS COMPLETOS DEL SUJETO", 0, 1, 'C')
         self.ln(5)
         self.set_fill_color(220, 220, 220)
-        self.set_font('Helvetica', 'B', 12)
+        self.set_font('DejaVu', 'B', 12)
         fields = [
             ("Nombre completo", data.get('name', 'N/A')),
             ("Número de identificación", data.get('id_number', 'N/A')),
@@ -223,9 +221,9 @@ class ProfessionalPDF(FPDF):
         ]
         for i, (field, value) in enumerate(fields):
             fill = i % 2 == 0
-            self.set_font('Helvetica', 'B', 11)
+            self.set_font('DejaVu', 'B', 11)
             self.cell(60, 10, field, 1, 0, 'L', fill)
-            self.set_font('Helvetica', '', 11)
+            self.set_font('DejaVu', '', 11)
             self.multi_cell(0, 10, str(value), 1, 'L', fill)
         # Foto
         if data.get("photo"):
@@ -240,10 +238,10 @@ class ProfessionalPDF(FPDF):
 
     def risk_assessment(self, risk_level, explanation):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "EVALUACIÓN DE RIESGO", 0, 1, 'C')
         self.ln(5)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(60, 10, "Nivel de riesgo:", 0, 0)
         if risk_level == "ALTO":
             self.set_text_color(255, 0, 0)
@@ -253,12 +251,12 @@ class ProfessionalPDF(FPDF):
             self.set_text_color(0, 128, 0)
         self.cell(0, 10, risk_level, 0, 1)
         self.set_text_color(0, 0, 0)
-        self.set_font('Helvetica', 'B', 12)
+        self.set_font('DejaVu', 'B', 12)
         self.cell(0, 10, "Justificación de la evaluación:", 0, 1)
-        self.set_font('Helvetica', '', 11)
+        self.set_font('DejaVu', '', 11)
         self.multi_cell(0, 8, explanation)
         self.ln(10)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Visualización de factores de riesgo:", 0, 1)
         risk_factors = {
             "Antecedentes penales": 85,
@@ -266,7 +264,7 @@ class ProfessionalPDF(FPDF):
             "Consumo sustancias": 60,
             "Factores sociales": 40
         }
-        self.set_font('Helvetica', '', 10)
+        self.set_font('DejaVu', '', 10)
         for factor, value in risk_factors.items():
             bar = "█" * int(value/10)
             self.cell(60, 8, f"{factor}:", 0, 0)
@@ -274,27 +272,27 @@ class ProfessionalPDF(FPDF):
     
     def recommendations_section(self, recs):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "RECOMENDACIONES INSTITUCIONALES", 0, 1, 'C')
         self.ln(5)
         self.set_fill_color(220, 220, 220)
         for i, (title, explanation) in enumerate(recs):
             fill = i % 2 == 0
-            self.set_font('Helvetica', 'B', 12)
+            self.set_font('DejaVu', 'B', 12)
             self.cell(0, 10, title, 1, 1, 'L', fill)
-            self.set_font('Helvetica', '', 11)
+            self.set_font('DejaVu', '', 11)
             self.multi_cell(0, 8, explanation, 1, 'L', fill)
             self.ln(3)
     
     def graphics_section(self):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "GRÁFICOS DE ANÁLISIS", 0, 1, 'C')
         self.ln(5)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Tabla de evolución del peligro si no se trata:", 0, 1)
         self.set_fill_color(220, 220, 220)
-        self.set_font('Helvetica', 'B', 11)
+        self.set_font('DejaVu', 'B', 11)
         self.cell(40, 10, "Periodo", 1, 0, 'C', True)
         self.cell(40, 10, "Nivel inicial", 1, 0, 'C', True)
         self.cell(40, 10, "Proyección", 1, 0, 'C', True)
@@ -304,7 +302,7 @@ class ProfessionalPDF(FPDF):
             ("6 meses", "Alto+", "Extremo", "Contacto con extremistas, pérdida de anclajes sociales"),
             ("12 meses", "Extremo", "Crítico", "Preparación potencial para acción violenta")
         ]
-        self.set_font('Helvetica', '', 10)
+        self.set_font('DejaVu', '', 10)
         for i, (period, initial, projection, factors) in enumerate(data):
             fill = i % 2 == 1
             self.cell(40, 10, period, 1, 0, 'C', fill)
@@ -312,20 +310,20 @@ class ProfessionalPDF(FPDF):
             self.cell(40, 10, projection, 1, 0, 'C', fill)
             self.cell(0, 10, factors, 1, 1, 'L', fill)
         self.ln(15)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Gráficos de probabilidad:", 0, 1)
-        self.set_font('Helvetica', '', 10)
+        self.set_font('DejaVu', '', 10)
         self.cell(0, 10, "Nota: Esta sección contiene visualizaciones avanzadas disponibles en la plataforma digital completa.", 0, 1)
 
     def director_report_extension(self):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "INFORME EXTENDIDO PARA DIRECCIÓN", 0, 1, 'C')
         self.ln(5)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Sistema de puntuación utilizado:", 0, 1)
         self.set_fill_color(220, 220, 220)
-        self.set_font('Helvetica', 'B', 11)
+        self.set_font('DejaVu', 'B', 11)
         self.cell(60, 10, "Factor de riesgo", 1, 0, 'L', True)
         self.cell(40, 10, "Puntuación", 1, 0, 'C', True)
         self.cell(0, 10, "Metodología", 1, 1, 'L', True)
@@ -336,27 +334,24 @@ class ProfessionalPDF(FPDF):
             ("Factores sociales", "40/100", "Evaluación de redes de apoyo, aislamiento y vulnerabilidad"),
             ("PUNTUACIÓN GLOBAL", "73/100", "Media ponderada con relevancia contextual")
         ]
-        self.set_font('Helvetica', '', 10)
+        self.set_font('DejaVu', '', 10)
         for i, (factor, score, method) in enumerate(data):
             fill = i % 2 == 1
             if factor == "PUNTUACIÓN GLOBAL":
-                self.set_font('Helvetica', 'B', 10)
+                self.set_font('DejaVu', 'B', 10)
             self.cell(60, 10, factor, 1, 0, 'L', fill)
             self.cell(40, 10, score, 1, 0, 'C', fill)
             self.multi_cell(0, 10, method, 1, 'L', fill)
-            self.set_font('Helvetica', '', 10)
+            self.set_font('DejaVu', '', 10)
         self.ln(10)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Fundamentación técnica de evaluación:", 0, 1)
-        self.set_font('Helvetica', '', 11)
+        self.set_font('DejaVu', '', 11)
         self.multi_cell(0, 8, "La evaluación utiliza un modelo integrado de análisis predictivo basado en investigación criminológica y neuropsicológica actual. Los factores de riesgo se evalúan mediante algoritmos de ponderación que consideran: 1) Gravedad del factor; 2) Evidencia empírica de correlación; 3) Interacción con otros factores. El sistema ha sido validado con una cohorte de 3.500 casos (2018-2024) mostrando una precisión predictiva del 87% en casos de alto riesgo.")
 
 def main():
-    # Inicialización segura del idioma
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
-    
-    # Sidebar para idioma y autenticación
     st.sidebar.title("🌍 Idioma / Language")
     lang_options = list(translations.keys())
     selected_lang = st.sidebar.selectbox(
@@ -365,16 +360,12 @@ def main():
         index=lang_options.index(st.session_state.lang) if st.session_state.lang in lang_options else 0
     )
     st.session_state.lang = selected_lang
-    
     if 'auth' not in st.session_state:
         st.session_state.auth = False
-    
-    # Pantalla de login
     if not st.session_state.auth:
         st.title(get_translation("app_title"))
         user = st.text_input(get_translation("username"))
         pwd = st.text_input(get_translation("password"), type="password")
-        
         if st.button(get_translation("login")):
             if user in ["demo_bias", "JuanCarlos_bias", "Cristina_bias"] and pwd == "biasdemo2025":
                 st.session_state.auth = True
@@ -383,19 +374,12 @@ def main():
             else:
                 st.error("Credenciales incorrectas")
         return
-    
-    # Botón de logout
     if st.sidebar.button(get_translation("logout")):
         st.session_state.auth = False
         st.rerun()
-    
-    # Título principal
     st.title(get_translation("app_title"))
-    
-    # FORMULARIO PRINCIPAL
-    with st.form(key="formulario_principal"):
+    with st.form(key="main_form"):
         col1, col2 = st.columns(2)
-        
         with col1:
             name = st.text_input(get_translation("name"))
             id_number = st.text_input(get_translation("id_number"))
@@ -445,7 +429,6 @@ def main():
                     "Preparación física para el combate"
                 ]
             )
-            
         with col2:
             personality_traits = st.multiselect(
                 get_translation("personality_traits"),
@@ -467,65 +450,30 @@ def main():
             )
             diagnosis_list = st.text_area(get_translation("diagnosis_list"))
             therapy = st.text_input(get_translation("therapy"))
-            
-            # Manejo seguro de therapy_date
-            if therapy:
-                therapy_date = st.date_input(get_translation("therapy_date"))
-            else:
-                therapy_date = None
-                st.write(f"{get_translation('therapy_date')}: No aplicable")
-            
-            # Selector de año para señales de alarma
-            alarm_year = st.selectbox(
-                get_translation("alarm_date"), 
-                list(range(2000, datetime.now().year + 1))
-            )
-            
+            therapy_date = st.date_input(get_translation("therapy_date")) if therapy else None
+            alarm_year = st.selectbox(get_translation("alarm_date"), list(range(2000, datetime.now().year + 1)))
             interest_profile = st.text_area(get_translation("interest_profile"))
             family_extremism = st.text_area(get_translation("family_extremism"))
             clinical_history = st.text_area(get_translation("clinical_history"))
             psychological_profile = st.text_area(get_translation("psychological_profile"))
             additional_comments = st.text_area(get_translation("additional_comments"))
             uploaded_photo = st.file_uploader(get_translation("upload_photo"), type=["jpg", "png"])
-        
-        # Analista (rellenado automáticamente con el usuario)
-        analyst = st.text_input(
-            get_translation("analyst"), 
-            value=st.session_state.user
-        )
-        
-        # IMPORTANTE: Botón de submit DENTRO del formulario
+        analyst = st.text_input(get_translation("analyst"), value=st.session_state.user)
         submitted = st.form_submit_button(get_translation("submit"))
-    
-    # Procesamiento del formulario después del envío
     if submitted:
-        # Resumen ejecutivo
         executive_summary = "El sujeto presenta un perfil de alto riesgo por la concurrencia de múltiples factores: antecedentes de violencia, rasgos de personalidad antisocial e inestable, consumo de sustancias y patrones cognitivos que justifican la violencia. El análisis multifactorial indica probabilidad elevada (78%) de radicalización violenta en ausencia de intervención."
-        
-        # Nivel de riesgo
         risk_level = "ALTO"
         risk_explanation = "La evaluación muestra nivel ALTO de riesgo basado en: 1) Presencia de antecedentes de violencia física unida a justificación ideológica de la misma; 2) Rasgos de personalidad antisocial e inestable con impulsividad marcada; 3) Patrones de consumo de sustancias que exacerban conductas de riesgo; 4) Aislamiento social progresivo combinado con fascinación por ideologías extremistas. La combinación de estos factores crea un perfil de vulnerabilidad significativa a la radicalización violenta, particularmente considerando la presencia de facilitadores ideológicos y la ausencia de factores protectores sólidos."
-        
-        # Recomendaciones detalladas con justificación
         recommendations = [
             ("Terapia cognitivo-conductual especializada", "Se recomienda terapia cognitivo-conductual enfocada en patrones violentos y distorsiones cognitivas. Justificación: Los estudios meta-analíticos (Johnson et al., 2019) demuestran que la TCC reduce en un 65% la probabilidad de conductas violentas en perfiles similares, abordando específicamente las distorsiones cognitivas que justifican la violencia. El patrón impulsivo-antisocial del sujeto responde favorablemente a intervenciones estructuradas de modificación conductual."),
-            
             ("Tratamiento farmacológico combinado", "Se recomienda evaluación psiquiátrica para valorar estabilizadores del ánimo y/o neurolépticos atípicos a dosis bajas. Justificación: La inestabilidad emocional e impulsividad observadas, combinadas con rasgos paranoides, pueden modularse farmacológicamente. Estudios recientes (Davidson et al., 2022) muestran que la combinación de estabilizadores del ánimo reduce en un 47% los episodios de violencia impulsiva en perfiles similares."),
-            
             ("Programa de desradicalización específico", "Se recomienda incorporar al sujeto al programa PREVENIR de intervención temprana. Justificación: El análisis del discurso del sujeto muestra patrones de fascinación por ideologías extremistas y justificación de violencia política que constituyen factores de alto riesgo. El programa PREVENIR ha demostrado una efectividad del 72% en casos similares mediante técnicas de desvinculación ideológica progresiva."),
-            
             ("Monitorización intensiva multidisciplinar", "Se recomienda seguimiento semanal durante los primeros 3 meses. Justificación: La combinación de factores de riesgo identificados crea una ventana crítica de intervención. El seguimiento intensivo permite ajustar intervenciones en tiempo real y ha demostrado reducir en un 58% las conductas de riesgo (Martínez-Cohen, 2023).")
         ]
-        
         try:
-            # Crear nuevo PDF
             pdf = ProfessionalPDF(st.session_state.lang)
-            
-            # Agregar todas las secciones
             pdf.cover_page({"analyst": analyst})
             pdf.executive_summary(executive_summary)
-            
-            # Datos completos del sujeto
             subject_data = {
                 "name": name,
                 "id_number": id_number,
@@ -547,37 +495,20 @@ def main():
                 "photo": uploaded_photo,
                 "analyst": analyst
             }
-            
             pdf.subject_data_table(subject_data)
             pdf.risk_assessment(risk_level, risk_explanation)
             pdf.recommendations_section(recommendations)
             pdf.graphics_section()
-            
-            # IMPORTANTE: Manejar errores de codificación en el PDF
             pdf_bytes = pdf.output(dest='S').encode('latin-1', errors='replace')
-            
             st.download_button(
                 get_translation("download_report"),
                 pdf_bytes,
                 file_name="bias_report.pdf",
                 mime="application/pdf"
             )
-            
-            # Informe específico para directores
             if st.session_state.user in ["JuanCarlos_bias", "Cristina_bias"]:
-                # Crear nuevo PDF para directores
-                dir_pdf = ProfessionalPDF(st.session_state.lang)
-                dir_pdf.cover_page({"analyst": analyst})
-                dir_pdf.executive_summary(executive_summary)
-                dir_pdf.subject_data_table(subject_data)
-                dir_pdf.risk_assessment(risk_level, risk_explanation)
-                dir_pdf.recommendations_section(recommendations)
-                dir_pdf.graphics_section()
-                dir_pdf.director_report_extension()
-                
-                # IMPORTANTE: Manejar errores de codificación
-                pdf_dir_bytes = dir_pdf.output(dest='S').encode('latin-1', errors='replace')
-                
+                pdf.director_report_extension()
+                pdf_dir_bytes = pdf.output(dest='S').encode('latin-1', errors='replace')
                 st.download_button(
                     get_translation("download_director"),
                     pdf_dir_bytes,
