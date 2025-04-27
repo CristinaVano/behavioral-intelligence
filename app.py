@@ -57,6 +57,7 @@ translations = {
         "none_traits": "Ninguno significativo",
         "diagnosis_list": "Diagnósticos previos",
         "therapy": "Terapias previas y fecha de inicio",
+        "therapy_date": "Fecha de inicio de terapia",
         "alarm_date": "Año de señales de alarma",
         "interest_profile": "Motivo de interés",
         "family_extremism": "Antecedentes de extremismo familiar",
@@ -132,6 +133,7 @@ translations = {
         "none_traits": "No significant traits",
         "diagnosis_list": "Previous diagnoses",
         "therapy": "Previous therapies and start date",
+        "therapy_date": "Therapy start date",
         "alarm_date": "Year of warning signs",
         "interest_profile": "Reason for interest",
         "family_extremism": "Family history of extremism",
@@ -157,7 +159,7 @@ translations = {
         "date": "Generation date",
         "analyst": "Responsible/Analyst"
     }
-    # Añade aquí Francés y Árabe siguiendo el mismo patrón
+    # Añade aquí Francés y Árabe siguiendo el mismo patrón, incluyendo "therapy_date"
 }
 
 def get_translation(key):
