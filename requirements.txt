@@ -1,3 +1,5 @@
-pandas
-fpdf
-streamlit
+
+streamlit==1.44.1
+pandas==2.2.3
+fpdf==1.7.2
+Pillow==10.2.0
