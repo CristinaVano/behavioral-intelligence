@@ -191,17 +191,30 @@ class ProfessionalPDF(FPDF):
         self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
         self.set_font('DejaVu', '', 12)
 
-    def cover_page(self, data):
-        self.add_page()
-        self.set_font('DejaVu', 'B', 16)
-        self.cell(0, 15, get_translation("app_title"), 0, 1, 'C')
-        self.set_font('DejaVu', 'B', 14)
-        self.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
-        self.cell(0, 10, f"Analista: {data.get('analyst', 'N/A')}", 0, 1, 'R')
-        self.ln(5)
-        self.set_font('DejaVu', 'I', 10)
-        self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
-        self.ln(10)
+   def cover_page(self, data):
+    self.add_page()
+    # --- Foto en la portada, arriba a la derecha ---
+    if data.get("photo"):
+        try:
+            img = Image.open(data["photo"])
+            img_path = "temp_photo.jpg"
+            img.save(img_path)
+            self.image(img_path, x=self.w-50, y=15, w=30)  # Ajusta x/y según estética
+            os.remove(img_path)
+        except Exception as e:
+            print(f"Error procesando la imagen: {e}")
+    # --- Título y resto de portada ---
+    self.set_font('DejaVu', 'B', 16)
+    title = get_translation("app_title")
+    self.multi_cell(0, 10, title, align='C')
+    self.set_font('DejaVu', 'B', 14)
+    self.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
+    self.cell(0, 10, f"Analista: {data.get('analyst', 'N/A')}", 0, 1, 'R')
+    self.ln(5)
+    self.set_font('DejaVu', 'I', 10)
+    self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
+    self.ln(10)
+
         
     def executive_summary(self, summary):
         self.set_font('DejaVu', 'B', 14)
@@ -239,16 +252,7 @@ class ProfessionalPDF(FPDF):
             self.cell(60, 10, field, 1, 0, 'L', fill)
             self.set_font('DejaVu', '', 11)
             self.multi_cell(0, 10, str(value), 1, 'L', fill)
-        # Foto
-        if data.get("photo"):
-            try:
-                img = Image.open(data["photo"])
-                img_path = "temp_photo.jpg"
-                img.save(img_path)
-                self.image(img_path, x=170, y=40, w=30)
-                os.remove(img_path)
-            except Exception as e:
-                print(f"Error procesando la imagen: {e}")
+       
 
     def risk_assessment(self, risk_level, explanation):
         self.add_page()
