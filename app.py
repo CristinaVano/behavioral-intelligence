@@ -180,16 +180,6 @@ def get_translation(key):
     # Devuelve la clave como valor predeterminado si no existe
     return translations[st.session_state.lang].get(key, key)
 
-class ProfessionalPDF(FPDF):
-    def __init__(self, lang="Español"):
-        super().__init__()
-        self.lang = lang
-        self.set_auto_page_break(auto=True, margin=15)
-        self.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)
-        self.add_font('DejaVu', 'B', 'DejaVuSans-Bold.ttf', uni=True)
-        self.add_font('DejaVu', 'I', 'DejaVuSans-Oblique.ttf', uni=True)
-        self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
-        self.set_font('DejaVu', '', 12)
 
 class ProfessionalPDF(FPDF):
     def __init__(self, lang="Español"):
