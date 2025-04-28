@@ -194,7 +194,6 @@ class ProfessionalPDF(FPDF):
 
     def cover_page(self, data):
     self.add_page()
-    
     # --- Foto en la portada, arriba a la derecha ---
     if data.get("photo") is not None:
         try:
