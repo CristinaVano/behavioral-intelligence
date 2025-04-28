@@ -192,9 +192,9 @@ class ProfessionalPDF(FPDF):
         self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
         self.set_font('DejaVu', '', 12)
 
-    
     def cover_page(self, data):
     self.add_page()
+    
     # --- Foto en la portada, arriba a la derecha ---
     if data.get("photo") is not None:
         try:
@@ -216,7 +216,7 @@ class ProfessionalPDF(FPDF):
         self.set_font('DejaVu', 'I', 10)
         self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
         self.ln(10)
-
+        
     def executive_summary(self, summary):
         self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
