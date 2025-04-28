@@ -193,7 +193,7 @@ class ProfessionalPDF(FPDF):
         self.set_font('DejaVu', '', 12)
 
     def cover_page(self, data):
-    self.add_page()
+        self.add_page()
     # --- Foto en la portada, arriba a la derecha ---
     if data.get("photo") is not None:
         try:
