@@ -193,7 +193,7 @@ class ProfessionalPDF(FPDF):
 
     def cover_page(self, data):
         self.add_page()
-        self.set_font('DejaVu', 'B', 22)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 15, get_translation("app_title"), 0, 1, 'C')
         self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
