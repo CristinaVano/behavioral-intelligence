@@ -191,7 +191,7 @@ class ProfessionalPDF(FPDF):
         self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
         self.set_font('DejaVu', '', 12)
 
- class ProfessionalPDF(FPDF):
+class ProfessionalPDF(FPDF):
     def __init__(self, lang="Español"):
         super().__init__()
         self.lang = lang
