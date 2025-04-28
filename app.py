@@ -216,22 +216,23 @@ class ProfessionalPDF(FPDF):
         self.ln(10)
 
     def executive_summary(self, summary, photo=None):
-        self.set_font('DejaVu', 'B', 14)
-        self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
-        self.set_font('DejaVu', '', 12)
-        self.multi_cell(0, 8, summary)
-        self.ln(5)
-    # --- FOTO DESPUÉS DEL RESUMEN EJECUTIVO ---
+    self.set_font('DejaVu', 'B', 14)
+    self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
+    self.set_font('DejaVu', '', 12)
+    self.multi_cell(0, 8, summary)
+    self.ln(5)
+    # FOTO a la derecha, debajo del resumen
     if photo is not None:
         try:
             img = Image.open(photo)
             img_path = "temp_photo.jpg"
             img.save(img_path)
-            # x=120 pone la foto a la derecha, y=actual posición vertical
-            self.image(img_path, x=120, y=self.get_y(), w=50)
+            # x=120 (ajusta si quieres más a la derecha), y=self.get_y() pone la foto justo debajo del resumen
+            self.image(img_path, x=120, y=self.get_y(), w=45)  # w=45 es tamaño medio, ajusta si quieres
             os.remove(img_path)
         except Exception as e:
             print(f"Error procesando la imagen: {e}")
+
 
     def subject_data_table(self, data):
         self.add_page()
