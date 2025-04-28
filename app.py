@@ -194,17 +194,16 @@ class ProfessionalPDF(FPDF):
 
     def cover_page(self, data):
         self.add_page()
-    # --- Foto en la portada, arriba a la derecha ---
-    if data.get("photo") is not None:
-        try:
-            # Lee los bytes del archivo de Streamlit y guárdalos temporalmente
-            img = Image.open(data["photo"])
-            img_path = "temp_photo.jpg"
-            img.save(img_path)
-            self.image(img_path, x=self.w-50, y=15, w=30)
-            os.remove(img_path)
-        except Exception as e:
-            print(f"Error procesando la imagen: {e}")
+        # --- Foto en la portada, arriba a la derecha ---
+        if data.get("photo") is not None:
+            try:
+                img = Image.open(data["photo"])
+                img_path = "temp_photo.jpg"
+                img.save(img_path)
+                self.image(img_path, x=self.w-50, y=15, w=30)
+                os.remove(img_path)
+            except Exception as e:
+                print(f"Error procesando la imagen: {e}")
         self.set_font('DejaVu', 'B', 16)
         title = get_translation("app_title")
         self.multi_cell(0, 10, title, align='C')
@@ -215,7 +214,7 @@ class ProfessionalPDF(FPDF):
         self.set_font('DejaVu', 'I', 10)
         self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
         self.ln(10)
-        
+
     def executive_summary(self, summary):
         self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
@@ -302,36 +301,35 @@ class ProfessionalPDF(FPDF):
             self.ln(3)
 
     def graphics_section(self):
-            self.add_page()
-            self.set_font('DejaVu', 'B', 16)
-            self.cell(0, 10, "GRÁFICOS DE ANÁLISIS", 0, 1, 'C')
-            self.ln(5)
-            self.set_font('DejaVu', 'B', 14)
-            self.cell(0, 10, "Tabla de evolución del peligro si no se trata:", 0, 1)
-            self.set_fill_color(220, 220, 220)
-    # REDUCE EL TAMAÑO DE FUENTE AQUÍ:
-            self.set_font('DejaVu', 'B', 9)
-            self.cell(40, 8, "Periodo", 1, 0, 'C', True)
-            self.cell(40, 8, "Nivel inicial", 1, 0, 'C', True)
-            self.cell(40, 8, "Proyección", 1, 0, 'C', True)
-            self.cell(0, 8, "Factores incrementales", 1, 1, 'C', True)
-    data = [
-        ("3 meses", "Alto", "Alto+", "Aislamiento social, radicalización online"),
-        ("6 meses", "Alto+", "Extremo", "Contacto con extremistas, pérdida de anclajes sociales"),
-        ("12 meses", "Extremo", "Crítico", "Preparación potencial para acción violenta")
-    ]
-            self.set_font('DejaVu', '', 8)
-    for i, (period, initial, projection, factors) in enumerate(data):
-        fill = i % 2 == 1
-        self.cell(40, 8, period, 1, 0, 'C', fill)
-        self.cell(40, 8, initial, 1, 0, 'C', fill)
-        self.cell(40, 8, projection, 1, 0, 'C', fill)
-        self.cell(0, 8, factors, 1, 1, 'L', fill)
-    self.ln(10)
-    self.set_font('DejaVu', 'B', 12)
-    self.cell(0, 10, "Gráficos de probabilidad:", 0, 1)
-    self.set_font('DejaVu', '', 10)
-    self.cell(0, 10, "Nota: Esta sección contiene visualizaciones avanzadas disponibles en la plataforma digital completa.", 0, 1)
+        self.add_page()
+        self.set_font('DejaVu', 'B', 16)
+        self.cell(0, 10, "GRÁFICOS DE ANÁLISIS", 0, 1, 'C')
+        self.ln(5)
+        self.set_font('DejaVu', 'B', 14)
+        self.cell(0, 10, "Tabla de evolución del peligro si no se trata:", 0, 1)
+        self.set_fill_color(220, 220, 220)
+        self.set_font('DejaVu', 'B', 9)
+        self.cell(40, 8, "Periodo", 1, 0, 'C', True)
+        self.cell(40, 8, "Nivel inicial", 1, 0, 'C', True)
+        self.cell(40, 8, "Proyección", 1, 0, 'C', True)
+        self.cell(0, 8, "Factores incrementales", 1, 1, 'C', True)
+        data = [
+            ("3 meses", "Alto", "Alto+", "Aislamiento social, radicalización online"),
+            ("6 meses", "Alto+", "Extremo", "Contacto con extremistas, pérdida de anclajes sociales"),
+            ("12 meses", "Extremo", "Crítico", "Preparación potencial para acción violenta")
+        ]
+        self.set_font('DejaVu', '', 8)
+        for i, (period, initial, projection, factors) in enumerate(data):
+            fill = i % 2 == 1
+            self.cell(40, 8, period, 1, 0, 'C', fill)
+            self.cell(40, 8, initial, 1, 0, 'C', fill)
+            self.cell(40, 8, projection, 1, 0, 'C', fill)
+            self.cell(0, 8, factors, 1, 1, 'L', fill)
+        self.ln(10)
+        self.set_font('DejaVu', 'B', 12)
+        self.cell(0, 10, "Gráficos de probabilidad:", 0, 1)
+        self.set_font('DejaVu', '', 10)
+        self.cell(0, 10, "Nota: Esta sección contiene visualizaciones avanzadas disponibles en la plataforma digital completa.", 0, 1)
 
     def director_report_extension(self):
         self.add_page()
