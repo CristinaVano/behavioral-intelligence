@@ -315,7 +315,7 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, "GRÁFICOS DE ANÁLISIS", 0, 1, 'C')
         self.ln(5)
         self.set_font('DejaVu', 'B', 14)
-        self.cell(0, 10, "Tabla de evolución del peligro si no se trata:", 0, 1)
+        self.cell(0, 7, "Tabla de evolución del peligro si no se trata:", 0, 1)
         self.set_fill_color(220, 220, 220)
         self.set_font('DejaVu', 'B', 11)
         self.cell(40, 10, "Periodo", 1, 0, 'C', True)
