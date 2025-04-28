@@ -215,12 +215,23 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
         self.ln(10)
 
-    def executive_summary(self, summary):
-        self.set_font('DejaVu', 'B', 14)
-        self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
-        self.set_font('DejaVu', '', 12)
-        self.multi_cell(0, 8, summary)
-        self.ln(5)
+    def executive_summary(self, summary, photo=None):
+    self.set_font('DejaVu', 'B', 14)
+    self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
+    self.set_font('DejaVu', '', 12)
+    self.multi_cell(0, 8, summary)
+    self.ln(5)
+    # --- FOTO DESPUÉS DEL RESUMEN EJECUTIVO ---
+    if photo is not None:
+        try:
+            img = Image.open(photo)
+            img_path = "temp_photo.jpg"
+            img.save(img_path)
+            # x=120 pone la foto a la derecha, y=actual posición vertical
+            self.image(img_path, x=120, y=self.get_y(), w=50)
+            os.remove(img_path)
+        except Exception as e:
+            print(f"Error procesando la imagen: {e}")
 
     def subject_data_table(self, data):
         self.add_page()
