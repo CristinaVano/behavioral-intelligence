@@ -86,100 +86,13 @@ translations = {
         "date": "Fecha de generación",
         "analyst": "Responsable/Analista"
     },
-    "English": {
-        "app_title": "BIAS - Behavioral Intelligence Analysis System",
-        "login": "Login",
-        "username": "Username",
-        "password": "Password",
-        "logout": "Logout",
-        "submit": "Submit evaluation",
-        "profile_section": "Evaluation Profile",
-        "name": "Full name",
-        "id_number": "ID number",
-        "age": "Age",
-        "gender": "Gender",
-        "male": "Male",
-        "female": "Female",
-        "other": "Other",
-        "education": "Education level",
-        "primary": "Primary",
-        "secondary": "Secondary",
-        "university": "University",
-        "postgraduate": "Postgraduate",
-        "none_edu": "None",
-        "substances": "Substance use",
-        "alcohol": "Alcohol",
-        "tobacco": "Tobacco",
-        "recreational": "Recreational drugs",
-        "cocaine": "Cocaine",
-        "heroin": "Heroin",
-        "none_substance": "None",
-        "criminal_record": "Criminal record",
-        "theft": "Theft",
-        "gender_violence": "Gender violence",
-        "homicide": "Homicide",
-        "terrorism": "Terrorism",
-        "none_criminal": "None",
-        "personality_traits": "Personality traits",
-        "paranoid": "Paranoid",
-        "antisocial": "Antisocial",
-        "sadomasochistic": "Sadomasochistic",
-        "impulsive": "Impulsive",
-        "unstable": "Emotionally unstable",
-        "dependent": "Dependent",
-        "avoidant": "Avoidant",
-        "narcissistic": "Narcissistic",
-        "histrionic": "Histrionic",
-        "passive_aggressive": "Passive-aggressive",
-        "schizoid": "Schizoid",
-        "obsessive": "Obsessive",
-        "none_traits": "No significant traits",
-        "diagnosis_list": "Previous diagnoses",
-        "therapy": "Previous therapies",
-        "therapy_date": "Therapy start date",
-        "alarm_date": "Year of warning signs",
-        "interest_profile": "Reason for interest",
-        "family_extremism": "Family history of extremism",
-        "clinical_history": "Clinical history",
-        "psychological_profile": "Psychological profile",
-        "additional_comments": "Additional comments",
-        "upload_photo": "Upload subject photo",
-        "download_report": "Download Generic Report",
-        "download_director": "Download Director Report",
-        "risk_level": "Risk level",
-        "risk_explanation": "Risk level explanation",
-        "recommendations": "Institutional recommendations",
-        "therapy_recs": "Therapeutic recommendations",
-        "medication_recs": "Pharmacological recommendations",
-        "reintegration_recs": "Reintegration therapies",
-        "prevention_recs": "Prevention measures",
-        "urgent_measures": "Urgent measures",
-        "graphics": "Graphics and Tables",
-        "danger_table": "Attack danger table",
-        "evolution_table": "Danger evolution table if untreated",
-        "confidential": "Confidential - Restricted use",
-        "executive_summary": "Executive Summary",
-        "date": "Generation date",
-        "analyst": "Responsible/Analyst"
-    },
-    "Français": {
-        "therapy_date": "Date de début de la thérapie",
-        # ... añade el resto de claves igual ...
-    },
-    "العربية": {
-        "therapy_date": "تاريخ بدء العلاج",
-        # ... añade el resto de claves igual ...
-    }
+    # ... el resto de idiomas ...
 }
 
-# Función segura de traducción
 def get_translation(key):
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
-    
-    # Devuelve la clave como valor predeterminado si no existe
     return translations[st.session_state.lang].get(key, key)
-
 
 class ProfessionalPDF(FPDF):
     def __init__(self, lang="Español"):
@@ -194,16 +107,6 @@ class ProfessionalPDF(FPDF):
 
     def cover_page(self, data):
         self.add_page()
-        # --- Foto en la portada, arriba a la derecha ---
-        if data.get("photo") is not None:
-            try:
-                img = Image.open(data["photo"])
-                img_path = "temp_photo.jpg"
-                img.save(img_path)
-                self.image(img_path, x=self.w-50, y=15, w=30)
-                os.remove(img_path)
-            except Exception as e:
-                print(f"Error procesando la imagen: {e}")
         self.set_font('DejaVu', 'B', 16)
         title = get_translation("app_title")
         self.multi_cell(0, 10, title, align='C')
@@ -215,23 +118,22 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
         self.ln(10)
 
-    pdf.executive_summary(executive_summary, photo=uploaded_photo)
+    def executive_summary(self, summary, photo=None):
         self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
         self.set_font('DejaVu', '', 12)
+        y_before = self.get_y()
         self.multi_cell(0, 8, summary)
         self.ln(5)
-    # FOTO a la derecha, debajo del resumen
-    if photo is not None:
-        try:
-            img = Image.open(photo)
-            img_path = "temp_photo.jpg"
-            img.save(img_path)
-            self.image(img_path, x=120, y=self.get_y(), w=45)
-            os.remove(img_path)
-        except Exception as e:
-            print(f"Error procesando la imagen: {e}")
-
+        if photo is not None:
+            try:
+                img = Image.open(photo)
+                img_path = "temp_photo.jpg"
+                img.save(img_path)
+                self.image(img_path, x=120, y=y_before+5, w=45)
+                os.remove(img_path)
+            except Exception as e:
+                print(f"Error procesando la imagen: {e}")
 
     def subject_data_table(self, data):
         self.add_page()
