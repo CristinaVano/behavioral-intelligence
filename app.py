@@ -191,7 +191,7 @@ class ProfessionalPDF(FPDF):
         self.add_font('DejaVu', 'I', 'DejaVuSans-Oblique.ttf', uni=True)
         self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
         self.set_font('DejaVu', '', 12)
-
+        
     def cover_page(self, data):
     self.add_page()
     # --- Foto en la portada, arriba a la derecha ---
