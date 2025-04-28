@@ -161,6 +161,14 @@ translations = {
         "executive_summary": "Executive Summary",
         "date": "Generation date",
         "analyst": "Responsible/Analyst"
+    },
+    "Français": {
+        "therapy_date": "Date de début de la thérapie",
+        # ... añade el resto de claves igual ...
+    },
+    "العربية": {
+        "therapy_date": "تاريخ بدء العلاج",
+        # ... añade el resto de claves igual ...
     }
 }
 
@@ -183,33 +191,32 @@ class ProfessionalPDF(FPDF):
         self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
         self.set_font('DejaVu', '', 12)
 
-
     def cover_page(self, data):
         self.add_page()
-        self.set_font('Helvetica', 'B', 22)
+        self.set_font('DejaVu', 'B', 22)
         self.cell(0, 15, get_translation("app_title"), 0, 1, 'C')
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
         self.cell(0, 10, f"Analista: {data.get('analyst', 'N/A')}", 0, 1, 'R')
         self.ln(5)
-        self.set_font('Helvetica', 'I', 10)
+        self.set_font('DejaVu', 'I', 10)
         self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
         self.ln(10)
         
     def executive_summary(self, summary):
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
-        self.set_font('Helvetica', '', 12)
+        self.set_font('DejaVu', '', 12)
         self.multi_cell(0, 8, summary)
         self.ln(5)
         
     def subject_data_table(self, data):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "DATOS COMPLETOS DEL SUJETO", 0, 1, 'C')
         self.ln(5)
         self.set_fill_color(220, 220, 220)
-        self.set_font('Helvetica', 'B', 12)
+        self.set_font('DejaVu', 'B', 12)
         fields = [
             ("Nombre completo", data.get('name', 'N/A')),
             ("Número de identificación", data.get('id_number', 'N/A')),
@@ -228,9 +235,9 @@ class ProfessionalPDF(FPDF):
         ]
         for i, (field, value) in enumerate(fields):
             fill = i % 2 == 0
-            self.set_font('Helvetica', 'B', 11)
+            self.set_font('DejaVu', 'B', 11)
             self.cell(60, 10, field, 1, 0, 'L', fill)
-            self.set_font('Helvetica', '', 11)
+            self.set_font('DejaVu', '', 11)
             self.multi_cell(0, 10, str(value), 1, 'L', fill)
         # Foto
         if data.get("photo"):
@@ -245,10 +252,10 @@ class ProfessionalPDF(FPDF):
 
     def risk_assessment(self, risk_level, explanation):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "EVALUACIÓN DE RIESGO", 0, 1, 'C')
         self.ln(5)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(60, 10, "Nivel de riesgo:", 0, 0)
         if risk_level == "ALTO":
             self.set_text_color(255, 0, 0)
@@ -258,12 +265,12 @@ class ProfessionalPDF(FPDF):
             self.set_text_color(0, 128, 0)
         self.cell(0, 10, risk_level, 0, 1)
         self.set_text_color(0, 0, 0)
-        self.set_font('Helvetica', 'B', 12)
+        self.set_font('DejaVu', 'B', 12)
         self.cell(0, 10, "Justificación de la evaluación:", 0, 1)
-        self.set_font('Helvetica', '', 11)
+        self.set_font('DejaVu', '', 11)
         self.multi_cell(0, 8, explanation)
         self.ln(10)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Visualización de factores de riesgo:", 0, 1)
         risk_factors = {
             "Antecedentes penales": 85,
@@ -271,7 +278,7 @@ class ProfessionalPDF(FPDF):
             "Consumo sustancias": 60,
             "Factores sociales": 40
         }
-        self.set_font('Helvetica', '', 10)
+        self.set_font('DejaVu', '', 10)
         for factor, value in risk_factors.items():
             bar = "█" * int(value/10)
             self.cell(60, 8, f"{factor}:", 0, 0)
@@ -279,27 +286,27 @@ class ProfessionalPDF(FPDF):
     
     def recommendations_section(self, recs):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "RECOMENDACIONES INSTITUCIONALES", 0, 1, 'C')
         self.ln(5)
         self.set_fill_color(220, 220, 220)
         for i, (title, explanation) in enumerate(recs):
             fill = i % 2 == 0
-            self.set_font('Helvetica', 'B', 12)
+            self.set_font('DejaVu', 'B', 12)
             self.cell(0, 10, title, 1, 1, 'L', fill)
-            self.set_font('Helvetica', '', 11)
+            self.set_font('DejaVu', '', 11)
             self.multi_cell(0, 8, explanation, 1, 'L', fill)
             self.ln(3)
     
     def graphics_section(self):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "GRÁFICOS DE ANÁLISIS", 0, 1, 'C')
         self.ln(5)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Tabla de evolución del peligro si no se trata:", 0, 1)
         self.set_fill_color(220, 220, 220)
-        self.set_font('Helvetica', 'B', 11)
+        self.set_font('DejaVu', 'B', 11)
         self.cell(40, 10, "Periodo", 1, 0, 'C', True)
         self.cell(40, 10, "Nivel inicial", 1, 0, 'C', True)
         self.cell(40, 10, "Proyección", 1, 0, 'C', True)
@@ -309,7 +316,7 @@ class ProfessionalPDF(FPDF):
             ("6 meses", "Alto+", "Extremo", "Contacto con extremistas, pérdida de anclajes sociales"),
             ("12 meses", "Extremo", "Crítico", "Preparación potencial para acción violenta")
         ]
-        self.set_font('Helvetica', '', 10)
+        self.set_font('DejaVu', '', 10)
         for i, (period, initial, projection, factors) in enumerate(data):
             fill = i % 2 == 1
             self.cell(40, 10, period, 1, 0, 'C', fill)
@@ -317,20 +324,20 @@ class ProfessionalPDF(FPDF):
             self.cell(40, 10, projection, 1, 0, 'C', fill)
             self.cell(0, 10, factors, 1, 1, 'L', fill)
         self.ln(15)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Gráficos de probabilidad:", 0, 1)
-        self.set_font('Helvetica', '', 10)
+        self.set_font('DejaVu', '', 10)
         self.cell(0, 10, "Nota: Esta sección contiene visualizaciones avanzadas disponibles en la plataforma digital completa.", 0, 1)
 
     def director_report_extension(self):
         self.add_page()
-        self.set_font('Helvetica', 'B', 16)
+        self.set_font('DejaVu', 'B', 16)
         self.cell(0, 10, "INFORME EXTENDIDO PARA DIRECCIÓN", 0, 1, 'C')
         self.ln(5)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Sistema de puntuación utilizado:", 0, 1)
         self.set_fill_color(220, 220, 220)
-        self.set_font('Helvetica', 'B', 11)
+        self.set_font('DejaVu', 'B', 11)
         self.cell(60, 10, "Factor de riesgo", 1, 0, 'L', True)
         self.cell(40, 10, "Puntuación", 1, 0, 'C', True)
         self.cell(0, 10, "Metodología", 1, 1, 'L', True)
@@ -341,19 +348,19 @@ class ProfessionalPDF(FPDF):
             ("Factores sociales", "40/100", "Evaluación de redes de apoyo, aislamiento y vulnerabilidad"),
             ("PUNTUACIÓN GLOBAL", "73/100", "Media ponderada con relevancia contextual")
         ]
-        self.set_font('Helvetica', '', 10)
+        self.set_font('DejaVu', '', 10)
         for i, (factor, score, method) in enumerate(data):
             fill = i % 2 == 1
             if factor == "PUNTUACIÓN GLOBAL":
-                self.set_font('Helvetica', 'B', 10)
+                self.set_font('DejaVu', 'B', 10)
             self.cell(60, 10, factor, 1, 0, 'L', fill)
             self.cell(40, 10, score, 1, 0, 'C', fill)
             self.multi_cell(0, 10, method, 1, 'L', fill)
-            self.set_font('Helvetica', '', 10)
+            self.set_font('DejaVu', '', 10)
         self.ln(10)
-        self.set_font('Helvetica', 'B', 14)
+        self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, "Fundamentación técnica de evaluación:", 0, 1)
-        self.set_font('Helvetica', '', 11)
+        self.set_font('DejaVu', '', 11)
         self.multi_cell(0, 8, "La evaluación utiliza un modelo integrado de análisis predictivo basado en investigación criminológica y neuropsicológica actual. Los factores de riesgo se evalúan mediante algoritmos de ponderación que consideran: 1) Gravedad del factor; 2) Evidencia empírica de correlación; 3) Interacción con otros factores. El sistema ha sido validado con una cohorte de 3.500 casos (2018-2024) mostrando una precisión predictiva del 87% en casos de alto riesgo.")
 
 def main():
