@@ -191,38 +191,36 @@ class ProfessionalPDF(FPDF):
         self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
         self.set_font('DejaVu', '', 12)
 
-def cover_page(self, data):
-    self.add_page()
-    # --- Foto en la portada, arriba a la derecha ---
-    if data.get("photo"):
-        try:
-            img = Image.open(data["photo"])
-            img_path = "temp_photo.jpg"
-            img.save(img_path)
-            self.image(img_path, x=self.w-50, y=15, w=30)  # Ajusta x/y según estética
-            os.remove(img_path)
-        except Exception as e:
-            print(f"Error procesando la imagen: {e}")
-    # --- Título y resto de portada ---
-    self.set_font('DejaVu', 'B', 16)
-    title = get_translation("app_title")
-    self.multi_cell(0, 10, title, align='C')
-    self.set_font('DejaVu', 'B', 14)
-    self.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
-    self.cell(0, 10, f"Analista: {data.get('analyst', 'N/A')}", 0, 1, 'R')
-    self.ln(5)
-    self.set_font('DejaVu', 'I', 10)
-    self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
-    self.ln(10)
+    def cover_page(self, data):
+        self.add_page()
+        # Foto en la portada, arriba a la derecha
+        if data.get("photo"):
+            try:
+                img = Image.open(data["photo"])
+                img_path = "temp_photo.jpg"
+                img.save(img_path)
+                self.image(img_path, x=self.w-50, y=15, w=30)
+                os.remove(img_path)
+            except Exception as e:
+                print(f"Error procesando la imagen: {e}")
+        self.set_font('DejaVu', 'B', 16)
+        title = get_translation("app_title")
+        self.multi_cell(0, 10, title, align='C')
+        self.set_font('DejaVu', 'B', 14)
+        self.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
+        self.cell(0, 10, f"Analista: {data.get('analyst', 'N/A')}", 0, 1, 'R')
+        self.ln(5)
+        self.set_font('DejaVu', 'I', 10)
+        self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
+        self.ln(10)
 
-        
     def executive_summary(self, summary):
         self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
         self.set_font('DejaVu', '', 12)
         self.multi_cell(0, 8, summary)
         self.ln(5)
-        
+
     def subject_data_table(self, data):
         self.add_page()
         self.set_font('DejaVu', 'B', 16)
@@ -252,7 +250,6 @@ def cover_page(self, data):
             self.cell(60, 10, field, 1, 0, 'L', fill)
             self.set_font('DejaVu', '', 11)
             self.multi_cell(0, 10, str(value), 1, 'L', fill)
-       
 
     def risk_assessment(self, risk_level, explanation):
         self.add_page()
@@ -287,7 +284,7 @@ def cover_page(self, data):
             bar = "█" * int(value/10)
             self.cell(60, 8, f"{factor}:", 0, 0)
             self.cell(0, 8, f"{bar} {value}%", 0, 1)
-    
+
     def recommendations_section(self, recs):
         self.add_page()
         self.set_font('DejaVu', 'B', 16)
@@ -301,7 +298,7 @@ def cover_page(self, data):
             self.set_font('DejaVu', '', 11)
             self.multi_cell(0, 8, explanation, 1, 'L', fill)
             self.ln(3)
-    
+
     def graphics_section(self):
         self.add_page()
         self.set_font('DejaVu', 'B', 16)
