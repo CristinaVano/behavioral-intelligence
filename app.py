@@ -318,7 +318,7 @@ class ProfessionalPDF(FPDF):
             ("6 meses", "Alto+", "Extremo", "Contacto con extremistas, pérdida de anclajes sociales"),
             ("12 meses", "Extremo", "Crítico", "Preparación potencial para acción violenta")
         ]
-        self.set_font('DejaVu', '', 8)
+        self.set_font('DejaVu', '', 6)
         for i, (period, initial, projection, factors) in enumerate(data):
             fill = i % 2 == 1
             self.cell(40, 8, period, 1, 0, 'C', fill)
