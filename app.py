@@ -215,7 +215,7 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
         self.ln(10)
 
-    def executive_summary(self, summary, photo=None):
+    pdf.executive_summary(executive_summary, photo=uploaded_photo)
         self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
         self.set_font('DejaVu', '', 12)
