@@ -191,9 +191,19 @@ class ProfessionalPDF(FPDF):
         self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
         self.set_font('DejaVu', '', 12)
 
-     def cover_page(self, data):
+ class ProfessionalPDF(FPDF):
+    def __init__(self, lang="Español"):
+        super().__init__()
+        self.lang = lang
+        self.set_auto_page_break(auto=True, margin=15)
+        self.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)
+        self.add_font('DejaVu', 'B', 'DejaVuSans-Bold.ttf', uni=True)
+        self.add_font('DejaVu', 'I', 'DejaVuSans-Oblique.ttf', uni=True)
+        self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
+        self.set_font('DejaVu', '', 12)
+
+    def cover_page(self, data):
         self.add_page()
-        # Foto en la portada, arriba a la derecha
         if data.get("photo"):
             try:
                 img = Image.open(data["photo"])
@@ -363,6 +373,7 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, "Fundamentación técnica de evaluación:", 0, 1)
         self.set_font('DejaVu', '', 11)
         self.multi_cell(0, 8, "La evaluación utiliza un modelo integrado de análisis predictivo basado en investigación criminológica y neuropsicológica actual. Los factores de riesgo se evalúan mediante algoritmos de ponderación que consideran: 1) Gravedad del factor; 2) Evidencia empírica de correlación; 3) Interacción con otros factores. El sistema ha sido validado con una cohorte de 3.500 casos (2018-2024) mostrando una precisión predictiva del 87% en casos de alto riesgo.")
+
 
 def main():
     # Inicialización segura del idioma
