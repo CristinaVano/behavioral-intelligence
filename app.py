@@ -227,8 +227,7 @@ class ProfessionalPDF(FPDF):
             img = Image.open(photo)
             img_path = "temp_photo.jpg"
             img.save(img_path)
-            # x=120 (ajusta si quieres más a la derecha), y=self.get_y() pone la foto justo debajo del resumen
-            self.image(img_path, x=120, y=self.get_y(), w=45)  # w=45 es tamaño medio, ajusta si quieres
+            self.image(img_path, x=120, y=self.get_y(), w=45)
             os.remove(img_path)
         except Exception as e:
             print(f"Error procesando la imagen: {e}")
