@@ -203,16 +203,18 @@ class ProfessionalPDF(FPDF):
         self.set_font('DejaVu', '', 12)
 
     def cover_page(self, data):
-        self.add_page()
-        if data.get("photo"):
-            try:
-                img = Image.open(data["photo"])
-                img_path = "temp_photo.jpg"
-                img.save(img_path)
-                self.image(img_path, x=self.w-50, y=15, w=30)
-                os.remove(img_path)
-            except Exception as e:
-                print(f"Error procesando la imagen: {e}")
+    self.add_page()
+    # --- Foto en la portada, arriba a la derecha ---
+    if data.get("photo") is not None:
+        try:
+            # Lee los bytes del archivo de Streamlit y guárdalos temporalmente
+            img = Image.open(data["photo"])
+            img_path = "temp_photo.jpg"
+            img.save(img_path)
+            self.image(img_path, x=self.w-50, y=15, w=30)
+            os.remove(img_path)
+        except Exception as e:
+            print(f"Error procesando la imagen: {e}")
         self.set_font('DejaVu', 'B', 16)
         title = get_translation("app_title")
         self.multi_cell(0, 10, title, align='C')
