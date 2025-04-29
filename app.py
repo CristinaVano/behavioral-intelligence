@@ -834,7 +834,7 @@ def main():
                     key="director_btn"
                 )
         except Exception as e:
-            sst.success("Formulario enviado correctamente.")
+            st.success("Formulario enviado correctamente.")
 
 if __name__ == "__main__":
     main()
