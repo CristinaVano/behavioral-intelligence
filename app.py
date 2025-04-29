@@ -618,7 +618,7 @@ class ProfessionalPDF(FPDF):
         (get_translation("social_isolation"), "40/100", get_translation("risk_explanation")),
         ("PUNTUACIÓN GLOBAL", "73/100", get_translation("risk_explanation"))
     ]
-    self.set_font('Arial', '', 10)
+        self.set_font('Arial', '', 10)
     for i, (factor, score, method) in enumerate(data):
         fill = i % 2 == 1
         if factor == "PUNTUACIÓN GLOBAL":
