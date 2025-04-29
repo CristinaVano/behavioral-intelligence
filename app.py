@@ -562,13 +562,13 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, get_translation("recommendations"), 0, 1, 'C')
         self.ln(5)
         self.set_fill_color(220, 220, 220)
-        for i, (title, explanation) in enumerate(recs):
-            fill = i % 2 == 0
-            self.set_font('DejaVu', 'B', 12)
-            self.cell(0, 10, title, 1, 1, 'L', fill)
-            self.set_font('DejaVu', '', 11)
-            self.multi_cell(0, 8, explanation, 1, 'L', fill)
-            self.ln(3)
+    for i, (title, explanation) in enumerate(recs):
+        fill = i % 2 == 0
+        self.set_font('DejaVu', 'B', 12)
+        self.cell(0, 10, title, 1, 1, 'L', fill)
+        self.set_font('DejaVu', '', 11)
+        self.multi_cell(0, 8, explanation, 1, 'L', fill)
+        self.ln(3)
 
     def graphics_section(self):
         self.add_page()
