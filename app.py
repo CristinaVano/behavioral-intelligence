@@ -521,12 +521,12 @@ class ProfessionalPDF(FPDF):
             self.multi_cell(0, 10, str(value), 1, 'L', fill)
 
     def risk_assessment(self, risk_level, explanation):
-    self.add_page()
-    self.set_font('DejaVu', 'B', 16)
-    self.cell(0, 10, get_translation("risk_level"), 0, 1, 'C')
-    self.ln(5)
-    self.set_font('DejaVu', 'B', 14)
-    self.cell(60, 10, f"{get_translation('risk_level')}:", 0, 0)
+        self.add_page()
+        self.set_font('DejaVu', 'B', 16)
+        self.cell(0, 10, get_translation("risk_level"), 0, 1, 'C')
+        self.ln(5)
+        self.set_font('DejaVu', 'B', 14)
+        self.cell(60, 10, f"{get_translation('risk_level')}:", 0, 0)
     
     if risk_level == get_translation("risk_level"):
         self.set_text_color(255, 0, 0)
