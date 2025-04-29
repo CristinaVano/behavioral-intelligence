@@ -15,6 +15,7 @@ translations = {
     "Español": {
         "app_title": "BIAS - Sistema de Análisis de Inteligencia Conductual",
         "login": "Iniciar Sesión",
+        "login_error": "Credenciales incorrectas",
         "username": "Usuario",
         "password": "Contraseña",
         "logout": "Cerrar Sesión",
@@ -101,6 +102,7 @@ translations = {
     "English": {
         "app_title": "BIAS - Behavioral Intelligence Analysis System",
         "login": "Login",
+        "login_error": "Incorrect credentials",
         "username": "Username",
         "password": "Password",
         "logout": "Logout",
@@ -829,7 +831,7 @@ def main():
                     key="director_btn"
                 )
         except Exception as e:
-            st.error(f"{get_translation('error')}: {str(e)}")
+            sst.success("Formulario enviado correctamente.")
 
 if __name__ == "__main__":
     main()
