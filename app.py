@@ -593,59 +593,59 @@ class ProfessionalPDF(FPDF):
             self.cell(40, 8, initial, 1, 0, 'C', fill)
             self.cell(40, 8, projection, 1, 0, 'C', fill)
             self.cell(0, 8, factors, 1, 1, 'L', fill)
-            self.ln(10)
-            self.set_font('Arial', 'B', 12)
-            self.cell(0, 10, get_translation("danger_table"), 0, 1)
-            self.set_font('Arial', '', 10)
-            self.cell(0, 10, get_translation("confidential"), 0, 1)
+        self.ln(10)
+        self.set_font('Arial', 'B', 12)
+        self.cell(0, 10, get_translation("danger_table"), 0, 1)
+        self.set_font('Arial', '', 10)
+        self.cell(0, 10, get_translation("confidential"), 0, 1)
 
     def director_report_extension(self):
-        self.add_page()
-        self.set_font('DejaVu', 'B', 16)
-        self.cell(0, 10, get_translation("download_director"), 0, 1, 'C')
-        self.ln(5)
-        self.set_font('DejaVu', 'B', 14)
-        self.cell(0, 10, get_translation("risk_level"), 0, 1)
-        self.set_fill_color(220, 220, 220)
-        self.set_font('DejaVu', 'B', 11)
-        self.cell(60, 10, get_translation("criminal_record"), 1, 0, 'L', True)
-        self.cell(40, 10, "Puntuación", 1, 0, 'C', True)
-        self.cell(0, 10, get_translation("risk_explanation"), 1, 1, 'L', True)
-        data = [
-            (get_translation("criminal_record"), "85/100", get_translation("risk_explanation")),
-            (get_translation("personality_traits"), "70/100", get_translation("risk_explanation")),
-            (get_translation("substances"), "60/100", get_translation("risk_explanation")),
-            (get_translation("social_isolation"), "40/100", get_translation("risk_explanation")),
-            ("PUNTUACIÓN GLOBAL", "73/100", get_translation("risk_explanation"))
-        ]
+    self.add_page()
+    self.set_font('Arial', 'B', 16)
+    self.cell(0, 10, get_translation("download_director"), 0, 1, 'C')
+    self.ln(5)
+    self.set_font('Arial', 'B', 14)
+    self.cell(0, 10, get_translation("risk_level"), 0, 1)
+    self.set_fill_color(220, 220, 220)
+    self.set_font('Arial', 'B', 11)
+    self.cell(60, 10, get_translation("criminal_record"), 1, 0, 'L', True)
+    self.cell(40, 10, "Puntuación", 1, 0, 'C', True)
+    self.cell(0, 10, get_translation("risk_explanation"), 1, 1, 'L', True)
+    data = [
+        (get_translation("criminal_record"), "85/100", get_translation("risk_explanation")),
+        (get_translation("personality_traits"), "70/100", get_translation("risk_explanation")),
+        (get_translation("substances"), "60/100", get_translation("risk_explanation")),
+        (get_translation("social_isolation"), "40/100", get_translation("risk_explanation")),
+        ("PUNTUACIÓN GLOBAL", "73/100", get_translation("risk_explanation"))
+    ]
+    self.set_font('Arial', '', 10)
+    for i, (factor, score, method) in enumerate(data):
+        fill = i % 2 == 1
+        if factor == "PUNTUACIÓN GLOBAL":
+            self.set_font('Arial', 'B', 10)
+        self.cell(60, 10, factor, 1, 0, 'L', fill)
+        self.cell(40, 10, score, 1, 0, 'C', fill)
+        self.multi_cell(0, 10, method, 1, 'L', fill)
         self.set_font('Arial', '', 10)
-        for i, (factor, score, method) in enumerate(data):
-            fill = i % 2 == 1
-            if factor == "PUNTUACIÓN GLOBAL":
-                self.set_font('Arial', 'B', 10)
-            self.cell(60, 10, factor, 1, 0, 'L', fill)
-            self.cell(40, 10, score, 1, 0, 'C', fill)
-            self.multi_cell(0, 10, method, 1, 'L', fill)
-            self.set_font('Arial', '', 10)
-            self.ln(10)
-            self.set_font('Arial', 'B', 14)
-            self.cell(0, 10, get_translation("executive_summary"), 0, 1)
-            self.set_font('Arial', '', 11)
-            self.multi_cell(0, 8, get_translation("risk_explanation"))
+    self.ln(10)
+    self.set_font('Arial', 'B', 14)
+    self.cell(0, 10, get_translation("executive_summary"), 0, 1)
+    self.set_font('Arial', '', 11)
+    self.multi_cell(0, 8, get_translation("risk_explanation"))
 
 def main():
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
 
-        st.sidebar.title("🌍 " + get_translation("language"))
-        lang_options = list(translations.keys())
-        selected_lang = st.sidebar.selectbox(
+    st.sidebar.title("🌍 " + get_translation("language"))
+    lang_options = list(translations.keys())
+    selected_lang = st.sidebar.selectbox(
         get_translation("language"),
         lang_options,
         index=lang_options.index(st.session_state.lang) if st.session_state.lang in lang_options else 0,
         key="lang_selector"
     )
-        st.session_state.lang = selected_lang
+    st.session_state.lang = selected_lang
 
     if 'auth' not in st.session_state:
         st.session_state.auth = False
@@ -674,7 +674,6 @@ def main():
 
     st.title(get_translation("app_title"))
 
-    # --- FORMULARIO CORRECTO ---
     with st.form(key="main_form"):
         col1, col2 = st.columns(2)
 
@@ -828,7 +827,7 @@ def main():
                     key="director_btn"
                 )
         except Exception as e:
-            st.success("Formulario enviado correctamente.")
+            st.error(f"Error al generar el PDF: {str(e)}")  # Mensaje de error realista
 
 if __name__ == "__main__":
     main()
