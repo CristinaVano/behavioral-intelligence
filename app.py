@@ -721,7 +721,7 @@ def main():
                     "Justificación de la violencia",
                     "Fascinación por ideologías extremistas",
                     "Cambios drásticos en el comportamiento",
-                    "hate_expression": "Expresión de odio hacia grupos específicos",
+                    "combat_preparation": "Preparación física para el combate",
 
         col1, col2 = st.columns(2)
         
