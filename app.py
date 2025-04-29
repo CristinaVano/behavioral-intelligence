@@ -669,7 +669,7 @@ def main():
 
     st.title(get_translation("app_title"))
     with st.form(key="main_form"):
-    col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
     with col1:
         name = st.text_input(get_translation("name"), key="name_input")
