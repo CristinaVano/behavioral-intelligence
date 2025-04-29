@@ -189,6 +189,7 @@ translations = {
     "Deutsch": {
         "app_title": "BIAS - System für Verhaltensintelligenz-Analyse",
         "login": "Anmelden",
+        "login_error": "Ungültige Zugangsdaten",
         "username": "Benutzername",
         "password": "Passwort",
         "logout": "Abmelden",
@@ -275,6 +276,7 @@ translations = {
     "Français": {
         "app_title": "BIAS - Système d'Analyse d'Intelligence Comportementale",
         "login": "Connexion",
+        "login_error": "Identifiants incorrects", 
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "logout": "Déconnexion",
@@ -361,6 +363,7 @@ translations = {
     "العربية": {
         "app_title": "نظام تحليل الذكاء السلوكي - BIAS",
         "login": "تسجيل الدخول",
+        "login_error": "بيانات الاعتماد غير صحيحة",
         "username": "اسم المستخدم",
         "password": "كلمة المرور",
         "logout": "تسجيل الخروج",
