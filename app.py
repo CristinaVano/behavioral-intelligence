@@ -94,7 +94,7 @@ def get_translation(key):
         st.session_state.lang = "Español"
     return translations[st.session_state.lang].get(key, key)
 
-class ProfessionalPDF(FPDF):
+pdf.executive_summary(executive_summary, photo=uploaded_photo)
     def __init__(self, lang="Español"):
         super().__init__()
         self.lang = lang
