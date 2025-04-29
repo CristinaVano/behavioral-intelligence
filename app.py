@@ -462,10 +462,10 @@ class ProfessionalPDF(FPDF):
 
     def risk_assessment(self, risk_level, explanation):
         self.add_page()
-        self.set_font('DejaVu', 'B', 16)
+        self.set_font('Arial', 'B', 16)
         self.cell(0, 10, get_translation("risk_level"), 0, 1, 'C')
         self.ln(5)
-        self.set_font('DejaVu', 'B', 14)
+        self.set_font('Arial', 'B', 14)
         self.cell(60, 10, f"{get_translation('risk_level')}:", 0, 0)
         if risk_level in ["ALTO", "HIGH"]:
             self.set_text_color(255, 0, 0)
@@ -475,12 +475,12 @@ class ProfessionalPDF(FPDF):
             self.set_text_color(0, 128, 0)
         self.cell(0, 10, risk_level, 0, 1)
         self.set_text_color(0, 0, 0)
-        self.set_font('DejaVu', 'B', 12)
+        self.set_font('Arial', '', 12)
         self.cell(0, 10, get_translation("risk_explanation"), 0, 1)
-        self.set_font('DejaVu', '', 11)
+        self.set_font('Arial', '', 11)
         self.multi_cell(0, 8, explanation)
         self.ln(10)
-        self.set_font('DejaVu', 'B', 14)
+         self.set_font('Arial', 'B', 14)
         self.cell(0, 10, get_translation("graphics"), 0, 1)
         risk_factors = {
             get_translation("criminal_record"): 85,
@@ -496,22 +496,22 @@ class ProfessionalPDF(FPDF):
 
     def cover_page(self, data):
         self.add_page()
-        self.set_font('DejaVu', 'B', 16)
+        self.set_font('Arial', 'B', 16)
         title = get_translation("app_title")
         self.multi_cell(0, 10, title, align='C')
-        self.set_font('DejaVu', 'B', 14)
+        self.set_font('Arial', 'B', 14)
         self.cell(0, 10, f"{get_translation('date')}: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
         self.cell(0, 10, f"{get_translation('analyst')}: {data.get('analyst', 'N/A')}", 0, 1, 'R')
         self.ln(5)
-        self.set_font('DejaVu', 'I', 10)
+        self.set_font('Arial', 'I', 10)
         self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
         self.ln(10)
 
     def executive_summary(self, summary, photo=None):
-        self.set_font('DejaVu', 'B', 14)
+        self.set_font('Arial', 'B', 14)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
         y_start = self.get_y()
-        self.set_font('DejaVu', '', 12)
+        self.set_font('Arial', '', 12)
         self.multi_cell(110, 8, summary)
         self.ln(5)
         if photo is not None:
@@ -526,11 +526,11 @@ class ProfessionalPDF(FPDF):
 
     def subject_data_table(self, data):
         self.add_page()
-        self.set_font('DejaVu', 'B', 16)
+        self.set_font('Arial', 'B', 16)
         self.cell(0, 10, get_translation("profile_section"), 0, 1, 'C')
         self.ln(5)
         self.set_fill_color(220, 220, 220)
-        self.set_font('DejaVu', 'B', 12)
+        self.set_font('Arial', 'B', 12)
         fields = [
             (get_translation("name"), data.get('name', 'N/A')),
             (get_translation("id_number"), data.get('id_number', 'N/A')),
@@ -549,34 +549,34 @@ class ProfessionalPDF(FPDF):
         ]
         for i, (field, value) in enumerate(fields):
             fill = i % 2 == 0
-            self.set_font('DejaVu', 'B', 11)
+            self.set_font('Arial', 'B', 11)
             self.cell(60, 10, field, 1, 0, 'L', fill)
-            self.set_font('DejaVu', '', 11)
+            self.set_font('Arial', '', 11)
             self.multi_cell(0, 10, str(value), 1, 'L', fill)
 
     def recommendations_section(self, recs):
         self.add_page()
-        self.set_font('DejaVu', 'B', 16)
+        self.set_font('Arial', 'B', 16)
         self.cell(0, 10, get_translation("recommendations"), 0, 1, 'C')
         self.ln(5)
         self.set_fill_color(220, 220, 220)
         for i, (title, explanation) in enumerate(recs):
             fill = i % 2 == 0
-            self.set_font('DejaVu', 'B', 12)
+            self.set_font('Arial', 'B', 12)
             self.cell(0, 10, title, 1, 1, 'L', fill)
-            self.set_font('DejaVu', '', 11)
+            self.set_font('Arial', '', 11)
             self.multi_cell(0, 8, explanation, 1, 'L', fill)
             self.ln(3)
 
     def graphics_section(self):
         self.add_page()
-        self.set_font('DejaVu', 'B', 16)
+        self.set_font('Arial', 'B', 16)
         self.cell(0, 10, get_translation("graphics"), 0, 1, 'C')
         self.ln(5)
-        self.set_font('DejaVu', 'B', 14)
+        self.set_font('Arial', 'B', 14)
         self.cell(0, 10, get_translation("evolution_table"), 0, 1)
         self.set_fill_color(220, 220, 220)
-        self.set_font('DejaVu', 'B', 9)
+        self.set_font('Arial', 'B', 9)
         self.cell(40, 8, get_translation("date"), 1, 0, 'C', True)
         self.cell(40, 8, get_translation("risk_level"), 1, 0, 'C', True)
         self.cell(40, 8, get_translation("recommendations"), 1, 0, 'C', True)
@@ -586,18 +586,18 @@ class ProfessionalPDF(FPDF):
             ("6 meses", "Alto+", "Extremo", "Contacto con extremistas, pérdida de anclajes sociales"),
             ("12 meses", "Extremo", "Crítico", "Preparación potencial para acción violenta")
         ]
-        self.set_font('DejaVu', '', 6)
+        self.set_font('Arial', '', 6)
         for i, (period, initial, projection, factors) in enumerate(data):
             fill = i % 2 == 1
             self.cell(40, 8, period, 1, 0, 'C', fill)
             self.cell(40, 8, initial, 1, 0, 'C', fill)
             self.cell(40, 8, projection, 1, 0, 'C', fill)
             self.cell(0, 8, factors, 1, 1, 'L', fill)
-        self.ln(10)
-        self.set_font('DejaVu', 'B', 12)
-        self.cell(0, 10, get_translation("danger_table"), 0, 1)
-        self.set_font('DejaVu', '', 10)
-        self.cell(0, 10, get_translation("confidential"), 0, 1)
+            self.ln(10)
+            self.set_font('Arial', 'B', 12)
+            self.cell(0, 10, get_translation("danger_table"), 0, 1)
+            self.set_font('Arial', '', 10)
+             self.cell(0, 10, get_translation("confidential"), 0, 1)
 
     def director_report_extension(self):
         self.add_page()
@@ -618,39 +618,38 @@ class ProfessionalPDF(FPDF):
             (get_translation("social_isolation"), "40/100", get_translation("risk_explanation")),
             ("PUNTUACIÓN GLOBAL", "73/100", get_translation("risk_explanation"))
         ]
-        self.set_font('DejaVu', '', 10)
+        self.set_font('Arial', '', 10)
         for i, (factor, score, method) in enumerate(data):
             fill = i % 2 == 1
             if factor == "PUNTUACIÓN GLOBAL":
-                self.set_font('DejaVu', 'B', 10)
+                self.set_font('Arial', 'B', 10)
             self.cell(60, 10, factor, 1, 0, 'L', fill)
             self.cell(40, 10, score, 1, 0, 'C', fill)
             self.multi_cell(0, 10, method, 1, 'L', fill)
-            self.set_font('DejaVu', '', 10)
-        self.ln(10)
-        self.set_font('DejaVu', 'B', 14)
-        self.cell(0, 10, get_translation("executive_summary"), 0, 1)
-        self.set_font('DejaVu', '', 11)
-        self.multi_cell(0, 8, get_translation("risk_explanation"))
+            self.set_font('Arial', '', 10)
+            self.ln(10)
+            self.set_font('Arial', 'B', 14)
+            self.cell(0, 10, get_translation("executive_summary"), 0, 1)
+            self.set_font('Arial', '', 11)
+            self.multi_cell(0, 8, get_translation("risk_explanation"))
 
 def main():
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
 
-    st.sidebar.title("🌍 " + get_translation("language"))
-    lang_options = list(translations.keys())
-    selected_lang = st.sidebar.selectbox(
+        st.sidebar.title("🌍 " + get_translation("language"))
+        lang_options = list(translations.keys())
+        selected_lang = st.sidebar.selectbox(
         get_translation("language"),
         lang_options,
         index=lang_options.index(st.session_state.lang) if st.session_state.lang in lang_options else 0,
         key="lang_selector"
     )
-    st.session_state.lang = selected_lang
+        st.session_state.lang = selected_lang
 
     if 'auth' not in st.session_state:
         st.session_state.auth = False
 
-    # --- LOGIN CON CSV ---
     if not st.session_state.auth:
         st.title(get_translation("app_title"))
         username = st.text_input(get_translation("username"), key="login_user")
