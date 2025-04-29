@@ -468,36 +468,34 @@ class ProfessionalPDF(FPDF):
         self.set_font('DejaVu', 'B', 14)
         self.cell(60, 10, f"{get_translation('risk_level')}:", 0, 0)
 
-    if risk_level in ["ALTO", "HIGH"]:
-        self.set_text_color(255, 0, 0)
-    elif risk_level in ["MODERADO", "MODERATE"]:
-        self.set_text_color(255, 128, 0)
-    else:
-        self.set_text_color(0, 128, 0)
-    
-    self.cell(0, 10, risk_level, 0, 1)
-    self.set_text_color(0, 0, 0)
+        # --- Bloque condicional correctamente indentado ---
+        if risk_level in ["ALTO", "HIGH"]:
+            self.set_text_color(255, 0, 0)
+        elif risk_level in ["MODERADO", "MODERATE"]:
+            self.set_text_color(255, 128, 0)
+        else:
+            self.set_text_color(0, 128, 0)
 
-    self.cell(0, 10, risk_level, 0, 1)
-    self.set_text_color(0, 0, 0)
-    self.set_font('DejaVu', 'B', 12)
-    self.cell(0, 10, get_translation("risk_explanation"), 0, 1)
-    self.set_font('DejaVu', '', 11)
-    self.multi_cell(0, 8, explanation)
-    self.ln(10)
-    self.set_font('DejaVu', 'B', 14)
-    self.cell(0, 10, get_translation("graphics"), 0, 1)
-    risk_factors = {
-        get_translation("criminal_record"): 85,
-        get_translation("personality_traits"): 70,
-        get_translation("substances"): 60,
-        get_translation("social_isolation"): 40
-    }
-    self.set_font('DejaVu', '', 10)
-    for factor, value in risk_factors.items():
-        bar = "█" * int(value/10)
-        self.cell(60, 8, f"{factor}:", 0, 0)
-        self.cell(0, 8, f"{bar} {value}%", 0, 1)
+        self.cell(0, 10, risk_level, 0, 1)
+        self.set_text_color(0, 0, 0)
+        self.set_font('DejaVu', 'B', 12)
+        self.cell(0, 10, get_translation("risk_explanation"), 0, 1)
+        self.set_font('DejaVu', '', 11)
+        self.multi_cell(0, 8, explanation)
+        self.ln(10)
+        self.set_font('DejaVu', 'B', 14)
+        self.cell(0, 10, get_translation("graphics"), 0, 1)
+        risk_factors = {
+            get_translation("criminal_record"): 85,
+            get_translation("personality_traits"): 70,
+            get_translation("substances"): 60,
+            get_translation("social_isolation"): 40
+        }
+        self.set_font('DejaVu', '', 10)
+        for factor, value in risk_factors.items():
+            bar = "█" * int(value/10)
+            self.cell(60, 8, f"{factor}:", 0, 0)
+            self.cell(0, 8, f"{bar} {value}%", 0, 1)
 
     def cover_page(self, data):
         self.add_page()
@@ -565,13 +563,13 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, get_translation("recommendations"), 0, 1, 'C')
         self.ln(5)
         self.set_fill_color(220, 220, 220)
-    for i, (title, explanation) in enumerate(recs):
-        fill = i % 2 == 0
-        self.set_font('DejaVu', 'B', 12)
-        self.cell(0, 10, title, 1, 1, 'L', fill)
-        self.set_font('DejaVu', '', 11)
-        self.multi_cell(0, 8, explanation, 1, 'L', fill)
-        self.ln(3)
+        for i, (title, explanation) in enumerate(recs):
+            fill = i % 2 == 0
+            self.set_font('DejaVu', 'B', 12)
+            self.cell(0, 10, title, 1, 1, 'L', fill)
+            self.set_font('DejaVu', '', 11)
+            self.multi_cell(0, 8, explanation, 1, 'L', fill)
+            self.ln(3)
 
     def graphics_section(self):
         self.add_page()
@@ -632,11 +630,11 @@ class ProfessionalPDF(FPDF):
             self.cell(40, 10, score, 1, 0, 'C', fill)
             self.multi_cell(0, 10, method, 1, 'L', fill)
             self.set_font('DejaVu', '', 10)
-            self.ln(10)
-            self.set_font('DejaVu', 'B', 14)
-            self.cell(0, 10, get_translation("executive_summary"), 0, 1)
-            self.set_font('DejaVu', '', 11)
-            self.multi_cell(0, 8, get_translation("risk_explanation"))
+        self.ln(10)
+        self.set_font('DejaVu', 'B', 14)
+        self.cell(0, 10, get_translation("executive_summary"), 0, 1)
+        self.set_font('DejaVu', '', 11)
+        self.multi_cell(0, 8, get_translation("risk_explanation"))
 
 def main():
     if 'lang' not in st.session_state:
@@ -654,6 +652,21 @@ def main():
 
     if 'auth' not in st.session_state:
         st.session_state.auth = False
+
+    if not st.session_state.auth:
+        st.title(get_translation("app_title"))
+        username = st.text_input(get_translation("username"), key="login_user")
+        password = st.text_input(get_translation("password"), type="password", key="login_pwd")
+        if st.button(get_translation("login"), key="login_btn"):
+            users_df = load_users()
+            user_row = users_df[(users_df['username'] == username) & (users_df['password'] == password)]
+            if not user_row.empty:
+                st.session_state.auth = True
+                st.session_state.user = username
+                st.rerun()
+            else:
+                st.error(get_translation("login_error"))
+        return
 
     if not st.session_state.auth:
         st.title(get_translation("app_title"))
