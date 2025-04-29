@@ -727,6 +727,8 @@ def main():
                     get_translation("suspicious_online"),
                     get_translation("recruitment_attempts"),
                     get_translation("combat_preparation"),
+                    ]
+)
         col1, col2 = st.columns(2)
         
         with col1:
