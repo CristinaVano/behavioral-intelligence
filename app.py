@@ -721,7 +721,8 @@ def main():
                     "Justificación de la violencia",
                     "Fascinación por ideologías extremistas",
                     "Cambios drásticos en el comportamiento",
-                    "Expresión de odwith st.form(key="formulario_principal"):
+                    "hate_expression": "Expresión de odio hacia grupos específicos",
+
         col1, col2 = st.columns(2)
         
         with col1:
