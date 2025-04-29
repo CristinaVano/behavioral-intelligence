@@ -521,39 +521,44 @@ class ProfessionalPDF(FPDF):
             self.multi_cell(0, 10, str(value), 1, 'L', fill)
 
     def risk_assessment(self, risk_level, explanation):
-        self.add_page()
-        self.set_font('DejaVu', 'B', 16)
-        self.cell(0, 10, get_translation("risk_level"), 0, 1, 'C')
-        self.ln(5)
-        self.set_font('DejaVu', 'B', 14)
-        self.cell(60, 10, f"{get_translation('risk_level')}:", 0, 0)
+    self.add_page()
+    self.set_font('DejaVu', 'B', 16)
+    self.cell(0, 10, get_translation("risk_level"), 0, 1, 'C')
+    self.ln(5)
+    self.set_font('DejaVu', 'B', 14)
+    self.cell(60, 10, f"{get_translation('risk_level')}:", 0, 0)
     
-    if risk_level == get_translation("risk_level"):
+    # ========== BLOQUE CORREGIDO ==========
+    if risk_level in ["ALTO", "HIGH"]:  # Comparación multilingüe
         self.set_text_color(255, 0, 0)
-    elif risk_level == "MODERADO":
+    elif risk_level in ["MODERADO", "MODERATE"]:
         self.set_text_color(255, 128, 0)
     else:
         self.set_text_color(0, 128, 0)
-        self.cell(0, 10, risk_level, 0, 1)
-        self.set_text_color(0, 0, 0)
-        self.set_font('DejaVu', 'B', 12)
-        self.cell(0, 10, get_translation("risk_explanation"), 0, 1)
-        self.set_font('DejaVu', '', 11)
-        self.multi_cell(0, 8, explanation)
-        self.ln(10)
-        self.set_font('DejaVu', 'B', 14)
-        self.cell(0, 10, get_translation("graphics"), 0, 1)
-        risk_factors = {
-            get_translation("criminal_record"): 85,
-            get_translation("personality_traits"): 70,
-            get_translation("substances"): 60,
-            get_translation("social_isolation"): 40
-        }
-        self.set_font('DejaVu', '', 10)
-        for factor, value in risk_factors.items():
-            bar = "█" * int(value/10)
-            self.cell(60, 8, f"{factor}:", 0, 0)
-            self.cell(0, 8, f"{bar} {value}%", 0, 1)
+    
+    self.cell(0, 10, risk_level, 0, 1)  # Fuera del if/elif/else
+    self.set_text_color(0, 0, 0)  # Restablecer color
+    # ======================================
+    
+    self.set_font('DejaVu', 'B', 12)
+    self.cell(0, 10, get_translation("risk_explanation"), 0, 1)
+    self.set_font('DejaVu', '', 11)
+    self.multi_cell(0, 8, explanation)
+    self.ln(10)
+    self.set_font('DejaVu', 'B', 14)
+    self.cell(0, 10, get_translation("graphics"), 0, 1)
+    risk_factors = {
+        get_translation("criminal_record"): 85,
+        get_translation("personality_traits"): 70,
+        get_translation("substances"): 60,
+        get_translation("social_isolation"): 40
+    }
+    self.set_font('DejaVu', '', 10)
+    for factor, value in risk_factors.items():
+        bar = "█" * int(value/10)
+        self.cell(60, 8, f"{factor}:", 0, 0)
+        self.cell(0, 8, f"{bar} {value}%", 0, 1)
+
 
     def recommendations_section(self, recs):
         self.add_page()
