@@ -85,16 +85,15 @@ translations = {
         "executive_summary": "Resumen Ejecutivo",
         "date": "Fecha de generación",
         "analyst": "Responsable/Analista"
-    },
-    # ... el resto de idiomas ...
+    }
 }
 
 def get_translation(key):
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
     return translations[st.session_state.lang].get(key, key)
-    
-pdf.executive_summary(executive_summary, photo=uploaded_photo)
+
+class ProfessionalPDF(FPDF):
     def __init__(self, lang="Español"):
         super().__init__()
         self.lang = lang
@@ -104,7 +103,7 @@ pdf.executive_summary(executive_summary, photo=uploaded_photo)
         self.add_font('DejaVu', 'I', 'DejaVuSans-Oblique.ttf', uni=True)
         self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
         self.set_font('DejaVu', '', 12)
-        
+
     def cover_page(self, data):
         self.add_page()
         self.set_font('DejaVu', 'B', 16)
@@ -123,20 +122,18 @@ pdf.executive_summary(executive_summary, photo=uploaded_photo)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
         y_start = self.get_y()
         self.set_font('DejaVu', '', 12)
-    # El texto del resumen ocupa solo la parte izquierda (110mm de ancho)
         self.multi_cell(110, 8, summary)
         self.ln(5)
-    if photo is not None:
-        try:
-            img = Image.open(photo)
-            img_path = "temp_photo.jpg"
-            img.save(img_path)
-            # x=130 (derecha), y=y_start (debajo del título), w=50 (tamaño medio)
-            self.image(img_path, x=130, y=y_start, w=50)
-            os.remove(img_path)
-        except Exception as e:
-            print(f"Error procesando la imagen: {e}")
-            
+        if photo is not None:
+            try:
+                img = Image.open(photo)
+                img_path = "temp_photo.jpg"
+                img.save(img_path)
+                self.image(img_path, x=130, y=y_start, w=50)
+                os.remove(img_path)
+            except Exception as e:
+                print(f"Error procesando la imagen: {e}")
+
     def subject_data_table(self, data):
         self.add_page()
         self.set_font('DejaVu', 'B', 16)
@@ -280,13 +277,10 @@ pdf.executive_summary(executive_summary, photo=uploaded_photo)
         self.set_font('DejaVu', '', 11)
         self.multi_cell(0, 8, "La evaluación utiliza un modelo integrado de análisis predictivo basado en investigación criminológica y neuropsicológica actual. Los factores de riesgo se evalúan mediante algoritmos de ponderación que consideran: 1) Gravedad del factor; 2) Evidencia empírica de correlación; 3) Interacción con otros factores. El sistema ha sido validado con una cohorte de 3.500 casos (2018-2024) mostrando una precisión predictiva del 87% en casos de alto riesgo.")
 
-
 def main():
-    # Inicialización segura del idioma
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
     
-    # Sidebar para idioma y autenticación
     st.sidebar.title("🌍 Idioma / Language")
     lang_options = list(translations.keys())
     selected_lang = st.sidebar.selectbox(
@@ -299,7 +293,6 @@ def main():
     if 'auth' not in st.session_state:
         st.session_state.auth = False
     
-    # Pantalla de login
     if not st.session_state.auth:
         st.title(get_translation("app_title"))
         user = st.text_input(get_translation("username"))
@@ -314,15 +307,12 @@ def main():
                 st.error("Credenciales incorrectas")
         return
     
-    # Botón de logout
     if st.sidebar.button(get_translation("logout")):
         st.session_state.auth = False
         st.rerun()
     
-    # Título principal
     st.title(get_translation("app_title"))
     
-    # FORMULARIO PRINCIPAL
     with st.form(key="formulario_principal"):
         col1, col2 = st.columns(2)
         
@@ -398,14 +388,11 @@ def main():
             diagnosis_list = st.text_area(get_translation("diagnosis_list"))
             therapy = st.text_input(get_translation("therapy"))
             
-            # Manejo seguro de therapy_date
             if therapy:
                 therapy_date = st.date_input(get_translation("therapy_date"))
             else:
                 therapy_date = None
-                st.write(f"{get_translation('therapy_date')}: No aplicable")
             
-            # Selector de año para señales de alarma
             alarm_year = st.selectbox(
                 get_translation("alarm_date"), 
                 list(range(2000, datetime.now().year + 1))
@@ -418,44 +405,31 @@ def main():
             additional_comments = st.text_area(get_translation("additional_comments"))
             uploaded_photo = st.file_uploader(get_translation("upload_photo"), type=["jpg", "png"])
         
-        # Analista (rellenado automáticamente con el usuario)
         analyst = st.text_input(
             get_translation("analyst"), 
             value=st.session_state.user
         )
         
-        # IMPORTANTE: Botón de submit DENTRO del formulario
         submitted = st.form_submit_button(get_translation("submit"))
     
-    # Procesamiento del formulario después del envío
     if submitted:
-        # Resumen ejecutivo
         executive_summary = "El sujeto presenta un perfil de alto riesgo por la concurrencia de múltiples factores: antecedentes de violencia, rasgos de personalidad antisocial e inestable, consumo de sustancias y patrones cognitivos que justifican la violencia. El análisis multifactorial indica probabilidad elevada (78%) de radicalización violenta en ausencia de intervención."
         
-        # Nivel de riesgo
         risk_level = "ALTO"
         risk_explanation = "La evaluación muestra nivel ALTO de riesgo basado en: 1) Presencia de antecedentes de violencia física unida a justificación ideológica de la misma; 2) Rasgos de personalidad antisocial e inestable con impulsividad marcada; 3) Patrones de consumo de sustancias que exacerban conductas de riesgo; 4) Aislamiento social progresivo combinado con fascinación por ideologías extremistas. La combinación de estos factores crea un perfil de vulnerabilidad significativa a la radicalización violenta, particularmente considerando la presencia de facilitadores ideológicos y la ausencia de factores protectores sólidos."
         
-        # Recomendaciones detalladas con justificación
         recommendations = [
             ("Terapia cognitivo-conductual especializada", "Se recomienda terapia cognitivo-conductual enfocada en patrones violentos y distorsiones cognitivas. Justificación: Los estudios meta-analíticos (Johnson et al., 2019) demuestran que la TCC reduce en un 65% la probabilidad de conductas violentas en perfiles similares, abordando específicamente las distorsiones cognitivas que justifican la violencia. El patrón impulsivo-antisocial del sujeto responde favorablemente a intervenciones estructuradas de modificación conductual."),
-            
             ("Tratamiento farmacológico combinado", "Se recomienda evaluación psiquiátrica para valorar estabilizadores del ánimo y/o neurolépticos atípicos a dosis bajas. Justificación: La inestabilidad emocional e impulsividad observadas, combinadas con rasgos paranoides, pueden modularse farmacológicamente. Estudios recientes (Davidson et al., 2022) muestran que la combinación de estabilizadores del ánimo reduce en un 47% los episodios de violencia impulsiva en perfiles similares."),
-            
             ("Programa de desradicalización específico", "Se recomienda incorporar al sujeto al programa PREVENIR de intervención temprana. Justificación: El análisis del discurso del sujeto muestra patrones de fascinación por ideologías extremistas y justificación de violencia política que constituyen factores de alto riesgo. El programa PREVENIR ha demostrado una efectividad del 72% en casos similares mediante técnicas de desvinculación ideológica progresiva."),
-            
             ("Monitorización intensiva multidisciplinar", "Se recomienda seguimiento semanal durante los primeros 3 meses. Justificación: La combinación de factores de riesgo identificados crea una ventana crítica de intervención. El seguimiento intensivo permite ajustar intervenciones en tiempo real y ha demostrado reducir en un 58% las conductas de riesgo (Martínez-Cohen, 2023).")
         ]
         
         try:
-            # Crear nuevo PDF
             pdf = ProfessionalPDF(st.session_state.lang)
-            
-            # Agregar todas las secciones
             pdf.cover_page({"analyst": analyst})
-            pdf.executive_summary(executive_summary)
+            pdf.executive_summary(executive_summary, photo=uploaded_photo)
             
-            # Datos completos del sujeto
             subject_data = {
                 "name": name,
                 "id_number": id_number,
@@ -474,7 +448,6 @@ def main():
                 "clinical_history": clinical_history,
                 "psychological_profile": psychological_profile,
                 "additional_comments": additional_comments,
-                "photo": uploaded_photo,
                 "analyst": analyst
             }
             
@@ -483,9 +456,7 @@ def main():
             pdf.recommendations_section(recommendations)
             pdf.graphics_section()
             
-            # IMPORTANTE: Manejar errores de codificación en el PDF
             pdf_bytes = pdf.output(dest='S').encode('latin-1', errors='replace')
-            
             st.download_button(
                 get_translation("download_report"),
                 pdf_bytes,
@@ -493,21 +464,17 @@ def main():
                 mime="application/pdf"
             )
             
-            # Informe específico para directores
             if st.session_state.user in ["JuanCarlos_bias", "Cristina_bias"]:
-                # Crear nuevo PDF para directores
                 dir_pdf = ProfessionalPDF(st.session_state.lang)
                 dir_pdf.cover_page({"analyst": analyst})
-                dir_pdf.executive_summary(executive_summary)
+                dir_pdf.executive_summary(executive_summary, photo=uploaded_photo)
                 dir_pdf.subject_data_table(subject_data)
                 dir_pdf.risk_assessment(risk_level, risk_explanation)
                 dir_pdf.recommendations_section(recommendations)
                 dir_pdf.graphics_section()
                 dir_pdf.director_report_extension()
                 
-                # IMPORTANTE: Manejar errores de codificación
                 pdf_dir_bytes = dir_pdf.output(dest='S').encode('latin-1', errors='replace')
-                
                 st.download_button(
                     get_translation("download_director"),
                     pdf_dir_bytes,
