@@ -480,7 +480,7 @@ class ProfessionalPDF(FPDF):
         self.set_font('Arial', '', 11)
         self.multi_cell(0, 8, explanation)
         self.ln(10)
-         self.set_font('Arial', 'B', 14)
+        self.set_font('Arial', 'B', 14)
         self.cell(0, 10, get_translation("graphics"), 0, 1)
         risk_factors = {
             get_translation("criminal_record"): 85,
