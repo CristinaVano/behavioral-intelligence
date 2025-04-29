@@ -717,12 +717,16 @@ def main():
                     get_translation("homicide"),
                     get_translation("terrorism"),
                     get_translation("none_criminal"),
-                    "Aislamiento social progresivo",
-                    "Justificación de la violencia",
-                    "Fascinación por ideologías extremistas",
-                    "Cambios drásticos en el comportamiento",
-                    "combat_preparation": "Preparación física para el combate",
-
+                    get_translation("social_isolation"),
+                    get_translation("violence_justification"),
+                    get_translation("extremist_fascination"),
+                    get_translation("behavior_changes"),
+                    get_translation("hate_expression"),
+                    get_translation("radicalized_contact"),
+                    get_translation("extremist_propaganda"),
+                    get_translation("suspicious_online"),
+                    get_translation("recruitment_attempts"),
+                    get_translation("combat_preparation")
         col1, col2 = st.columns(2)
         
         with col1:
