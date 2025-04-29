@@ -104,7 +104,7 @@ class ProfessionalPDF(FPDF):
         self.add_font('DejaVu', 'I', 'DejaVuSans-Oblique.ttf', uni=True)
         self.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
         self.set_font('DejaVu', '', 12)
-
+        
     def cover_page(self, data):
         self.add_page()
         self.set_font('DejaVu', 'B', 16)
@@ -118,23 +118,25 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, get_translation("confidential"), 0, 1, 'C')
         self.ln(10)
 
-    def executive_summary(self, summary, photo=None):
+    pdf.executive_summary(executive_summary, photo=uploaded_photo)
         self.set_font('DejaVu', 'B', 14)
         self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
+    y_start = self.get_y()
+    # Reservamos espacio a la izquierda para el texto, a la derecha para la foto
         self.set_font('DejaVu', '', 12)
-        y_before = self.get_y()
-        self.multi_cell(0, 8, summary)
+        self.multi_cell(110, 8, summary)
         self.ln(5)
-        if photo is not None:
-            try:
-                img = Image.open(photo)
-                img_path = "temp_photo.jpg"
-                img.save(img_path)
-                self.image(img_path, x=120, y=y_before+5, w=45)
-                os.remove(img_path)
-            except Exception as e:
-                print(f"Error procesando la imagen: {e}")
-
+    if photo is not None:
+        try:
+            img = Image.open(photo)
+            img_path = "temp_photo.jpg"
+            img.save(img_path)
+            # x=130 (a la derecha), y=y_start (debajo del título), w=50 (tamaño medio)
+            self.image(img_path, x=130, y=y_start, w=50)
+            os.remove(img_path)
+        except Exception as e:
+            print(f"Error procesando la imagen: {e}")
+            
     def subject_data_table(self, data):
         self.add_page()
         self.set_font('DejaVu', 'B', 16)
