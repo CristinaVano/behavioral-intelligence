@@ -3,6 +3,10 @@ from datetime import datetime
 from fpdf import FPDF
 import os
 from PIL import Image
+import pandas as pd
+
+def load_users():
+    return pd.read_csv("registros_perfiles.csv")
 
 st.set_page_config(page_title="BIAS", page_icon="🕵️", layout="wide")
 
