@@ -627,11 +627,11 @@ class ProfessionalPDF(FPDF):
             self.cell(40, 10, score, 1, 0, 'C', fill)
             self.multi_cell(0, 10, method, 1, 'L', fill)
             self.set_font('DejaVu', '', 10)
-        self.ln(10)
-        self.set_font('DejaVu', 'B', 14)
-        self.cell(0, 10, get_translation("executive_summary"), 0, 1)
-        self.set_font('DejaVu', '', 11)
-        self.multi_cell(0, 8, get_translation("risk_explanation"))
+            self.ln(10)
+            self.set_font('DejaVu', 'B', 14)
+            self.cell(0, 10, get_translation("executive_summary"), 0, 1)
+            self.set_font('DejaVu', '', 11)
+            self.multi_cell(0, 8, get_translation("risk_explanation"))
 
 def main():
     if 'lang' not in st.session_state:
