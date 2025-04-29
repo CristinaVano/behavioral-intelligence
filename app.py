@@ -633,7 +633,6 @@ def main():
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
 
-    # === SELECCIÓN DE IDIOMA ===
     st.sidebar.title("🌍 " + get_translation("language"))
     lang_options = list(translations.keys())
     selected_lang = st.sidebar.selectbox(
@@ -644,7 +643,6 @@ def main():
     )
     st.session_state.lang = selected_lang
 
-    # === AUTENTICACIÓN ===
     if 'auth' not in st.session_state:
         st.session_state.auth = False
 
@@ -653,7 +651,7 @@ def main():
         user = st.text_input(get_translation("username"), key="login_user")
         pwd = st.text_input(get_translation("password"), type="password", key="login_pwd")
         if st.button(get_translation("login"), key="login_btn"):
-            if user in ["demo_bias", "JuanCarlos_bias", "Cristina_bias"] and pwd == "biasdemo2025":
+            if user in ["demo_bias", "JuanCarlos_bias", "Cristina_bias"] and pwd in ["biasdemo2025", "admin_bias"]:
                 st.session_state.auth = True
                 st.session_state.user = user
                 st.rerun()
@@ -661,16 +659,13 @@ def main():
                 st.error(get_translation("login_error"))
         return
 
-    # === LOGOUT ===
     if st.sidebar.button(get_translation("logout"), key="logout_btn"):
         st.session_state.auth = False
         st.rerun()
 
-    # === FORMULARIO PRINCIPAL ===
     st.title(get_translation("app_title"))
     with st.form(key="main_form"):
         col1, col2 = st.columns(2)
-
         with col1:
             name = st.text_input(get_translation("name"), key="name_input")
             id_number = st.text_input(get_translation("id_number"), key="id_input")
@@ -724,7 +719,6 @@ def main():
                 ],
                 key="criminal_select"
             )
-
         with col2:
             personality_traits = st.multiselect(
                 get_translation("personality_traits"),
@@ -763,7 +757,6 @@ def main():
         analyst = st.text_input(get_translation("analyst"), value=st.session_state.user, key="analyst_input")
         submitted = st.form_submit_button(get_translation("submit"), key="submit_btn")
 
-    # === GENERACIÓN DE PDF ===
     if submitted:
         executive_summary = get_translation("executive_summary")
         risk_level = "ALTO"
@@ -774,7 +767,6 @@ def main():
             (get_translation("reintegration_recs"), get_translation("reintegration_recs_details")),
             (get_translation("prevention_recs"), get_translation("prevention_recs_details"))
         ]
-
         try:
             pdf = ProfessionalPDF(st.session_state.lang)
             pdf.cover_page({"analyst": analyst})
@@ -803,7 +795,6 @@ def main():
             pdf.risk_assessment(risk_level, risk_explanation)
             pdf.recommendations_section(recommendations)
             pdf.graphics_section()
-
             pdf_bytes = pdf.output(dest='S').encode('latin-1')
             st.download_button(
                 get_translation("download_report"),
@@ -812,7 +803,6 @@ def main():
                 mime="application/pdf",
                 key="report_btn"
             )
-
             if st.session_state.user in ["JuanCarlos_bias", "Cristina_bias"]:
                 dir_pdf = ProfessionalPDF(st.session_state.lang)
                 dir_pdf.director_report_extension()
