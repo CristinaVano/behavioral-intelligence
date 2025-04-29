@@ -488,7 +488,7 @@ class ProfessionalPDF(FPDF):
             get_translation("substances"): 60,
             get_translation("social_isolation"): 40
         }
-        self.set_font('Arial', '', 10)  # <- Corregido aquí
+        self.set_font('Arial', '', 10)  
         for factor, value in risk_factors.items():
             bar = "█" * int(value/10)
             self.cell(60, 8, f"{factor}:", 0, 0)
@@ -827,7 +827,7 @@ def main():
                     key="director_btn"
                 )
         except Exception as e:
-            st.error(f"Error al generar el PDF: {str(e)}")  # Mensaje de error realista
+            st.error(f"Error al generar el PDF: {str(e)}") 
 
 if __name__ == "__main__":
     main()
