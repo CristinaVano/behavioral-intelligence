@@ -53,7 +53,7 @@ translations = {
         "suspicious_online": "Participación en actividades sospechosas online",
         "recruitment_attempts": "Intento de reclutamiento de otros",
         "combat_preparation": "Preparación física para el combate"
-        "none_criminal": "Ninguno",
+        "none_criminal": "Ninguno"
         "personality_traits": "Rasgos de personalidad",
         "paranoid": "Paranoide",
         "antisocial": "Antisocial",
