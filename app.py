@@ -472,10 +472,10 @@ class ProfessionalPDF(FPDF):
         elif risk_level in ["MODERADO", "MODERATE"]:
             self.set_text_color(255, 128, 0)
         else:
-        self.set_text_color(0, 128, 0)
-        self.cell(0, 10, risk_level, 0, 1)
-        self.set_text_color(0, 0, 0)
-        self.set_font('Arial', '', 12)
+            self.set_text_color(0, 128, 0)
+            self.cell(0, 10, risk_level, 0, 1)
+            self.set_text_color(0, 0, 0)
+            self.set_font('Arial', '', 12)
         self.cell(0, 10, get_translation("risk_explanation"), 0, 1)
         self.set_font('Arial', '', 11)
         self.multi_cell(0, 8, explanation)
