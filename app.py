@@ -690,10 +690,10 @@ def main():
         col1, col2 = st.columns(2)
 
         with col1:
-        name = st.text_input(get_translation("name"), key="name_input")
-        id_number = st.text_input(get_translation("id_number"), key="id_input")
-        age = st.number_input(get_translation("age"), 12, 100, 25, key="age_input")
-        gender = st.selectbox(
+            name = st.text_input(get_translation("name"), key="name_input")
+            id_number = st.text_input(get_translation("id_number"), key="id_input")
+            age = st.number_input(get_translation("age"), 12, 100, 25, key="age_input")
+            gender = st.selectbox(
             get_translation("gender"),
             [get_translation("male"), get_translation("female"), get_translation("other")],
             key="gender_select"
@@ -744,7 +744,7 @@ def main():
         )
 
         with col2:
-        personality_traits = st.multiselect(
+            personality_traits = st.multiselect(
             get_translation("personality_traits"),
             [
                 get_translation("paranoid"),
