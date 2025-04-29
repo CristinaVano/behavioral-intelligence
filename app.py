@@ -597,7 +597,7 @@ class ProfessionalPDF(FPDF):
             self.set_font('Arial', 'B', 12)
             self.cell(0, 10, get_translation("danger_table"), 0, 1)
             self.set_font('Arial', '', 10)
-             self.cell(0, 10, get_translation("confidential"), 0, 1)
+            self.cell(0, 10, get_translation("confidential"), 0, 1)
 
     def director_report_extension(self):
         self.add_page()
