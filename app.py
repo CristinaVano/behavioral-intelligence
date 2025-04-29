@@ -478,7 +478,8 @@ class ProfessionalPDF(FPDF):
             self.set_font('Arial', '', 12)
         self.cell(0, 10, get_translation("risk_explanation"), 0, 1)
         self.set_font('Arial', '', 11)
-        self.multi_cell(0, 8, explanation)
+        self.set_x(self.l_margin)
+        self.multi_cell(180, 8, explanation)
         self.ln(10)
         self.set_font('Arial', 'B', 14)
         self.cell(0, 10, get_translation("graphics"), 0, 1)
@@ -494,11 +495,12 @@ class ProfessionalPDF(FPDF):
             self.cell(60, 8, f"{factor}:", 0, 0)
             self.cell(0, 8, f"{bar} {value}%", 0, 1)
 
-    def cover_page(self, data):
-        self.add_page()
-        self.set_font('Arial', 'B', 16)
-        title = get_translation("app_title")
-        self.multi_cell(0, 10, title, align='C')
+   def cover_page(self, data):
+       self.add_page()
+       self.set_font('Arial', 'B', 16)
+       title = get_translation("app_title")
+       self.set_x(self.l_margin)
+       self.multi_cell(180, 10, title, align='C')
         self.set_font('Arial', 'B', 14)
         self.cell(0, 10, f"{get_translation('date')}: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
         self.cell(0, 10, f"{get_translation('analyst')}: {data.get('analyst', 'N/A')}", 0, 1, 'R')
@@ -508,65 +510,69 @@ class ProfessionalPDF(FPDF):
         self.ln(10)
 
     def executive_summary(self, summary, photo=None):
-        self.set_font('Arial', 'B', 14)
-        self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
-        y_start = self.get_y()
-        self.set_font('Arial', '', 12)
-        self.multi_cell(110, 8, summary)
-        self.ln(5)
-        if photo is not None:
-            try:
-                img = Image.open(photo)
-                img_path = "temp_photo.jpg"
-                img.save(img_path)
-                self.image(img_path, x=130, y=y_start, w=50)
-                os.remove(img_path)
-            except Exception as e:
-                print(f"Error procesando la imagen: {e}")
+    self.set_font('Arial', 'B', 14)
+    self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
+    y_start = self.get_y()
+    self.set_font('Arial', '', 12)
+    self.set_x(self.l_margin)
+    self.multi_cell(110, 8, summary)  # 110 mm para dejar espacio a la foto a la derecha
+    self.ln(5)
+    if photo is not None:
+        try:
+            img = Image.open(photo)
+            img_path = "temp_photo.jpg"
+            img.save(img_path)
+            self.image(img_path, x=130, y=y_start, w=50)
+            os.remove(img_path)
+        except Exception as e:
+            print(f"Error procesando la imagen: {e}")
 
     def subject_data_table(self, data):
-        self.add_page()
-        self.set_font('Arial', 'B', 16)
-        self.cell(0, 10, get_translation("profile_section"), 0, 1, 'C')
-        self.ln(5)
-        self.set_fill_color(220, 220, 220)
-        self.set_font('Arial', 'B', 12)
-        fields = [
-            (get_translation("name"), data.get('name', 'N/A')),
-            (get_translation("id_number"), data.get('id_number', 'N/A')),
-            (get_translation("age"), str(data.get('age', 'N/A'))),
-            (get_translation("gender"), data.get('gender', 'N/A')),
-            (get_translation("education"), data.get('education', 'N/A')),
-            (get_translation("clinical_history"), data.get('clinical_history', 'N/A')),
-            (get_translation("psychological_profile"), data.get('psychological_profile', 'N/A')),
-            (get_translation("diagnosis_list"), data.get('diagnosis_list', 'N/A')),
-            (get_translation("therapy"), data.get('therapy', 'N/A')),
-            (get_translation("therapy_date"), str(data.get('therapy_date', 'N/A'))),
-            (get_translation("alarm_date"), str(data.get('alarm_year', 'N/A'))),
-            (get_translation("interest_profile"), data.get('interest_profile', 'N/A')),
-            (get_translation("family_extremism"), data.get('family_extremism', 'N/A')),
-            (get_translation("additional_comments"), data.get('additional_comments', 'N/A'))
-        ]
-        for i, (field, value) in enumerate(fields):
-            fill = i % 2 == 0
-            self.set_font('Arial', 'B', 11)
-            self.cell(60, 10, field, 1, 0, 'L', fill)
-            self.set_font('Arial', '', 11)
-            self.multi_cell(0, 10, str(value), 1, 'L', fill)
+    self.add_page()
+    self.set_font('Arial', 'B', 16)
+    self.cell(0, 10, get_translation("profile_section"), 0, 1, 'C')
+    self.ln(5)
+    self.set_fill_color(220, 220, 220)
+    self.set_font('Arial', 'B', 12)
+    fields = [
+        (get_translation("name"), data.get('name', 'N/A')),
+        (get_translation("id_number"), data.get('id_number', 'N/A')),
+        (get_translation("age"), str(data.get('age', 'N/A'))),
+        (get_translation("gender"), data.get('gender', 'N/A')),
+        (get_translation("education"), data.get('education', 'N/A')),
+        (get_translation("clinical_history"), data.get('clinical_history', 'N/A')),
+        (get_translation("psychological_profile"), data.get('psychological_profile', 'N/A')),
+        (get_translation("diagnosis_list"), data.get('diagnosis_list', 'N/A')),
+        (get_translation("therapy"), data.get('therapy', 'N/A')),
+        (get_translation("therapy_date"), str(data.get('therapy_date', 'N/A'))),
+        (get_translation("alarm_date"), str(data.get('alarm_year', 'N/A'))),
+        (get_translation("interest_profile"), data.get('interest_profile', 'N/A')),
+        (get_translation("family_extremism"), data.get('family_extremism', 'N/A')),
+        (get_translation("additional_comments"), data.get('additional_comments', 'N/A'))
+    ]
+    for i, (field, value) in enumerate(fields):
+        fill = i % 2 == 0
+        self.set_font('Arial', 'B', 11)
+        self.cell(60, 10, field, 1, 0, 'L', fill)
+        self.set_font('Arial', '', 11)
+        self.set_x(self.get_x())  # Asegura que la multicell empieza justo después de la celda anterior
+        self.multi_cell(120, 10, str(value), 1, 'L', fill)
 
     def recommendations_section(self, recs):
-        self.add_page()
-        self.set_font('Arial', 'B', 16)
-        self.cell(0, 10, get_translation("recommendations"), 0, 1, 'C')
-        self.ln(5)
-        self.set_fill_color(220, 220, 220)
-        for i, (title, explanation) in enumerate(recs):
-            fill = i % 2 == 0
-            self.set_font('Arial', 'B', 12)
-            self.cell(0, 10, title, 1, 1, 'L', fill)
-            self.set_font('Arial', '', 11)
-            self.multi_cell(0, 8, explanation, 1, 'L', fill)
-            self.ln(3)
+    self.add_page()
+    self.set_font('Arial', 'B', 16)
+    self.cell(0, 10, get_translation("recommendations"), 0, 1, 'C')
+    self.ln(5)
+    self.set_fill_color(220, 220, 220)
+    for i, (title, explanation) in enumerate(recs):
+        fill = i % 2 == 0
+        self.set_font('Arial', 'B', 12)
+        self.set_x(self.l_margin)
+        self.cell(180, 10, title, 1, 1, 'L', fill)
+        self.set_font('Arial', '', 11)
+        self.set_x(self.l_margin)
+        self.multi_cell(180, 8, explanation, 1, 'L', fill)
+        self.ln(3)
 
     def graphics_section(self):
         self.add_page()
@@ -608,9 +614,10 @@ def director_report_extension(self):
     self.cell(0, 10, get_translation("risk_level"), 0, 1)
     self.set_fill_color(220, 220, 220)
     self.set_font('Arial', 'B', 11)
+    self.set_x(self.l_margin)
     self.cell(60, 10, get_translation("criminal_record"), 1, 0, 'L', True)
     self.cell(40, 10, "Puntuación", 1, 0, 'C', True)
-    self.cell(0, 10, get_translation("risk_explanation"), 1, 1, 'L', True)
+    self.cell(80, 10, get_translation("risk_explanation"), 1, 1, 'L', True)
     data = [
         (get_translation("criminal_record"), "85/100", get_translation("risk_explanation")),
         (get_translation("personality_traits"), "70/100", get_translation("risk_explanation")),
@@ -623,15 +630,18 @@ def director_report_extension(self):
         fill = i % 2 == 1
         if factor == "PUNTUACIÓN GLOBAL":
             self.set_font('Arial', 'B', 10)
+        self.set_x(self.l_margin)
         self.cell(60, 10, factor, 1, 0, 'L', fill)
         self.cell(40, 10, score, 1, 0, 'C', fill)
-        self.multi_cell(0, 10, method, 1, 'L', fill)
+        self.multi_cell(80, 10, method, 1, 'L', fill)
         self.set_font('Arial', '', 10)
     self.ln(10)
     self.set_font('Arial', 'B', 14)
-    self.cell(0, 10, get_translation("executive_summary"), 0, 1)
+    self.set_x(self.l_margin)
+    self.cell(180, 10, get_translation("executive_summary"), 0, 1)
     self.set_font('Arial', '', 11)
-    self.multi_cell(0, 8, get_translation("risk_explanation"))
+    self.set_x(self.l_margin)
+    self.multi_cell(180, 8, get_translation("risk_explanation"))
 
 def main():
     if 'lang' not in st.session_state:
