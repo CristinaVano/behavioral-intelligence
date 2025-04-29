@@ -444,7 +444,7 @@ translations = {
 
 def get_translation(key):
     def main():
-    if 'lang' not in st.session_state:
+      if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
 
     st.sidebar.title("🌍 Idioma / Language")
