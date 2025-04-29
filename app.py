@@ -443,9 +443,18 @@ translations = {
 }
 
 def get_translation(key):
+    def main():
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
-    return translations[st.session_state.lang].get(key, key)
+
+    st.sidebar.title("🌍 Idioma / Language")
+    lang_options = list(translations.keys())
+    selected_lang = st.sidebar.selectbox(
+        "Idioma",
+        lang_options,
+        index=lang_options.index(st.session_state.lang) if st.session_state.lang in lang_options else 0
+    )
+    st.session_state.lang = selected_lang
 
 class ProfessionalPDF(FPDF):
     def __init__(self, lang="Español"):
@@ -712,14 +721,56 @@ def main():
                     "Justificación de la violencia",
                     "Fascinación por ideologías extremistas",
                     "Cambios drásticos en el comportamiento",
-                    "Expresión de odio hacia grupos específicos",
-                    "Contacto con individuos radicalizados",
-                    "Consumo de propaganda extremista",
-                    "Participación en actividades sospechosas online",
-                    "Intento de reclutamiento de otros",
-                    "Preparación física para el combate"
+                    "Expresión de odwith st.form(key="formulario_principal"):
+        col1, col2 = st.columns(2)
+        with col1:
+            name = st.text_input(get_translation("name"))
+            id_number = st.text_input(get_translation("id_number"))
+            age = st.number_input(get_translation("age"), 12, 100, 25)
+            gender = st.selectbox(
+                get_translation("gender"),
+                [get_translation("male"), get_translation("female"), get_translation("other")]
+            )
+            education = st.selectbox(
+                get_translation("education"),
+                [
+                    get_translation("primary"),
+                    get_translation("secondary"),
+                    get_translation("university"),
+                    get_translation("postgraduate"),
+                    get_translation("none_edu")
                 ]
             )
+            substances = st.multiselect(
+                get_translation("substances"),
+                [
+                    get_translation("alcohol"),
+                    get_translation("tobacco"),
+                    get_translation("recreational"),
+                    get_translation("cocaine"),
+                    get_translation("heroin"),
+                    get_translation("none_substance")
+                ]
+            )
+            criminal_record = st.multiselect(
+                get_translation("criminal_record"),
+                [
+                    get_translation("theft"),
+                    get_translation("gender_violence"),
+                    get_translation("homicide"),
+                    get_translation("terrorism"),
+                    get_translation("none_criminal"),
+                    get_translation("social_isolation"),
+                    get_translation("violence_justification"),
+                    get_translation("extremist_fascination"),
+                    get_translation("behavior_changes"),
+                    get_translation("hate_expression"),
+                    get_translation("radicalized_contact"),
+                    get_translation("extremist_propaganda"),
+                    get_translation("suspicious_online"),
+                    get_translation("recruitment_attempts"),
+                    get_translation("combat_preparation")
+                ]
             
         with col2:
             personality_traits = st.multiselect(
