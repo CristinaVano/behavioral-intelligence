@@ -600,17 +600,17 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, get_translation("confidential"), 0, 1)
 
     def director_report_extension(self):
-        self.add_page()
-        self.set_font('Arial', 'B', 16)
-        self.cell(0, 10, get_translation("download_director"), 0, 1, 'C')
-        self.ln(5)
-        self.set_font('Arial', 'B', 14)
-        self.cell(0, 10, get_translation("risk_level"), 0, 1)
-        self.set_fill_color(220, 220, 220)
-        self.set_font('Arial', 'B', 11)
-        self.cell(60, 10, get_translation("criminal_record"), 1, 0, 'L', True)
-        self.cell(40, 10, "Puntuación", 1, 0, 'C', True)
-        self.cell(0, 10, get_translation("risk_explanation"), 1, 1, 'L', True)
+    self.add_page()
+    self.set_font('Arial', 'B', 16)
+    self.cell(0, 10, get_translation("download_director"), 0, 1, 'C')
+    self.ln(5)
+    self.set_font('Arial', 'B', 14)
+    self.cell(0, 10, get_translation("risk_level"), 0, 1)
+    self.set_fill_color(220, 220, 220)
+    self.set_font('Arial', 'B', 11)
+    self.cell(60, 10, get_translation("criminal_record"), 1, 0, 'L', True)
+    self.cell(40, 10, "Puntuación", 1, 0, 'C', True)
+    self.cell(0, 10, get_translation("risk_explanation"), 1, 1, 'L', True)
     data = [
         (get_translation("criminal_record"), "85/100", get_translation("risk_explanation")),
         (get_translation("personality_traits"), "70/100", get_translation("risk_explanation")),
@@ -618,7 +618,7 @@ class ProfessionalPDF(FPDF):
         (get_translation("social_isolation"), "40/100", get_translation("risk_explanation")),
         ("PUNTUACIÓN GLOBAL", "73/100", get_translation("risk_explanation"))
     ]
-        self.set_font('Arial', '', 10)
+    self.set_font('Arial', '', 10)
     for i, (factor, score, method) in enumerate(data):
         fill = i % 2 == 1
         if factor == "PUNTUACIÓN GLOBAL":
