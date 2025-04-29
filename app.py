@@ -467,15 +467,12 @@ class ProfessionalPDF(FPDF):
         self.ln(5)
         self.set_font('DejaVu', 'B', 14)
         self.cell(60, 10, f"{get_translation('risk_level')}:", 0, 0)
-
-        # --- Bloque condicional correctamente indentado ---
         if risk_level in ["ALTO", "HIGH"]:
             self.set_text_color(255, 0, 0)
         elif risk_level in ["MODERADO", "MODERATE"]:
             self.set_text_color(255, 128, 0)
         else:
             self.set_text_color(0, 128, 0)
-
         self.cell(0, 10, risk_level, 0, 1)
         self.set_text_color(0, 0, 0)
         self.set_font('DejaVu', 'B', 12)
@@ -653,32 +650,23 @@ def main():
     if 'auth' not in st.session_state:
         st.session_state.auth = False
 
+    # --- LOGIN CON CSV ---
     if not st.session_state.auth:
         st.title(get_translation("app_title"))
         username = st.text_input(get_translation("username"), key="login_user")
         password = st.text_input(get_translation("password"), type="password", key="login_pwd")
         if st.button(get_translation("login"), key="login_btn"):
             users_df = load_users()
-            user_row = users_df[(users_df['username'] == username) & (users_df['password'] == password)]
-            if not user_row.empty:
-                st.session_state.auth = True
-                st.session_state.user = username
-                st.rerun()
+            if not users_df.empty and "username" in users_df.columns and "password" in users_df.columns:
+                user_row = users_df[(users_df['username'] == username) & (users_df['password'] == password)]
+                if not user_row.empty:
+                    st.session_state.auth = True
+                    st.session_state.user = username
+                    st.rerun()
+                else:
+                    st.error(get_translation("login_error"))
             else:
-                st.error(get_translation("login_error"))
-        return
-
-    if not st.session_state.auth:
-        st.title(get_translation("app_title"))
-        user = st.text_input(get_translation("username"), key="login_user")
-        pwd = st.text_input(get_translation("password"), type="password", key="login_pwd")
-        if st.button(get_translation("login"), key="login_btn"):
-            if user in ["demo_bias", "JuanCarlos_bias", "Cristina_bias"] and pwd in ["biasdemo2025", "admin_bias"]:
-                st.session_state.auth = True
-                st.session_state.user = user
-                st.rerun()
-            else:
-                st.error(get_translation("login_error"))
+                st.error("Error: El archivo de usuarios no tiene las columnas requeridas.")
         return
 
     if st.sidebar.button(get_translation("logout"), key="logout_btn"):
@@ -686,6 +674,8 @@ def main():
         st.rerun()
 
     st.title(get_translation("app_title"))
+
+    # --- FORMULARIO CORRECTO ---
     with st.form(key="main_form"):
         col1, col2 = st.columns(2)
 
@@ -694,92 +684,92 @@ def main():
             id_number = st.text_input(get_translation("id_number"), key="id_input")
             age = st.number_input(get_translation("age"), 12, 100, 25, key="age_input")
             gender = st.selectbox(
-            get_translation("gender"),
-            [get_translation("male"), get_translation("female"), get_translation("other")],
-            key="gender_select"
-        )
-        education = st.selectbox(
-            get_translation("education"),
-            [
-                get_translation("primary"),
-                get_translation("secondary"),
-                get_translation("university"),
-                get_translation("postgraduate"),
-                get_translation("none_edu")
-            ],
-            key="education_select"
-        )
-        substances = st.multiselect(
-            get_translation("substances"),
-            [
-                get_translation("alcohol"),
-                get_translation("tobacco"),
-                get_translation("recreational"),
-                get_translation("cocaine"),
-                get_translation("heroin"),
-                get_translation("none_substance")
-            ],
-            key="substances_select"
-        )
-        criminal_record = st.multiselect(
-            get_translation("criminal_record"),
-            [
-                get_translation("theft"),
-                get_translation("gender_violence"),
-                get_translation("homicide"),
-                get_translation("terrorism"),
-                get_translation("none_criminal"),
-                get_translation("social_isolation"),
-                get_translation("violence_justification"),
-                get_translation("extremist_fascination"),
-                get_translation("behavior_changes"),
-                get_translation("hate_expression"),
-                get_translation("radicalized_contact"),
-                get_translation("extremist_propaganda"),
-                get_translation("suspicious_online"),
-                get_translation("recruitment_attempts"),
-                get_translation("combat_preparation")
-            ],
-            key="criminal_select"
-        )
+                get_translation("gender"),
+                [get_translation("male"), get_translation("female"), get_translation("other")],
+                key="gender_select"
+            )
+            education = st.selectbox(
+                get_translation("education"),
+                [
+                    get_translation("primary"),
+                    get_translation("secondary"),
+                    get_translation("university"),
+                    get_translation("postgraduate"),
+                    get_translation("none_edu")
+                ],
+                key="education_select"
+            )
+            substances = st.multiselect(
+                get_translation("substances"),
+                [
+                    get_translation("alcohol"),
+                    get_translation("tobacco"),
+                    get_translation("recreational"),
+                    get_translation("cocaine"),
+                    get_translation("heroin"),
+                    get_translation("none_substance")
+                ],
+                key="substances_select"
+            )
+            criminal_record = st.multiselect(
+                get_translation("criminal_record"),
+                [
+                    get_translation("theft"),
+                    get_translation("gender_violence"),
+                    get_translation("homicide"),
+                    get_translation("terrorism"),
+                    get_translation("none_criminal"),
+                    get_translation("social_isolation"),
+                    get_translation("violence_justification"),
+                    get_translation("extremist_fascination"),
+                    get_translation("behavior_changes"),
+                    get_translation("hate_expression"),
+                    get_translation("radicalized_contact"),
+                    get_translation("extremist_propaganda"),
+                    get_translation("suspicious_online"),
+                    get_translation("recruitment_attempts"),
+                    get_translation("combat_preparation")
+                ],
+                key="criminal_select"
+            )
 
         with col2:
             personality_traits = st.multiselect(
-            get_translation("personality_traits"),
-            [
-                get_translation("paranoid"),
-                get_translation("antisocial"),
-                get_translation("sadomasochistic"),
-                get_translation("impulsive"),
-                get_translation("unstable"),
-                get_translation("dependent"),
-                get_translation("avoidant"),
-                get_translation("narcissistic"),
-                get_translation("histrionic"),
-                get_translation("passive_aggressive"),
-                get_translation("schizoid"),
-                get_translation("obsessive"),
-                get_translation("none_traits")
-            ],
-            key="personality_select"
-        )
-        diagnosis_list = st.text_area(get_translation("diagnosis_list"), key="diagnosis_area")
-        therapy = st.text_input(get_translation("therapy"), key="therapy_input")
-        therapy_date = st.date_input(get_translation("therapy_date"), key="therapy_date") if therapy else None
-        alarm_year = st.selectbox(
-            get_translation("alarm_date"),
-            list(range(2000, datetime.now().year + 1)),
-            key="alarm_year_select"
-        )
-        interest_profile = st.text_area(get_translation("interest_profile"), key="interest_area")
-        family_extremism = st.text_area(get_translation("family_extremism"), key="family_extremism_area")
-        clinical_history = st.text_area(get_translation("clinical_history"), key="clinical_area")
-        psychological_profile = st.text_area(get_translation("psychological_profile"), key="psychological_area")
-        additional_comments = st.text_area(get_translation("additional_comments"), key="comments_area")
-        uploaded_photo = st.file_uploader(get_translation("upload_photo"), type=["jpg", "png"], key="photo_uploader")
+                get_translation("personality_traits"),
+                [
+                    get_translation("paranoid"),
+                    get_translation("antisocial"),
+                    get_translation("sadomasochistic"),
+                    get_translation("impulsive"),
+                    get_translation("unstable"),
+                    get_translation("dependent"),
+                    get_translation("avoidant"),
+                    get_translation("narcissistic"),
+                    get_translation("histrionic"),
+                    get_translation("passive_aggressive"),
+                    get_translation("schizoid"),
+                    get_translation("obsessive"),
+                    get_translation("none_traits")
+                ],
+                key="personality_select"
+            )
+            diagnosis_list = st.text_area(get_translation("diagnosis_list"), key="diagnosis_area")
+            therapy = st.text_input(get_translation("therapy"), key="therapy_input")
+            therapy_date = st.date_input(get_translation("therapy_date"), key="therapy_date") if therapy else None
+            alarm_year = st.selectbox(
+                get_translation("alarm_date"),
+                list(range(2000, datetime.now().year + 1)),
+                key="alarm_year_select"
+            )
+            interest_profile = st.text_area(get_translation("interest_profile"), key="interest_area")
+            family_extremism = st.text_area(get_translation("family_extremism"), key="family_extremism_area")
+            clinical_history = st.text_area(get_translation("clinical_history"), key="clinical_area")
+            psychological_profile = st.text_area(get_translation("psychological_profile"), key="psychological_area")
+            additional_comments = st.text_area(get_translation("additional_comments"), key="comments_area")
+            uploaded_photo = st.file_uploader(get_translation("upload_photo"), type=["jpg", "png"], key="photo_uploader")
 
-    analyst = st.text_input(get_translation("analyst"), value=st.session_state.user, key="analyst_input")
-    submitted = st.form_submit_button(get_translation("submit"), key="submit_btn")
+        analyst = st.text_input(get_translation("analyst"), value=st.session_state.user, key="analyst_input")
+        submitted = st.form_submit_button(get_translation("submit"), key="submit_btn")
 
     if submitted:
         executive_summary = get_translation("executive_summary")
