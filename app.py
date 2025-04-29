@@ -723,6 +723,7 @@ def main():
                     "Cambios drásticos en el comportamiento",
                     "Expresión de odwith st.form(key="formulario_principal"):
         col1, col2 = st.columns(2)
+        
         with col1:
             name = st.text_input(get_translation("name"))
             id_number = st.text_input(get_translation("id_number"))
