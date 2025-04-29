@@ -761,24 +761,25 @@ def main():
                 ]
             )
             criminal_record = st.multiselect(
-                get_translation("criminal_record"),
-                [
-                    get_translation("theft"),
-                    get_translation("gender_violence"),
-                    get_translation("homicide"),
-                    get_translation("terrorism"),
-                    get_translation("none_criminal"),
-                    get_translation("social_isolation"),
-                    get_translation("violence_justification"),
-                    get_translation("extremist_fascination"),
-                    get_translation("behavior_changes"),
-                    get_translation("hate_expression"),
-                    get_translation("radicalized_contact"),
-                    get_translation("extremist_propaganda"),
-                    get_translation("suspicious_online"),
-                    get_translation("recruitment_attempts"),
-                    get_translation("combat_preparation")
-                ]
+    get_translation("criminal_record"),
+    [
+        get_translation("theft"),
+        get_translation("gender_violence"),
+        get_translation("homicide"),
+        get_translation("terrorism"),
+        get_translation("none_criminal"),
+        get_translation("social_isolation"),
+        get_translation("violence_justification"),
+        get_translation("extremist_fascination"),
+        get_translation("behavior_changes"),
+        get_translation("hate_expression"),
+        get_translation("radicalized_contact"),
+        get_translation("extremist_propaganda"),
+        get_translation("suspicious_online"),
+        get_translation("recruitment_attempts"),
+        get_translation("combat_preparation")
+    ]
+)
             
         with col2:
             personality_traits = st.multiselect(
