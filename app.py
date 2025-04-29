@@ -689,7 +689,7 @@ def main():
     with st.form(key="main_form"):
         col1, col2 = st.columns(2)
 
-    with col1:
+        with col1:
         name = st.text_input(get_translation("name"), key="name_input")
         id_number = st.text_input(get_translation("id_number"), key="id_input")
         age = st.number_input(get_translation("age"), 12, 100, 25, key="age_input")
@@ -743,7 +743,7 @@ def main():
             key="criminal_select"
         )
 
-    with col2:
+        with col2:
         personality_traits = st.multiselect(
             get_translation("personality_traits"),
             [
