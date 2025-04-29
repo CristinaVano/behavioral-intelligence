@@ -119,13 +119,13 @@ class ProfessionalPDF(FPDF):
         self.ln(10)
 
     def executive_summary(self, summary, photo=None):
-    self.set_font('DejaVu', 'B', 14)
-    self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
-    y_start = self.get_y()
-    self.set_font('DejaVu', '', 12)
+        self.set_font('DejaVu', 'B', 14)
+        self.cell(0, 10, get_translation("executive_summary"), 0, 1, 'L')
+        y_start = self.get_y()
+        self.set_font('DejaVu', '', 12)
     # El texto del resumen ocupa solo la parte izquierda (110mm de ancho)
-    self.multi_cell(110, 8, summary)
-    self.ln(5)
+        self.multi_cell(110, 8, summary)
+        self.ln(5)
     if photo is not None:
         try:
             img = Image.open(photo)
