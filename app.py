@@ -474,6 +474,9 @@ class ProfessionalPDF(FPDF):
         self.set_text_color(255, 128, 0)
     else:
         self.set_text_color(0, 128, 0)
+    
+    self.cell(0, 10, risk_level, 0, 1)
+    self.set_text_color(0, 0, 0)
 
     self.cell(0, 10, risk_level, 0, 1)
     self.set_text_color(0, 0, 0)
