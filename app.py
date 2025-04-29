@@ -528,7 +528,7 @@ class ProfessionalPDF(FPDF):
         self.set_font('DejaVu', 'B', 14)
         self.cell(60, 10, f"{get_translation('risk_level')}:", 0, 0)
         if risk_level == get_translation("risk_level"):
-            self.set_text_color(255, 0, 0)
+        self.set_text_color(255, 0, 0)
     elif risk_level == "MODERADO":
         self.set_text_color(255, 128, 0)
     else:
