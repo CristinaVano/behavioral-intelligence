@@ -488,7 +488,7 @@ class ProfessionalPDF(FPDF):
             get_translation("substances"): 60,
             get_translation("social_isolation"): 40
         }
-        self.set_font('DejaVu', '', 10)
+        self.set_font('Arial', '', 10)  # <- Corregido aquí
         for factor, value in risk_factors.items():
             bar = "█" * int(value/10)
             self.cell(60, 8, f"{factor}:", 0, 0)
