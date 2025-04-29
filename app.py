@@ -43,6 +43,7 @@ translations = {
         "gender_violence": "Violencia de género",
         "homicide": "Homicidio",
         "terrorism": "Terrorismo",
+        "none_criminal": "Ninguno",
         "social_isolation": "Aislamiento social progresivo",
         "violence_justification": "Justificación de la violencia",
         "extremist_fascination": "Fascinación por ideologías extremistas",
@@ -52,8 +53,7 @@ translations = {
         "extremist_propaganda": "Consumo de propaganda extremista",
         "suspicious_online": "Participación en actividades sospechosas online",
         "recruitment_attempts": "Intento de reclutamiento de otros",
-        "combat_preparation": "Preparación física para el combate"
-        "none_criminal": "Ninguno",
+        "combat_preparation": "Preparación física para el combate",
         "personality_traits": "Rasgos de personalidad",
         "paranoid": "Paranoide",
         "antisocial": "Antisocial",
