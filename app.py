@@ -530,8 +530,8 @@ class ProfessionalPDF(FPDF):
         if risk_level == get_translation("risk_level"):
             self.set_text_color(255, 0, 0)
         elif risk_level == "MODERADO":
-            self.set_text_color(255, 128, 0)
-        else:
+        self.set_text_color(255, 128, 0)
+    else:
         self.set_text_color(0, 128, 0)
         self.cell(0, 10, risk_level, 0, 1)
         self.set_text_color(0, 0, 0)
