@@ -93,7 +93,7 @@ def get_translation(key):
     if 'lang' not in st.session_state:
         st.session_state.lang = "Español"
     return translations[st.session_state.lang].get(key, key)
-
+    
 pdf.executive_summary(executive_summary, photo=uploaded_photo)
     def __init__(self, lang="Español"):
         super().__init__()
