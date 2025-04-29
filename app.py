@@ -767,7 +767,7 @@ def main():
             uploaded_photo = st.file_uploader(get_translation("upload_photo"), type=["jpg", "png"], key="photo_uploader")
 
         analyst = st.text_input(get_translation("analyst"), value=st.session_state.user, key="analyst_input")
-        submitted = st.form_submit_button(get_translation("submit"), key="submit_btn")
+        submitted = st.form_submit_button(get_translation("submit"))
 
     if submitted:
         executive_summary = get_translation("executive_summary")
