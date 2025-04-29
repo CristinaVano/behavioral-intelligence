@@ -1,5 +1,3 @@
-
-streamlit==1.44.1
-pandas==2.2.3
-fpdf==1.7.2
-Pillow==10.2.0
+scikit-learn==1.2.2  # Versión compatible con tu código
+pandas==2.0.3
+streamlit==1.29.0
