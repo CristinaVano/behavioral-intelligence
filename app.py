@@ -563,11 +563,11 @@ class ProfessionalPDF(FPDF):
         self.multi_cell(120, 10, str(value), 1, 'L', fill)
 
     def recommendations_section(self, recs):
-    self.add_page()
-    self.set_font('Arial', 'B', 16)
-    self.cell(0, 10, get_translation("recommendations"), 0, 1, 'C')
-    self.ln(5)
-    self.set_fill_color(220, 220, 220)
+       self.add_page()
+       self.set_font('Arial', 'B', 16)
+       self.cell(0, 10, get_translation("recommendations"), 0, 1, 'C')
+       self.ln(5)
+       self.set_fill_color(220, 220, 220)
     for i, (title, explanation) in enumerate(recs):
         fill = i % 2 == 0
         self.set_font('Arial', 'B', 12)
