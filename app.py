@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión con Títulos Dinámicos y Traducción Login ---
+# --- Versión con Fix para Idioma en Login ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -9,6 +9,7 @@ import shap
 import lime
 import lime.lime_tabular
 import numpy as np
+# import matplotlib.pyplot as plt # Comentado si no se usan gráficas en PDF
 import base64
 from datetime import datetime
 import os 
@@ -16,7 +17,7 @@ import traceback
 import re 
 
 # --- Configuración de la Página de Streamlit ---
-st.set_page_config(layout="wide", page_title="BIAS Platform") # Título para la pestaña del navegador
+st.set_page_config(layout="wide", page_title="BIAS Platform") 
 
 # --- Credenciales de Usuario (NO SEGURO PARA PRODUCCIÓN) ---
 USER_CREDENTIALS = {
@@ -25,29 +26,20 @@ USER_CREDENTIALS = {
     "Pau_bias": "coordinacionbias"
 }
 
-# --- Traducciones (Títulos App/Formulario y Roles) ---
+# --- Traducciones (Igual que antes) ---
 translations = {
     "es": {
-        "app_title": "BIAS", # Título Fijo
-        "login_title": "Acceso a la Plataforma",
-        "username": "Usuario", # Para el login
-        "password": "Contraseña", # Para el login
-        "login_button": "Iniciar Sesión",
+        "app_title": "BIAS", "login_title": "Acceso a la Plataforma",
+        "username": "Usuario", "password": "Contraseña", "login_button": "Iniciar Sesión",
         "logout_button": "Cerrar Sesión", "wrong_credentials": "Usuario o contraseña incorrectos.",
         "select_language": "Seleccionar Idioma", "language_en": "Inglés (English)", "language_es": "Español",
-        # "form_title": "Formulario de Evaluación de Sujeto", # Eliminado, será dinámico
         "user_id": "ID de Sujeto", "age": "Edad",
-        "income": "Ingresos Anuales (Opcional)", 
-        "education_level_new": "Nivel de Estudios",
-        "substance_use": "Consumo de Sustancias", 
-        "country_origin": "País de Origen", "city_origin": "Ciudad de Origen",
-        "criminal_record": "Antecedentes Penales", 
-        "personality_traits": "Rasgos de Personalidad", 
-        "previous_diagnoses": "Diagnósticos Previos", 
-        "reason_interest": "Motivo de Interés/Caso",
+        "income": "Ingresos Anuales (Opcional)", "education_level_new": "Nivel de Estudios",
+        "substance_use": "Consumo de Sustancias", "country_origin": "País de Origen", "city_origin": "Ciudad de Origen",
+        "criminal_record": "Antecedentes Penales", "personality_traits": "Rasgos de Personalidad",
+        "previous_diagnoses": "Diagnósticos Previos", "reason_interest": "Motivo de Interés/Caso",
         "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", 
-        "psychological_profile_notes": "Perfil Psicológico (Notas)", 
-        "clinical_history_summary": "Historial Clínico (Resumen)", 
+        "psychological_profile_notes": "Perfil Psicológico (Notas)", "clinical_history_summary": "Historial Clínico (Resumen)", 
         "section_reason_interest": "Motivo de Interés / Contexto del Caso",
         "section_family_history": "Antecedentes Familiares Relevantes",
         "section_psychological_profile": "Notas sobre el Perfil Psicológico",
@@ -55,13 +47,13 @@ translations = {
         "section_detailed_recommendations": "Recomendaciones Detalladas (Intervención)",
         "section_risk_projection": "Proyección de Riesgo Estimada (Sin Intervención)",
         "projection_period": "Periodo", "projection_estimated_risk": "Riesgo Estimado",
-        "projection_disclaimer": "Nota: Proyección simplificada basada en riesgo y confianza actual. No es predicción formal.", # Acortado
+        "projection_disclaimer": "Nota: Proyección simplificada basada en riesgo y confianza actual. No es predicción formal.", 
         "months": "Meses",
-        "studies_none": "Ninguno", "studies_primary": "Primaria", # ... resto de opciones ...
-        "substance_none": "Ninguno", "substance_alcohol": "Alcohol", # ... resto de opciones ...
-        "crime_none": "Ninguno", "crime_theft": "Robo/Hurto", # ... resto de opciones ...
-        "trait_responsible": "Responsable", "trait_impulsive": "Impulsivo", # ... resto de opciones ...
-        "diag_none": "Ninguno", "diag_depression": "Depresión", # ... resto de opciones ...
+        "studies_none": "Ninguno", "studies_primary": "Primaria", "studies_secondary": "Secundaria", "studies_vocational": "FP", "studies_bachelor": "Grado", "studies_master": "Máster", "studies_phd": "Doctorado", "studies_other": "Otro",
+        "substance_none": "Ninguno", "substance_alcohol": "Alcohol", "substance_cannabis": "Cannabis", "substance_cocaine": "Cocaína", "substance_amphetamines": "Anfetaminas", "substance_opiates": "Opiáceos", "substance_benzodiazepines": "Benzodiacepinas", "substance_hallucinogens": "Alucinógenos", "substance_tobacco": "Tabaco", "substance_new_psychoactive": "NSP", "substance_other": "Otra",
+        "crime_none": "Ninguno", "crime_theft": "Robo/Hurto", "crime_assault": "Lesiones", "crime_drug_trafficking": "Tráfico Drogas", "crime_fraud": "Fraude", "crime_public_order": "Desórden Público", "crime_domestic_violence": "Violencia Domést.", "crime_terrorism_related": "Rel. Terrorismo", "crime_cybercrime": "Ciberdelincuencia", "crime_homicide": "Homicidio", "crime_other": "Otro",
+        "trait_responsible": "Responsable", "trait_impulsive": "Impulsivo", "trait_introverted": "Introvertido", "trait_extroverted": "Extrovertido", "trait_anxious": "Ansioso", "trait_aggressive": "Agresivo", "trait_empathetic": "Empático", "trait_narcissistic": "Narcisista", "trait_conscientious": "Concienzudo", "trait_open_experience": "Abierto Exper.", "trait_neurotic": "Neurótico", "trait_agreeable": "Amable", "trait_psychoticism": "Psicoticismo", "trait_manipulative": "Manipulador", "trait_other": "Otro",
+        "diag_none": "Ninguno", "diag_depression": "Depresión", "diag_anxiety": "Ansiedad", "diag_bipolar": "Bipolar", "diag_schizophrenia": "Esquizofrenia", "diag_ptsd": "TEPT", "diag_personality_disorder": "Trast. Personalidad", "diag_adhd": "TDAH", "diag_substance_use_disorder": "Trast. Uso Sust.", "diag_eating_disorder": "Trast. Alimentario", "diag_other": "Otro",
         "yes": "Sí", "no": "No", "submit": "Evaluar y Generar Informes",
         "download_report": "Descargar Informe PDF", "error_processing": "Error procesando datos:", 
         "report_generated": "Informe generado.", "prediction": "Predicción Riesgo", "confidence": "Confianza", 
@@ -77,33 +69,21 @@ translations = {
         "xai_skipped_warning": "XAI omitido (modelo/datos no disponibles).", 
         "error_prediction": "Error predicción:", "error_xai": "Error XAI:", "error_pdf": "Error PDF:", 
         "input_user_id_warning": "Ingrese ID Sujeto.",
-        # --- Roles para título de formulario ---
-        "role_direccion": "Formulario Dirección",
-        "role_coordinacion": "Formulario Coordinación",
-        "role_invitado": "Formulario Invitado",
-        "form_default_title": "Formulario de Evaluación", # Título por si acaso
+        "role_direccion": "Formulario Dirección", "role_coordinacion": "Formulario Coordinación",
+        "role_invitado": "Formulario Invitado", "form_default_title": "Formulario de Evaluación", 
     },
     "en": { 
-        "app_title": "BIAS", # Título Fijo
-        "login_title": "Platform Access",
-        "username": "Username", # Para el login
-        "password": "Password", # Para el login
-        "login_button": "Login",
+        "app_title": "BIAS", "login_title": "Platform Access",
+        "username": "Username", "password": "Password", "login_button": "Login",
         "logout_button": "Logout", "wrong_credentials": "Incorrect username or password.",
         "select_language": "Select Language", "language_en": "English", "language_es": "Spanish (Español)",
-        # "form_title": "Subject Evaluation Form", # Eliminado
         "user_id": "Subject ID", "age": "Age",
-        "income": "Annual Income (Optional)", 
-        "education_level_new": "Education Level",
-        "substance_use": "Substance Use", 
-        "country_origin": "Country of Origin", "city_origin": "City of Origin",
-        "criminal_record": "Criminal Record", 
-        "personality_traits": "Personality Traits", 
-        "previous_diagnoses": "Previous Diagnoses", 
-        "reason_interest": "Reason for Interest/Case",
+        "income": "Annual Income (Optional)", "education_level_new": "Education Level",
+        "substance_use": "Substance Use", "country_origin": "Country of Origin", "city_origin": "City of Origin",
+        "criminal_record": "Criminal Record", "personality_traits": "Personality Traits",
+        "previous_diagnoses": "Previous Diagnoses", "reason_interest": "Reason for Interest/Case",
         "family_terrorism_history": "Family History Terrorism/Extremism",
-        "psychological_profile_notes": "Psychological Profile (Notes)", 
-        "clinical_history_summary": "Clinical History (Summary)", 
+        "psychological_profile_notes": "Psychological Profile (Notes)", "clinical_history_summary": "Clinical History (Summary)", 
         "section_reason_interest": "Reason for Interest / Case Context",
         "section_family_history": "Relevant Family History",
         "section_psychological_profile": "Notes on Psychological Profile",
@@ -111,13 +91,13 @@ translations = {
         "section_detailed_recommendations": "Detailed Recommendations (Intervention)",
         "section_risk_projection": "Estimated Risk Projection (Without Intervention)",
         "projection_period": "Period", "projection_estimated_risk": "Estimated Risk",
-        "projection_disclaimer": "Note: Simplified projection based on current risk/confidence. Not a formal prediction.", # Shortened
+        "projection_disclaimer": "Note: Simplified projection based on current risk/confidence. Not a formal prediction.", 
         "months": "Months",
-        "studies_none": "None", "studies_primary": "Primary", # ... resto de opciones ...
-        "substance_none": "None", "substance_alcohol": "Alcohol", # ... resto de opciones ...
-        "crime_none": "None", "crime_theft": "Theft", # ... resto de opciones ...
-        "trait_responsible": "Responsible", "trait_impulsive": "Impulsive", # ... resto de opciones ...
-        "diag_none": "None", "diag_depression": "Depression", # ... resto de opciones ...
+        "studies_none": "None", "studies_primary": "Primary", "studies_secondary": "Secondary", "studies_vocational": "Vocational", "studies_bachelor": "Bachelor's", "studies_master": "Master's", "studies_phd": "PhD", "studies_other": "Other",
+        "substance_none": "None", "substance_alcohol": "Alcohol", "substance_cannabis": "Cannabis", "substance_cocaine": "Cocaine", "substance_amphetamines": "Amphetamines", "substance_opiates": "Opiates", "substance_benzodiazepines": "Benzodiazepines", "substance_hallucinogens": "Hallucinogens", "substance_tobacco": "Tobacco", "substance_new_psychoactive": "NPS", "substance_other": "Other",
+        "crime_none": "None", "crime_theft": "Theft", "crime_assault": "Assault", "crime_drug_trafficking": "Drug Trafficking", "crime_fraud": "Fraud", "crime_public_order": "Public Order", "crime_domestic_violence": "Domestic Viol.", "crime_terrorism_related": "Terrorism Rel.", "crime_cybercrime": "Cybercrime", "crime_homicide": "Homicide", "crime_other": "Other",
+        "trait_responsible": "Responsible", "trait_impulsive": "Impulsive", "trait_introverted": "Introverted", "trait_extroverted": "Extroverted", "trait_anxious": "Anxious", "trait_aggressive": "Aggressive", "trait_empathetic": "Empathetic", "trait_narcissistic": "Narcissistic", "trait_conscientious": "Conscientious", "trait_open_experience": "Open to Exp.", "trait_neurotic": "Neurotic", "trait_agreeable": "Agreeable", "trait_psychoticism": "Psychoticism", "trait_manipulative": "Manipulative", "trait_other": "Other",
+        "diag_none": "None", "diag_depression": "Depression", "diag_anxiety": "Anxiety", "diag_bipolar": "Bipolar", "diag_schizophrenia": "Schizophrenia", "diag_ptsd": "PTSD", "diag_personality_disorder": "Personality Dis.", "diag_adhd": "ADHD", "diag_substance_use_disorder": "Substance Use Dis.", "diag_eating_disorder": "Eating Dis.", "diag_other": "Other",
         "yes": "Yes", "no": "No", "submit": "Evaluate & Generate Reports",
         "download_report": "Download PDF Report", "error_processing": "Error processing data:",
         "report_generated": "Report generated.", "prediction": "Risk Prediction", "confidence": "Confidence",
@@ -132,11 +112,8 @@ translations = {
         "xai_skipped_warning": "XAI skipped (model/data unavailable).",
         "error_prediction": "Prediction error:", "error_xai": "XAI error:", "error_pdf": "PDF error:",
         "input_user_id_warning": "Enter Subject ID.",
-        # --- Roles para título de formulario ---
-        "role_direccion": "Management Form",
-        "role_coordinacion": "Coordination Form",
-        "role_invitado": "Guest Form",
-        "form_default_title": "Evaluation Form", 
+        "role_direccion": "Management Form", "role_coordinacion": "Coordination Form",
+        "role_invitado": "Guest Form", "form_default_title": "Evaluation Form", 
     }
 }
 
@@ -150,17 +127,30 @@ def get_translation(key):
     return translations.get(st.session_state.lang, translations.get("es", {})).get(key, key.replace("_", " ").title())
 
 
-# --- Login y Selección de Idioma ---
-if not st.session_state.logged_in:
-    language_options_map = {"es": get_translation("language_es"), "en": get_translation("language_en")}
-    selected_lang_key = st.radio(get_translation("select_language"), list(language_options_map.keys()),
-                                 format_func=lambda x: language_options_map[x], key="lang_sel_main", horizontal=True)
+# --- Selección de Idioma (AHORA FUERA DEL BLOQUE if not logged_in) ---
+# Esto asegura que el idioma se procese en cada rerun ANTES de renderizar otros elementos
+language_options_map = {"es": get_translation("language_es"), "en": get_translation("language_en")}
+
+# Usar columnas para poner el selector de idioma arriba a la derecha (opcional)
+col_main, col_lang = st.columns([0.8, 0.2]) 
+with col_lang:
+    selected_lang_key = st.radio(
+        get_translation("select_language"), 
+        list(language_options_map.keys()),
+        format_func=lambda x: language_options_map[x], 
+        key="lang_sel_main", 
+        horizontal=True,
+        label_visibility="collapsed" # Ocultar la etiqueta "Seleccionar Idioma" si se desea
+    )
     if selected_lang_key != st.session_state.lang:
         st.session_state.lang = selected_lang_key
-        st.rerun() 
+        st.rerun() # Rerun inmediato para aplicar el idioma
+
+# --- Login ---
+if not st.session_state.logged_in:
     st.title(get_translation("login_title"))
     with st.form("login_form"):
-        # Usar get_translation para etiquetas de login
+        # Asegurarse que aquí SÍ usa get_translation con el idioma ya actualizado
         username_input = st.text_input(get_translation("username")) 
         password_input = st.text_input(get_translation("password"), type="password") 
         if st.form_submit_button(get_translation("login_button")):
@@ -168,15 +158,22 @@ if not st.session_state.logged_in:
                 st.session_state.logged_in = True
                 st.session_state.username = username_input
                 st.rerun() 
-            else: st.error(get_translation("wrong_credentials"))
-    st.stop()
+            else: 
+                st.error(get_translation("wrong_credentials"))
+    st.stop() # Detener si no está logueado
 
-# --- App Principal ---
-st.sidebar.title(get_translation("app_title")) # Usa la nueva traducción fija
+# --- App Principal (Contenido después del login) ---
+# El título de la app se pone en el sidebar
+st.sidebar.title(get_translation("app_title")) 
 st.sidebar.subheader(f"{get_translation('username')}: {st.session_state.username}")
 if st.sidebar.button(get_translation("logout_button")):
     st.session_state.logged_in = False; st.session_state.username = ""
     st.rerun() 
+
+# --- Modelo y Features ---
+# (El código del modelo, datos, clase PDF y lógica de la app principal sigue aquí...)
+# COPIA TODO DESDE ESTA LÍNEA HACIA ABAJO DE LA VERSIÓN ANTERIOR COMPLETA
+# (Asegúrate de incluir la clase ProfessionalPDF COMPLETA y toda la lógica restante)
 
 # --- Modelo y Features (Actualizado para counts de multi-select) ---
 NEW_FEATURE_NAMES = [ 
@@ -223,6 +220,7 @@ def train_new_model(df_train):
     model = RandomForestClassifier(random_state=42, class_weight='balanced', n_estimators=50, max_depth=10)
     try:
         model.fit(X, y)
+        # model.feature_names_in_ = features_present # Descomentar para sklearn >= 1.0
         return model, X
     except Exception as e:
         st.error(f"Error al entrenar modelo: {e}")
@@ -234,7 +232,6 @@ if trained_model_new is None and st.session_state.logged_in:
     st.warning(get_translation("model_not_trained_warning"))
 
 # --- Clase PDF Profesional con Helvetica (Simplificada) ---
-# (La clase PDF es idéntica a la versión anterior, no necesita cambios aquí)
 class ProfessionalPDF(FPDF):
     PDF_FONT_FAMILY = 'Helvetica' 
 
@@ -247,6 +244,7 @@ class ProfessionalPDF(FPDF):
     def header(self):
         if self.page_no() == 1: return 
         self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
+        # Usar app_title aquí también
         self.cell(0, 10, get_translation("app_title"), 0, 0, 'C') 
         self.ln(10)
         self.set_font(self.PDF_FONT_FAMILY, '', 8)
@@ -330,7 +328,7 @@ class ProfessionalPDF(FPDF):
             self.multi_cell(value_width, 7, field_value, border=0, align='L', fill=fill, new_x=XPos.LMARGIN, new_y=YPos.NEXT, max_line_height=self.font_size)
             
             end_y_value = self.get_y()
-            self.set_y(max(start_y + 7, end_y_label, end_y_value)) # Asegura bajar al menos una línea
+            self.set_y(max(start_y + 7, end_y_label, end_y_value)) 
 
         self.ln(5) 
 
@@ -415,11 +413,12 @@ class ProfessionalPDF(FPDF):
             self.cell(col_width_risk, 7, str(risk), border=1, align='C', fill=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.ln(5)
 
-    def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df): # Sigue vacía
+    # --- MÉTODO XAI VACÍO ---
+    def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
         """Sección de explicaciones XAI omitida."""
         pass 
 
-    def generate_full_report(self, report_data, recommendations, detailed_recommendations, risk_projection, lime_expl, shap_vals, x_instance_df): # Argumentos XAI se reciben pero no se usan
+    def generate_full_report(self, report_data, recommendations, detailed_recommendations, risk_projection, lime_expl, shap_vals, x_instance_df): 
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.reason_interest_section(report_data)
@@ -429,7 +428,7 @@ class ProfessionalPDF(FPDF):
         self.recommendations_section(recommendations) 
         self.detailed_recommendations_section(detailed_recommendations) 
         self.risk_projection_table_section(risk_projection)
-        # La llamada a XAI sigue comentada / el método está vacío
+        # --- LLAMADA A SECCIÓN XAI SIGUE COMENTADA ---
         # if lime_expl or (shap_vals is not None): 
         #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
@@ -438,12 +437,12 @@ class ProfessionalPDF(FPDF):
 # --- Lógica App Streamlit ---
 # --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
 THERAPY_RECOMMENDATIONS = { # Mismo diccionario que antes
-    "diag_depression": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "..." }, {"type": "Medicación", "name": "ISRS...", "explanation": "..." }],
-    "diag_anxiety": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "..."},{"type": "Terapia", "name": "Terapia de Aceptación y Compromiso (ACT)","explanation": "..."},{"type": "Medicación", "name": "ISRS / IRSN / Benzodiacepinas", "explanation": "..."}],
-    "diag_ptsd": [{"type": "Terapia", "name": "EMDR...", "explanation": "..."},{"type": "Terapia", "name": "Terapia de Exposición Prolongada (TEP)","explanation": "..."},{"type": "Medicación", "name": "ISRS (Sertralina, Paroxetina)","explanation": "..."}],
-    "diag_substance_use_disorder": [{"type": "Terapia", "name": "Entrevista Motivacional", "explanation": "..."},{"type": "Terapia", "name": "Terapia Grupal / Grupos de Apoyo (ej. AA/NA)","explanation": "..."},{"type": "Medicación", "name": "Tratamiento Asistido por Medicación (TAM/MAT)","explanation": "..."}],
-    "diag_personality_disorder": [{"type": "Terapia", "name": "Terapia Dialéctico-Conductual (TDC)","explanation": "..."},{"type": "Terapia", "name": "Terapia Basada en la Mentalización (MBT)","explanation": "..."},{"type": "Terapia", "name": "Terapia de Esquemas","explanation": "..."}],
-    "diag_schizophrenia": [{"type": "Medicación", "name": "Antipsicóticos","explanation": "..."},{"type": "Terapia", "name": "Terapia Cognitivo-Conductual para Psicosis (TCCp)","explanation": "..."},{"type": "Intervención", "name": "Apoyo Psicosocial y Familiar","explanation": "..."}],
+    "diag_depression": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "La TCC ayuda a identificar y modificar patrones de pensamiento y comportamiento negativos asociados a la depresión. Se centra en el presente y en la resolución de problemas. Sesiones semanales suelen ser efectivas, enfocándose en la reestructuración cognitiva y la activación conductual." }, {"type": "Medicación", "name": "ISRS (Inhibidores Selectivos de la Recaptación de Serotonina)", "explanation": "Fármacos como Fluoxetina, Sertralina o Escitalopram son comúnmente prescritos. Aumentan los niveles de serotonina en el cerebro. Requieren evaluación médica para dosis y seguimiento de efectos secundarios. Su efecto completo puede tardar varias semanas." }],
+    "diag_anxiety": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "Eficaz para diversos trastornos de ansiedad (TAG, pánico, fobias). Incluye técnicas de exposición gradual, reestructuración cognitiva para manejar preocupaciones y miedos irracionales, y entrenamiento en relajación."},{"type": "Terapia", "name": "Terapia de Aceptación y Compromiso (ACT)","explanation": "Enfocada en aceptar pensamientos y sensaciones difíciles sin luchar contra ellos, y comprometerse con acciones alineadas a los valores personales, incluso en presencia de ansiedad."},{"type": "Medicación", "name": "ISRS / IRSN / Benzodiacepinas", "explanation": "Los ISRS o IRSN suelen ser la primera línea farmacológica a largo plazo. Las Benzodiacepinas (ej. Diazepam, Lorazepam) pueden usarse puntualmente para alivio rápido pero con riesgo de dependencia. Requiere prescripción y supervisión médica estricta."}],
+    "diag_ptsd": [{"type": "Terapia", "name": "EMDR (Desensibilización y Reprocesamiento por Movimientos Oculares)", "explanation": "Terapia especializada para procesar recuerdos traumáticos. Utiliza estimulación bilateral (movimientos oculares, sonidos o toques) para ayudar al cerebro a integrar la experiencia traumática de forma adaptativa."},{"type": "Terapia", "name": "Terapia de Exposición Prolongada (TEP)","explanation": "Consiste en enfrentar gradualmente los recuerdos y situaciones temidas relacionadas con el trauma en un entorno seguro, ayudando a reducir la evitación y la intensidad emocional asociada."},{"type": "Medicación", "name": "ISRS (Sertralina, Paroxetina)","explanation": "Aprobados específicamente para TEPT, pueden ayudar a manejar síntomas de ansiedad, depresión e intrusión. La Prazosina se usa a veces para pesadillas. Requiere evaluación médica."}],
+    "diag_substance_use_disorder": [{"type": "Terapia", "name": "Entrevista Motivacional", "explanation": "Enfoque centrado en el cliente para explorar y resolver la ambivalencia hacia el cambio. Ayuda a aumentar la motivación interna para reducir o detener el consumo."},{"type": "Terapia", "name": "Terapia Grupal / Grupos de Apoyo (ej. AA/NA)","explanation": "Proporciona apoyo entre pares, reduce el aislamiento y ofrece estrategias compartidas para mantener la sobriedad. La asistencia regular es clave."},{"type": "Medicación", "name": "Tratamiento Asistido por Medicación (TAM/MAT)","explanation": "Dependiendo de la sustancia (ej. Naltrexona para alcohol/opiáceos, Buprenorfina/Metadona para opiáceos, Acamprosato para alcohol). Reduce el 'craving' y los síntomas de abstinencia. Requiere un programa médico especializado."}],
+    "diag_personality_disorder": [{"type": "Terapia", "name": "Terapia Dialéctico-Conductual (TDC)","explanation": "Originalmente para TLP, útil para desregulación emocional intensa, conductas autolesivas e impulsividad. Se enfoca en mindfulness, tolerancia al malestar, regulación emocional y efectividad interpersonal."},{"type": "Terapia", "name": "Terapia Basada en la Mentalización (MBT)","explanation": "Ayuda a los individuos a comprender sus propios estados mentales y los de los demás, mejorando las relaciones interpersonales y la comprensión de las reacciones emocionales."},{"type": "Terapia", "name": "Terapia de Esquemas","explanation": "Identifica y modifica esquemas maladaptativos tempranos (patrones de pensamiento y emoción profundamente arraigados) que se originan en la infancia y causan problemas en la vida adulta."}],
+    "diag_schizophrenia": [{"type": "Medicación", "name": "Antipsicóticos","explanation": "Piedra angular del tratamiento (ej. Risperidona, Olanzapina, Aripiprazol, Clozapina para casos resistentes). Controlan síntomas positivos (delirios, alucinaciones) y ayudan con los negativos/cognitivos. Es crucial la adherencia y monitorización médica."},{"type": "Terapia", "name": "Terapia Cognitivo-Conductual para Psicosis (TCCp)","explanation": "Ayuda a entender y manejar los síntomas psicóticos, reducir el malestar asociado y mejorar el funcionamiento social."},{"type": "Intervención", "name": "Apoyo Psicosocial y Familiar","explanation": "Incluye psicoeducación familiar, entrenamiento en habilidades sociales, apoyo laboral/educativo y manejo del estrés para mejorar la calidad de vida y prevenir recaídas."}],
 }
 
 def predict_risk_level(df_input, model, feature_list): 
@@ -513,7 +512,6 @@ def generate_risk_projection(prediction_label, confidence, class_names):
          for t in time_points_months: projections[f"{t} {months_str}"] = prediction_label 
     return list(projections.items())
 
-
 st.title(get_translation("app_title")) # Título principal
 
 def get_options_dict(prefix, keys):
@@ -543,7 +541,7 @@ diagnosis_numeric_map = create_numeric_map(diagnosis_options.keys())
 # --- Fin Definiciones ---
 
 # --- Determinar Título del Formulario ---
-user_role_title_key = "form_default_title" # Título por defecto
+user_role_title_key = "form_default_title" 
 if st.session_state.username in ["JuanCarlos_bias", "Cristina_bias"]:
     user_role_title_key = "role_direccion"
 elif st.session_state.username in ["Teresa_bias", "Pau_bias"]:
@@ -554,7 +552,7 @@ form_display_title = get_translation(user_role_title_key)
 
 
 with st.form(key="evaluation_form_final"):
-    st.header(form_display_title) # Usar el título dinámico
+    st.header(form_display_title) 
     col1, col2 = st.columns(2)
     with col1:
         st.markdown(f"#### {get_translation('Información Básica y Contexto')}")
@@ -584,22 +582,38 @@ if submit_button_final:
         "age": float(age_form), 
         "income": float(income_form), 
         "education_level_numeric": float(education_numeric_map.get(education_key_selected, 0)), 
-        "substance_use_count": float(len(substance_keys_selected)), 
-        "criminal_record_count": float(len(crime_keys_selected)),
-        "personality_traits_count": float(len(trait_keys_selected)),
-        "previous_diagnoses_count": float(len(diag_keys_selected)),
+        "substance_use_count": float(len([k for k in substance_keys_selected if k != "substance_none"])), # No contar 'none'
+        "criminal_record_count": float(len([k for k in crime_keys_selected if k != "crime_none"])), # No contar 'none'
+        "personality_traits_count": float(len([k for k in trait_keys_selected if k != "trait_other"])), # No contar 'other' como rasgo específico
+        "previous_diagnoses_count": float(len([k for k in diag_keys_selected if k != "diag_none"])), # No contar 'none'
     }
     
     def format_multiselect_output(selected_keys, options_dict, none_key_prefix):
         none_key = f"{none_key_prefix}_none"
-        if not selected_keys: return get_translation(none_key) if none_key in options_dict else "N/A"
+        # Considerar también other_key si existe y debe filtrarse
+        other_key = f"{none_key_prefix}_other" 
         
-        if len(selected_keys) == 1 and selected_keys[0] == none_key: 
+        if not selected_keys or (len(selected_keys) == 1 and selected_keys[0] == none_key): 
             return options_dict.get(none_key, "N/A") 
         
-        filtered_keys = [key for key in selected_keys if key != none_key]
+        # Filtrar 'none' y 'other' si hay otras selecciones
+        keys_to_filter = [none_key]
+        if other_key in options_dict: keys_to_filter.append(other_key)
+        
+        filtered_keys = [key for key in selected_keys if key not in keys_to_filter]
+        
+        # Si después de filtrar no queda nada, pero se seleccionó 'other', mostrar 'other'
+        if not filtered_keys and other_key in selected_keys:
+             return options_dict.get(other_key, "Other")
+        # Si no queda nada y tampoco se seleccionó 'other', pero sí 'none', mostrar 'none'
+        elif not filtered_keys and none_key in selected_keys:
+             return options_dict.get(none_key, "N/A")
+        # Si no queda nada y no se seleccionó ni 'none' ni 'other' (caso raro)
+        elif not filtered_keys:
+             return "N/A" # O un texto indicando selección múltiple sin especificar
+
         labels = [options_dict.get(key, key) for key in filtered_keys]
-        return ", ".join(labels) if labels else options_dict.get(none_key, "N/A") # Devolver None si no queda nada? o N/A?
+        return ", ".join(labels)
 
     report_data_payload = {
         "user_id": subject_id_generated, "age": age_form, "income": income_form,
@@ -618,11 +632,7 @@ if submit_button_final:
     
     # --- Predicción ---
     try:
-        # Crear DataFrame asegurando el orden y tipo de columnas para el modelo
-        df_for_prediction = pd.DataFrame(columns=NEW_FEATURE_NAMES) 
-        df_for_prediction.loc[0] = form_data_for_model_dict # Llenar la primera fila
-        df_for_prediction = df_for_prediction.astype(float) # Asegurar tipo float
-        
+        df_for_prediction = pd.DataFrame([form_data_for_model_dict], columns=NEW_FEATURE_NAMES)
         prediction, confidence = predict_risk_level(df_for_prediction, trained_model_new, NEW_FEATURE_NAMES) 
     except KeyError as e:
          st.error(f"Error: Falta la columna '{e}' para predicción.")
@@ -655,7 +665,7 @@ if submit_button_final:
     
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
-            X_test_df_global_new_ordered = X_test_df_global_new[NEW_FEATURE_NAMES] # Asegurar orden
+            X_test_df_global_new_ordered = X_test_df_global_new[NEW_FEATURE_NAMES]
             lime_explainer = lime.lime_tabular.LimeTabularExplainer(
                 X_test_df_global_new_ordered.values, 
                 feature_names=NEW_FEATURE_NAMES,
@@ -691,7 +701,7 @@ if submit_button_final:
             report_data_payload, 
             general_recommendations_list, 
             detailed_recommendations_list, 
-            risk_projection_list, # Pasar proyección
+            risk_projection_list, # Pasar la proyección
             lime_expl_obj, 
             shap_vals_pred_class, 
             instance_df_for_xai 
