@@ -10,7 +10,7 @@ import numpy as np
 # import matplotlib.pyplot as plt # Comentado si no se usan gráficas en PDF
 import base64
 from datetime import datetime
-import os # Aunque ya no cargaremos fuentes, es buena práctica mantenerlo si se usa en otro lado
+import os 
 import traceback
 
 # --- Configuración de la Página de Streamlit ---
@@ -31,15 +31,15 @@ translations = {
         "logout_button": "Cerrar Sesión", "wrong_credentials": "Usuario o contraseña incorrectos.",
         "select_language": "Seleccionar Idioma", "language_en": "Inglés (English)", "language_es": "Español",
         "form_title": "Formulario de Evaluación de Sujeto", "user_id": "ID de Sujeto", "age": "Edad",
-        "income": "Ingresos Anuales (Opcional)", # MODIFICADO AQUÍ - SIN SÍMBOLO €
+        "income": "Ingresos Anuales (Opcional)", 
         "education_level_new": "Nivel de Estudios",
         "substance_use": "Consumo de Sustancias", "country_origin": "País de Origen", "city_origin": "Ciudad de Origen",
         "criminal_record": "Antecedentes Penales", "personality_traits": "Rasgos de Personalidad",
         "previous_diagnoses": "Diagnósticos Previos", "reason_interest": "Motivo de Interés/Caso",
-        "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", # Acortado para evitar problemas de ancho
+        "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", 
         "psychological_profile_notes": "Perfil Psicológico", "clinical_history_summary": "Historial Clínico",
         "studies_none": "Ninguno", "studies_primary": "Primaria", "studies_secondary": "Secundaria",
-        "studies_vocational": "FP", "studies_bachelor": "Grado", "studies_master": "Máster", # Acortados
+        "studies_vocational": "FP", "studies_bachelor": "Grado", "studies_master": "Máster", 
         "studies_phd": "Doctorado", "studies_other": "Otro",
         "substance_none": "Ninguno", "substance_alcohol": "Alcohol", "substance_cannabis": "Cannabis", "substance_cocaine": "Cocaína",
         "substance_amphetamines": "Anfetaminas", "substance_opiates": "Opiáceos", "substance_benzodiazepines": "Benzodiacepinas",
@@ -58,26 +58,26 @@ translations = {
         "diag_personality_disorder": "Trast. Personalidad", "diag_adhd": "TDAH",
         "diag_substance_use_disorder": "Trast. Uso Sust.", "diag_eating_disorder": "Trast. Alimentario", "diag_other": "Otro",
         "yes": "Sí", "no": "No", "submit": "Evaluar y Generar Informes",
-        "download_report": "Descargar Informe PDF", "error_processing": "Error procesando datos:", # Acortado
-        "report_generated": "Informe generado.", "prediction": "Predicción Riesgo", "confidence": "Confianza", # Acortado
-        "recommendations": "Recomendaciones", "data_summary": "Resumen Datos Sujeto", # Acortado
-        "cover_page_title": "Informe Confidencial Inteligencia Conductual", # Acortado
-        "subject_id_pdf": "ID Sujeto (Informe)", # Acortado
-        "report_date": "Fecha Informe", "lime_report_title": "Informe LIME", "shap_report_title": "Informe SHAP", # Acortado
-        "xai_explanations_title": "Explicaciones IA (LIME & SHAP)", "risk_level_low": "Bajo", # Acortado
+        "download_report": "Descargar Informe PDF", "error_processing": "Error procesando datos:", 
+        "report_generated": "Informe generado.", "prediction": "Predicción Riesgo", "confidence": "Confianza", 
+        "recommendations": "Recomendaciones", "data_summary": "Resumen Datos Sujeto", 
+        "cover_page_title": "Informe Confidencial Inteligencia Conductual", 
+        "subject_id_pdf": "ID Sujeto (Informe)", 
+        "report_date": "Fecha Informe", "lime_report_title": "Informe LIME", "shap_report_title": "Informe SHAP", 
+        "xai_explanations_title": "Explicaciones IA (LIME & SHAP)", "risk_level_low": "Bajo", 
         "risk_level_medium": "Medio", "risk_level_high": "Alto", "page": "Página", "confidential_footer": "CONFIDENCIAL",
-        "model_not_trained_warning": "Advertencia: Modelo no entrenado. Usando datos placeholder.", # Acortado
-        "xai_skipped_warning": "XAI omitido (modelo/datos no disponibles).", # Acortado
-        "error_prediction": "Error predicción:", "error_xai": "Error XAI:", "error_pdf": "Error PDF:", # Acortado
-        "input_user_id_warning": "Ingrese ID Sujeto.", # Acortado
+        "model_not_trained_warning": "Advertencia: Modelo no entrenado. Usando datos placeholder.", 
+        "xai_skipped_warning": "XAI omitido (modelo/datos no disponibles).", 
+        "error_prediction": "Error predicción:", "error_xai": "Error XAI:", "error_pdf": "Error PDF:", 
+        "input_user_id_warning": "Ingrese ID Sujeto.", 
     },
-    "en": { # Traducciones al inglés (también sin € y algunas acortadas para consistencia)
+    "en": { 
         "app_title": "Behavioral Intelligence Platform", "login_title": "Platform Access",
         "username": "Username", "password": "Password", "login_button": "Login",
         "logout_button": "Logout", "wrong_credentials": "Incorrect username or password.",
         "select_language": "Select Language", "language_en": "English", "language_es": "Spanish (Español)",
         "form_title": "Subject Evaluation Form", "user_id": "Subject ID", "age": "Age",
-        "income": "Annual Income (Optional)", # MODIFICADO AQUÍ - SIN SÍMBOLO €
+        "income": "Annual Income (Optional)", 
         "education_level_new": "Education Level",
         "substance_use": "Substance Use", "country_origin": "Country of Origin", "city_origin": "City of Origin",
         "criminal_record": "Criminal Record", "personality_traits": "Personality Traits",
@@ -117,10 +117,6 @@ translations = {
         "input_user_id_warning": "Enter Subject ID.",
     }
 }
-
-# --- El resto del código (Estado de Sesión, Login, Modelo, Clase PDF, UI) ---
-# --- COPIA EL RESTO DEL CÓDIGO DE LA RESPUESTA ANTERIOR (LA MÁS COMPLETA) ---
-# --- Y SÓLO REEMPLAZA LA CLASE ProfessionalPDF CON LA SIGUIENTE VERSIÓN ---
 
 # --- Estado de Sesión ---
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
@@ -203,20 +199,13 @@ if trained_model_new is None and st.session_state.logged_in:
 
 # --- Clase PDF Profesional con Helvetica (Simplificada) ---
 class ProfessionalPDF(FPDF):
-    PDF_FONT_FAMILY = 'Helvetica' # Usar Helvetica como base
+    PDF_FONT_FAMILY = 'Helvetica' 
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_auto_page_break(auto=True, margin=15)
-        # No es necesario llamar a add_font para las fuentes base como Helvetica
-        self.set_font(self.PDF_FONT_FAMILY, "", 12) # Establecer Helvetica por defecto
+        self.set_font(self.PDF_FONT_FAMILY, "", 12) 
         self.alias_nb_pages()
-
-    # Los métodos header, footer, chapter_title, chapter_body, cover_page,
-    # create_data_summary_section, recommendations_section, xai_explanations_section,
-    # y generate_full_report deben usar self.set_font(self.PDF_FONT_FAMILY, ...)
-    # como ya estaban haciendo en la versión anterior que usaba Helvetica.
-    # NO es necesario un método setup_unicode_fonts ni get_current_font_family.
 
     def header(self):
         if self.page_no() == 1: return 
@@ -247,7 +236,6 @@ class ProfessionalPDF(FPDF):
 
     def chapter_body(self, body_text):
         self.set_font(self.PDF_FONT_FAMILY, '', 11)
-        # FPDF con fuentes base no maneja bien saltos de línea \n dentro de cell. Usar multi_cell.
         self.multi_cell(0, 7, str(body_text)) 
         self.ln(5)
 
@@ -294,23 +282,33 @@ class ProfessionalPDF(FPDF):
             self.multi_cell(0, 7, field_value, border=0, align='L', fill=fill, ln=1)
         self.ln(5)
 
-    def recommendations_section(self, recommendations_list):
+    def recommendations_section(self, recommendations_list): # MODIFICADO AQUÍ
         self.chapter_title("recommendations")
+        current_font = self.PDF_FONT_FAMILY
+        
         if recommendations_list and isinstance(recommendations_list, list):
+            available_width = self.w - self.l_margin - self.r_margin # Ancho disponible en la página
             for i, rec in enumerate(recommendations_list):
-                self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
-                self.multi_cell(0, 7, f"{i+1}. {rec.get('title', 'N/A')}")
-                self.set_font(self.PDF_FONT_FAMILY, '', 10)
-                self.multi_cell(0, 7, rec.get('description', 'N/A'))
-                self.ln(3)
-        else: self.chapter_body("No recommendations available.")
+                # Título de la recomendación
+                self.set_x(self.l_margin) # Asegurar X al margen izquierdo
+                self.set_font(current_font, 'B', 10)
+                self.multi_cell(available_width, 7, f"{i+1}. {rec.get('title', 'N/A')}") # ln=1 por defecto
+
+                # Descripción de la recomendación
+                self.set_x(self.l_margin) # Asegurar X al margen izquierdo
+                self.set_font(current_font, '', 10)
+                self.multi_cell(available_width, 7, rec.get('description', 'N/A')) # ln=1 por defecto
+                self.ln(3) 
+        else:
+            self.chapter_body("No recommendations available.")
         self.ln(5)
 
     def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
         self.chapter_title("xai_explanations_title")
-        self.set_font(self.PDF_FONT_FAMILY, 'B', 12)
+        current_font = self.PDF_FONT_FAMILY
+        self.set_font(current_font, 'B', 12)
         self.cell(0, 10, get_translation("lime_report_title"), 0, 1, 'L')
-        self.set_font(self.PDF_FONT_FAMILY, '', 10)
+        self.set_font(current_font, '', 10)
         if lime_expl:
             try:
                 pred_label = report_data.get('prediction_label', CLASS_NAMES[0])
@@ -324,9 +322,9 @@ class ProfessionalPDF(FPDF):
             except Exception as e: self.multi_cell(0, 7, f"Error LIME: {e}")
         else: self.multi_cell(0, 7, "LIME explanation not available.")
         self.ln(5)
-        self.set_font(self.PDF_FONT_FAMILY, 'B', 12)
+        self.set_font(current_font, 'B', 12)
         self.cell(0, 10, get_translation("shap_report_title"), 0, 1, 'L')
-        self.set_font(self.PDF_FONT_FAMILY, '', 10)
+        self.set_font(current_font, '', 10)
         if shap_vals is not None and x_instance_df is not None:
             try:
                 self.multi_cell(0, 7, f"SHAP (Predicted: {report_data.get('prediction_label', 'N/A')}):")
@@ -399,7 +397,7 @@ with st.form(key="evaluation_form_final"):
     with col1:
         st.markdown(f"#### {get_translation('Información Básica y Contexto')}")
         age_form = st.number_input(get_translation("age"), 18, 100, 30)
-        income_form = st.number_input(get_translation("income"), 0, 250000, 30000, 1000, help="Este campo es opcional.") # Etiqueta ya no tiene €
+        income_form = st.number_input(get_translation("income"), 0, 250000, 30000, 1000, help="Este campo es opcional.")
         education_key_selected = st.selectbox(get_translation("education_level_new"), list(education_options_new.keys()), format_func=lambda x: education_options_new[x])
         substance_key_selected = st.selectbox(get_translation("substance_use"), list(substance_options.keys()), format_func=lambda x: substance_options[x])
         country_origin_form = st.text_input(get_translation("country_origin"))
