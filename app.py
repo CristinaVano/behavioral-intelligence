@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión Final SIN XAI en PDF y con Fix para Predicción ---
+# --- Versión Final SIN XAI en PDF y con Fix para Predicción y Nombre Variable ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -311,7 +311,7 @@ class ProfessionalPDF(FPDF):
     # --- MÉTODO XAI VACÍO ---
     def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
         """Sección de explicaciones XAI omitida."""
-        pass # No se añade nada al PDF desde este método
+        pass 
 
     def generate_full_report(self, report_data, recommendations, lime_expl, shap_vals, x_instance_df):
         self.cover_page(report_data)
@@ -319,12 +319,12 @@ class ProfessionalPDF(FPDF):
         self.recommendations_section(recommendations)
         # --- LLAMADA A SECCIÓN XAI COMENTADA ---
         # if lime_expl or (shap_vals is not None): 
-        #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
+        #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df) # Esta línea ESTÁ comentada
 # --- Fin de la Clase PDF ---
 
 
 # --- Lógica App Streamlit ---
-def predict_risk_level(df_input, model, feature_list): # CORREGIDO: Espera DataFrame
+def predict_risk_level(df_input, model, feature_list): # CORREGIDO
     """Realiza la predicción usando el modelo entrenado."""
     if model is None: 
         print("DEBUG: Modelo no entrenado, devolviendo placeholder.")
@@ -343,32 +343,26 @@ def predict_risk_level(df_input, model, feature_list): # CORREGIDO: Espera DataF
         # Asegurarse de que el DataFrame tiene las columnas correctas y en el orden correcto
         input_df_ordered = df_input[feature_list] 
         
-        # Verificar la forma ANTES de predecir
-        print(f"DEBUG Predict: Shape of data passed to model.predict_proba: {input_df_ordered.shape}") # Debería ser (1, 7)
+        print(f"DEBUG Predict: Shape of data passed to model.predict_proba: {input_df_ordered.shape}") 
         
         if input_df_ordered.shape[1] != len(feature_list):
              st.error(f"Error: Discrepancia en número de features. Modelo espera {len(feature_list)}, datos tienen {input_df_ordered.shape[1]}.")
-             # Añadir más detalles para depuración
              print(f"DEBUG Predict: Columns expected by model: {feature_list}")
              print(f"DEBUG Predict: Columns in DataFrame passed: {input_df_ordered.columns.tolist()}")
              return CLASS_NAMES[0], 0.05
 
-        # Realizar la predicción
         pred_proba = model.predict_proba(input_df_ordered) 
-        
         pred_proba_instance = pred_proba[0] 
-        
         pred_idx = np.argmax(pred_proba_instance)
         confidence = pred_proba_instance[pred_idx]
         pred_label = CLASS_NAMES[pred_idx]
-        
         print(f"DEBUG Predict: Prediction Label: {pred_label}, Confidence: {confidence:.3f}")
         return pred_label, confidence
         
     except Exception as e:
         st.error(f"{get_translation('error_prediction')} {e}")
         print(f"Predict Error Details: {traceback.format_exc()}") 
-        print(f"Input DataFrame causing prediction error:\n{df_input}") # Imprimir el DataFrame original pasado
+        print(f"Input DataFrame causing prediction error:\n{df_input}") 
         print(f"Expected features: {feature_list}")
         return CLASS_NAMES[0], 0.05
 
@@ -481,29 +475,30 @@ if submit_button_final:
     
     # --- Cálculo XAI (se ejecuta pero no se añade al PDF) ---
     lime_expl_obj, shap_vals_pred_class = None, None
-    instance_df_for_xai = df_for_prediction.copy() 
+    instance_df_for_xai = df_for_prediction.copy() # CORREGIDO Nombre de variable
     
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
-            # LIME
             lime_explainer = lime.lime_tabular.LimeTabularExplainer(
                 X_test_df_global_new[NEW_FEATURE_NAMES].values, 
                 feature_names=NEW_FEATURE_NAMES,
                 class_names=CLASS_NAMES, mode='classification', discretize_continuous=True
             )
+            # CORREGIDO Nombre de variable
             lime_expl_obj = lime_explainer.explain_instance(
-                instance_df_xai.iloc[0].values, 
+                instance_df_for_xai.iloc[0].values, 
                 trained_model_new.predict_proba, num_features=len(NEW_FEATURE_NAMES)
             )
             
-            # SHAP
             if isinstance(trained_model_new, RandomForestClassifier):
                 shap_explainer = shap.TreeExplainer(trained_model_new, X_test_df_global_new[NEW_FEATURE_NAMES]) 
-                shap_values_all = shap_explainer.shap_values(instance_df_xai)
+                # CORREGIDO Nombre de variable
+                shap_values_all = shap_explainer.shap_values(instance_df_for_xai) 
             else:
                 X_test_summary = shap.kmeans(X_test_df_global_new[NEW_FEATURE_NAMES], min(50, len(X_test_df_global_new)))
                 shap_explainer = shap.KernelExplainer(trained_model_new.predict_proba, X_test_summary)
-                shap_values_all = shap_explainer.shap_values(instance_df_xai)
+                 # CORREGIDO Nombre de variable
+                shap_values_all = shap_explainer.shap_values(instance_df_for_xai)
             
             pred_idx = CLASS_NAMES.index(prediction) if prediction in CLASS_NAMES else 0
             if isinstance(shap_values_all, list) and len(shap_values_all) == len(CLASS_NAMES):
@@ -518,12 +513,13 @@ if submit_button_final:
     # --- Generación del PDF (SIN sección XAI activa) ---
     try:
         pdf = ProfessionalPDF()
+        # CORREGIDO Nombre de variable en la llamada
         pdf.generate_full_report( 
             report_data_payload, 
             recommendations_list, 
             lime_expl_obj, 
             shap_vals_pred_class, 
-            instance_df_xai 
+            instance_df_for_xai 
         )
         pdf_file_name = f"Informe_{report_data_payload['user_id']}_{datetime.now().strftime('%Y%m%d')}.pdf"
         pdf_bytes = pdf.output(dest='S').encode('latin-1') 
