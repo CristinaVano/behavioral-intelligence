@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión Final SIN XAI en PDF y con Fix para Predicción y PDF Output ---
+# --- Versión Final SIN XAI en PDF y con Fix para Predicción y PDF Output (Bytes) ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -474,8 +474,7 @@ if submit_button_final:
     
     # --- Cálculo XAI (se ejecuta pero no se añade al PDF) ---
     lime_expl_obj, shap_vals_pred_class = None, None
-    # CORREGIDO Nombre de variable
-    instance_df_for_xai = df_for_prediction.copy() 
+    instance_df_for_xai = df_for_prediction.copy() # CORREGIDO Nombre de variable
     
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
@@ -524,8 +523,8 @@ if submit_button_final:
             instance_df_for_xai 
         )
         pdf_file_name = f"Informe_{report_data_payload['user_id']}_{datetime.now().strftime('%Y%m%d')}.pdf"
-        # CORREGIDO: pdf.output() ya devuelve bytes/bytearray con dest='S' en fpdf2
-        pdf_bytes = pdf.output(dest='S') 
+        # CORREGIDO: Convertir bytearray a bytes
+        pdf_bytes = bytes(pdf.output(dest='S')) 
         st.download_button(get_translation("download_report"), pdf_bytes, pdf_file_name, "application/pdf")
         st.success(get_translation("report_generated"))
     except Exception as e: st.error(f"{get_translation('error_pdf')} {e}\n{traceback.format_exc()}")
