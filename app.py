@@ -512,25 +512,6 @@ class ProfessionalPDF(FPDF):
        self.cell(180, 10, get_translation("confidential"), 0, 1, 'C')
        self.ln(10)
 
-    def executive_summary(self, summary, photo=None):
-       self.set_font('Arial', 'B', 14)
-       self.set_x(self.l_margin)
-       self.cell(180, 10, get_translation("executive_summary"), 0, 1, 'L')
-       y_start = self.get_y()
-       self.set_font('Arial', '', 12)
-       self.set_x(self.l_margin)
-       self.multi_cell(110, 8, summary)
-       self.ln(5)
-    if photo is not None:
-        try:
-            img = Image.open(photo)
-            img_path = "temp_photo.jpg"
-            img.save(img_path)
-            self.image(img_path, x=130, y=y_start, w=50)
-            os.remove(img_path)
-        except Exception as e:
-            print(f"Error procesando la imagen: {e}")
-
     def subject_data_table(self, data):
        self.add_page()
        self.set_font('Arial', 'B', 16)
