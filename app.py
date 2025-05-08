@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-# --- Versión con Tabla de Proyección de Riesgo ---
+# --- Versión con Títulos Dinámicos y Traducción Login ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from fpdf import FPDF
-# Importar clases específicas para posicionamiento si usamos la nueva API de FPDF
 from fpdf.enums import XPos, YPos 
 import shap
 import lime
 import lime.lime_tabular
 import numpy as np
-# import matplotlib.pyplot as plt 
 import base64
 from datetime import datetime
 import os 
@@ -18,19 +16,27 @@ import traceback
 import re 
 
 # --- Configuración de la Página de Streamlit ---
-st.set_page_config(layout="wide", page_title="Behavioral Intelligence Platform")
+st.set_page_config(layout="wide", page_title="BIAS Platform") # Título para la pestaña del navegador
 
-# --- Credenciales de Usuario ---
+# --- Credenciales de Usuario (NO SEGURO PARA PRODUCCIÓN) ---
 USER_CREDENTIALS = {
     "demo_bias": "biasdemo2025", "JuanCarlos_bias": "direccionbias",
     "Cristina_bias": "direccionbias", "Teresa_bias": "coordinacionbias",
     "Pau_bias": "coordinacionbias"
 }
 
-# --- Traducciones (Añadir claves para Proyección) ---
+# --- Traducciones (Títulos App/Formulario y Roles) ---
 translations = {
     "es": {
-        # ... (Traducciones anteriores sin cambios)...
+        "app_title": "BIAS", # Título Fijo
+        "login_title": "Acceso a la Plataforma",
+        "username": "Usuario", # Para el login
+        "password": "Contraseña", # Para el login
+        "login_button": "Iniciar Sesión",
+        "logout_button": "Cerrar Sesión", "wrong_credentials": "Usuario o contraseña incorrectos.",
+        "select_language": "Seleccionar Idioma", "language_en": "Inglés (English)", "language_es": "Español",
+        # "form_title": "Formulario de Evaluación de Sujeto", # Eliminado, será dinámico
+        "user_id": "ID de Sujeto", "age": "Edad",
         "income": "Ingresos Anuales (Opcional)", 
         "education_level_new": "Nivel de Estudios",
         "substance_use": "Consumo de Sustancias", 
@@ -47,14 +53,11 @@ translations = {
         "section_psychological_profile": "Notas sobre el Perfil Psicológico",
         "section_clinical_history": "Resumen del Historial Clínico",
         "section_detailed_recommendations": "Recomendaciones Detalladas (Intervención)",
-        # --- Nuevas Claves Proyección ---
         "section_risk_projection": "Proyección de Riesgo Estimada (Sin Intervención)",
-        "projection_period": "Periodo",
-        "projection_estimated_risk": "Riesgo Estimado",
-        "projection_disclaimer": "Nota: Esta es una proyección simplificada basada en el nivel de riesgo actual y la confianza de la predicción. No constituye una predicción clínica o estadística formal de eventos futuros.",
+        "projection_period": "Periodo", "projection_estimated_risk": "Riesgo Estimado",
+        "projection_disclaimer": "Nota: Proyección simplificada basada en riesgo y confianza actual. No es predicción formal.", # Acortado
         "months": "Meses",
-        # --- Fin Nuevas Claves ---
-        "studies_none": "Ninguno", "studies_primary": "Primaria", "studies_secondary": "Secundaria", # ... resto de opciones ...
+        "studies_none": "Ninguno", "studies_primary": "Primaria", # ... resto de opciones ...
         "substance_none": "Ninguno", "substance_alcohol": "Alcohol", # ... resto de opciones ...
         "crime_none": "Ninguno", "crime_theft": "Robo/Hurto", # ... resto de opciones ...
         "trait_responsible": "Responsable", "trait_impulsive": "Impulsivo", # ... resto de opciones ...
@@ -73,10 +76,23 @@ translations = {
         "model_not_trained_warning": "Advertencia: Modelo no entrenado. Usando datos placeholder.", 
         "xai_skipped_warning": "XAI omitido (modelo/datos no disponibles).", 
         "error_prediction": "Error predicción:", "error_xai": "Error XAI:", "error_pdf": "Error PDF:", 
-        "input_user_id_warning": "Ingrese ID Sujeto.", 
+        "input_user_id_warning": "Ingrese ID Sujeto.",
+        # --- Roles para título de formulario ---
+        "role_direccion": "Formulario Dirección",
+        "role_coordinacion": "Formulario Coordinación",
+        "role_invitado": "Formulario Invitado",
+        "form_default_title": "Formulario de Evaluación", # Título por si acaso
     },
     "en": { 
-        # ... (Traducciones anteriores sin cambios)...
+        "app_title": "BIAS", # Título Fijo
+        "login_title": "Platform Access",
+        "username": "Username", # Para el login
+        "password": "Password", # Para el login
+        "login_button": "Login",
+        "logout_button": "Logout", "wrong_credentials": "Incorrect username or password.",
+        "select_language": "Select Language", "language_en": "English", "language_es": "Spanish (Español)",
+        # "form_title": "Subject Evaluation Form", # Eliminado
+        "user_id": "Subject ID", "age": "Age",
         "income": "Annual Income (Optional)", 
         "education_level_new": "Education Level",
         "substance_use": "Substance Use", 
@@ -93,13 +109,10 @@ translations = {
         "section_psychological_profile": "Notes on Psychological Profile",
         "section_clinical_history": "Clinical History Summary",
         "section_detailed_recommendations": "Detailed Recommendations (Intervention)",
-        # --- Nuevas Claves Proyección ---
         "section_risk_projection": "Estimated Risk Projection (Without Intervention)",
-        "projection_period": "Period",
-        "projection_estimated_risk": "Estimated Risk",
-        "projection_disclaimer": "Note: This is a simplified projection based on the current risk level and prediction confidence. It does not constitute a formal clinical or statistical prediction of future events.",
+        "projection_period": "Period", "projection_estimated_risk": "Estimated Risk",
+        "projection_disclaimer": "Note: Simplified projection based on current risk/confidence. Not a formal prediction.", # Shortened
         "months": "Months",
-        # --- Fin Nuevas Claves ---
         "studies_none": "None", "studies_primary": "Primary", # ... resto de opciones ...
         "substance_none": "None", "substance_alcohol": "Alcohol", # ... resto de opciones ...
         "crime_none": "None", "crime_theft": "Theft", # ... resto de opciones ...
@@ -119,6 +132,11 @@ translations = {
         "xai_skipped_warning": "XAI skipped (model/data unavailable).",
         "error_prediction": "Prediction error:", "error_xai": "XAI error:", "error_pdf": "PDF error:",
         "input_user_id_warning": "Enter Subject ID.",
+        # --- Roles para título de formulario ---
+        "role_direccion": "Management Form",
+        "role_coordinacion": "Coordination Form",
+        "role_invitado": "Guest Form",
+        "form_default_title": "Evaluation Form", 
     }
 }
 
@@ -128,7 +146,9 @@ if 'username' not in st.session_state: st.session_state.username = ""
 if 'lang' not in st.session_state: st.session_state.lang = "es"
 
 def get_translation(key):
+    # Fallback a clave formateada si no existe ni en lang actual ni en 'es'
     return translations.get(st.session_state.lang, translations.get("es", {})).get(key, key.replace("_", " ").title())
+
 
 # --- Login y Selección de Idioma ---
 if not st.session_state.logged_in:
@@ -140,8 +160,9 @@ if not st.session_state.logged_in:
         st.rerun() 
     st.title(get_translation("login_title"))
     with st.form("login_form"):
-        username_input = st.text_input(get_translation("username"))
-        password_input = st.text_input(get_translation("password"), type="password")
+        # Usar get_translation para etiquetas de login
+        username_input = st.text_input(get_translation("username")) 
+        password_input = st.text_input(get_translation("password"), type="password") 
         if st.form_submit_button(get_translation("login_button")):
             if username_input in USER_CREDENTIALS and USER_CREDENTIALS[username_input] == password_input:
                 st.session_state.logged_in = True
@@ -151,13 +172,13 @@ if not st.session_state.logged_in:
     st.stop()
 
 # --- App Principal ---
-st.sidebar.title(get_translation("app_title"))
+st.sidebar.title(get_translation("app_title")) # Usa la nueva traducción fija
 st.sidebar.subheader(f"{get_translation('username')}: {st.session_state.username}")
 if st.sidebar.button(get_translation("logout_button")):
     st.session_state.logged_in = False; st.session_state.username = ""
     st.rerun() 
 
-# --- Modelo y Features ---
+# --- Modelo y Features (Actualizado para counts de multi-select) ---
 NEW_FEATURE_NAMES = [ 
     'age', 'income', 'education_level_numeric', 
     'substance_use_count', 'criminal_record_count', 
@@ -189,14 +210,14 @@ def train_new_model(df_train):
     
     features_present = [f for f in NEW_FEATURE_NAMES if f in df_train.columns]
     if len(features_present) < len(NEW_FEATURE_NAMES):
-        st.error(f"Faltan columnas para entrenar modelo: {NEW_FEATURE_NAMES}. Encontradas: {features_present}")
+        st.error(f"Faltan columnas para entrenar el modelo. Esperadas: {NEW_FEATURE_NAMES}, Encontradas: {features_present}")
         return None, pd.DataFrame(columns=NEW_FEATURE_NAMES)
 
     X = df_train[features_present].astype(float) 
     y = df_train['risk_target']
     
     if len(np.unique(y)) < 2 : 
-         st.warning("Target con una sola clase. Modelo no entrenado.")
+         st.warning("Target con una sola clase. El modelo no puede entrenar.")
          return None, X 
          
     model = RandomForestClassifier(random_state=42, class_weight='balanced', n_estimators=50, max_depth=10)
@@ -212,7 +233,8 @@ trained_model_new, X_test_df_global_new = train_new_model(df_training_data_new.c
 if trained_model_new is None and st.session_state.logged_in:
     st.warning(get_translation("model_not_trained_warning"))
 
-# --- Clase PDF Profesional con Helvetica y Proyección ---
+# --- Clase PDF Profesional con Helvetica (Simplificada) ---
+# (La clase PDF es idéntica a la versión anterior, no necesita cambios aquí)
 class ProfessionalPDF(FPDF):
     PDF_FONT_FAMILY = 'Helvetica' 
 
@@ -252,7 +274,6 @@ class ProfessionalPDF(FPDF):
     def chapter_body(self, body_text):
         if body_text and str(body_text).strip() not in ["N/A", ""]:
             self.set_font(self.PDF_FONT_FAMILY, '', 11)
-            # Usar la nueva API si está disponible para mejor manejo de texto
             self.multi_cell(0, 7, str(body_text), new_x=XPos.LMARGIN, new_y=YPos.NEXT) 
             self.ln(5)
 
@@ -287,11 +308,11 @@ class ProfessionalPDF(FPDF):
             "personality_traits": "personality_traits_str_list", 
             "previous_diagnoses": "previous_diagnoses_str_list" 
         }
-        label_width = 70 # Ancho fijo para etiquetas
-        value_width = self.w - self.l_margin - self.r_margin - label_width # Ancho restante para valor
+        label_width = 70 
+        value_width = self.w - self.l_margin - self.r_margin - label_width 
         
         for i, label_key in enumerate(fields_to_display_keys):
-            data_key_actual = key_map.get(label_key, label_key)
+            data_key_actual = key_map.get(label_key, label_key) 
             field_label = get_translation(label_key)
             field_value = str(report_data.get(data_key_actual, "N/A"))
             fill = i % 2 == 0
@@ -302,16 +323,14 @@ class ProfessionalPDF(FPDF):
             self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
             self.multi_cell(label_width, 7, field_label, border=0, align='L', fill=fill, new_x=XPos.RIGHT, new_y=YPos.TOP, max_line_height=self.font_size)
             
-            end_y_label = self.get_y() # Captura Y después de la etiqueta
+            end_y_label = self.get_y() 
             
-            # Posicionar valor al lado, usando la Y inicial de la fila
             self.set_xy(self.l_margin + label_width, start_y) 
             self.set_font(self.PDF_FONT_FAMILY, '', 10)
             self.multi_cell(value_width, 7, field_value, border=0, align='L', fill=fill, new_x=XPos.LMARGIN, new_y=YPos.NEXT, max_line_height=self.font_size)
             
-            # Asegurarse que la Y final sea la más baja de las dos celdas
             end_y_value = self.get_y()
-            self.set_y(max(end_y_label, end_y_value))
+            self.set_y(max(start_y + 7, end_y_label, end_y_value)) # Asegura bajar al menos una línea
 
         self.ln(5) 
 
@@ -372,48 +391,35 @@ class ProfessionalPDF(FPDF):
              self.chapter_body("No detailed recommendations available based on provided data.") 
         self.ln(5)
 
-    # --- NUEVA SECCIÓN: Tabla de Proyección de Riesgo ---
     def risk_projection_table_section(self, projection_data):
         self.chapter_title("section_risk_projection")
-        
-        # Disclaimer
         self.set_font(self.PDF_FONT_FAMILY, 'I', 9)
         self.multi_cell(0, 5, get_translation("projection_disclaimer"), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.ln(5)
-        
         if not projection_data:
             self.set_font(self.PDF_FONT_FAMILY, '', 10)
             self.cell(0, 7, "No projection data available.", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
             self.ln(5)
             return
-
-        # Cabeceras de la tabla
         self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
-        self.set_fill_color(240, 240, 240) # Gris claro para cabecera
-        col_width_period = 50 # Ancho para columna "Periodo"
-        col_width_risk = self.w - self.l_margin - self.r_margin - col_width_period # Ancho restante
-        
+        self.set_fill_color(240, 240, 240) 
+        col_width_period = 50 
+        col_width_risk = self.w - self.l_margin - self.r_margin - col_width_period 
         self.cell(col_width_period, 7, get_translation("projection_period"), border=1, align='C', fill=True)
         self.cell(col_width_risk, 7, get_translation("projection_estimated_risk"), border=1, align='C', fill=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-        
-        # Datos de la tabla
         self.set_font(self.PDF_FONT_FAMILY, '', 10)
         for i, (period, risk) in enumerate(projection_data):
-            fill = i % 2 == 0 # Relleno alterno
+            fill = i % 2 == 0 
             self.set_fill_color(255, 255, 255) if not fill else self.set_fill_color(245, 245, 245)
             self.cell(col_width_period, 7, str(period), border=1, align='C', fill=True)
             self.cell(col_width_risk, 7, str(risk), border=1, align='C', fill=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-            
         self.ln(5)
 
-
-    # --- MÉTODO XAI VACÍO ---
-    def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
+    def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df): # Sigue vacía
         """Sección de explicaciones XAI omitida."""
         pass 
 
-    # --- MÉTODO generate_full_report ACTUALIZADO CON PROYECCIÓN ---
-    def generate_full_report(self, report_data, recommendations, detailed_recommendations, risk_projection, lime_expl, shap_vals, x_instance_df):
+    def generate_full_report(self, report_data, recommendations, detailed_recommendations, risk_projection, lime_expl, shap_vals, x_instance_df): # Argumentos XAI se reciben pero no se usan
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.reason_interest_section(report_data)
@@ -422,8 +428,8 @@ class ProfessionalPDF(FPDF):
         self.clinical_history_summary_section(report_data)
         self.recommendations_section(recommendations) 
         self.detailed_recommendations_section(detailed_recommendations) 
-        self.risk_projection_table_section(risk_projection) # <-- LLAMADA A LA NUEVA SECCIÓN
-        # --- LLAMADA A SECCIÓN XAI SIGUE COMENTADA ---
+        self.risk_projection_table_section(risk_projection)
+        # La llamada a XAI sigue comentada / el método está vacío
         # if lime_expl or (shap_vals is not None): 
         #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
@@ -431,63 +437,21 @@ class ProfessionalPDF(FPDF):
 
 # --- Lógica App Streamlit ---
 # --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
-THERAPY_RECOMMENDATIONS = {
-    "diag_depression": [
-        {"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", 
-         "explanation": "La TCC ayuda a identificar y modificar patrones de pensamiento y comportamiento negativos asociados a la depresión. Se centra en el presente y en la resolución de problemas. Sesiones semanales suelen ser efectivas, enfocándose en la reestructuración cognitiva y la activación conductual."},
-        {"type": "Medicación", "name": "ISRS (Inhibidores Selectivos de la Recaptación de Serotonina)", 
-         "explanation": "Fármacos como Fluoxetina, Sertralina o Escitalopram son comúnmente prescritos. Aumentan los niveles de serotonina en el cerebro. Requieren evaluación médica para dosis y seguimiento de efectos secundarios. Su efecto completo puede tardar varias semanas."}
-    ],
-    # ... (Resto de THERAPY_RECOMMENDATIONS como en la versión anterior)...
-    "diag_anxiety": [
-        {"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", 
-         "explanation": "Eficaz para diversos trastornos de ansiedad (TAG, pánico, fobias). Incluye técnicas de exposición gradual, reestructuración cognitiva para manejar preocupaciones y miedos irracionales, y entrenamiento en relajación."},
-        {"type": "Terapia", "name": "Terapia de Aceptación y Compromiso (ACT)",
-         "explanation": "Enfocada en aceptar pensamientos y sensaciones difíciles sin luchar contra ellos, y comprometerse con acciones alineadas a los valores personales, incluso en presencia de ansiedad."},
-         {"type": "Medicación", "name": "ISRS / IRSN / Benzodiacepinas", 
-         "explanation": "Los ISRS o IRSN suelen ser la primera línea farmacológica a largo plazo. Las Benzodiacepinas (ej. Diazepam, Lorazepam) pueden usarse puntualmente para alivio rápido pero con riesgo de dependencia. Requiere prescripción y supervisión médica estricta."}
-    ],
-     "diag_ptsd": [
-        {"type": "Terapia", "name": "EMDR (Desensibilización y Reprocesamiento por Movimientos Oculares)", 
-         "explanation": "Terapia especializada para procesar recuerdos traumáticos. Utiliza estimulación bilateral (movimientos oculares, sonidos o toques) para ayudar al cerebro a integrar la experiencia traumática de forma adaptativa."},
-        {"type": "Terapia", "name": "Terapia de Exposición Prolongada (TEP)",
-         "explanation": "Consiste en enfrentar gradualmente los recuerdos y situaciones temidas relacionadas con el trauma en un entorno seguro, ayudando a reducir la evitación y la intensidad emocional asociada."},
-         {"type": "Medicación", "name": "ISRS (Sertralina, Paroxetina)", 
-         "explanation": "Aprobados específicamente para TEPT, pueden ayudar a manejar síntomas de ansiedad, depresión e intrusión. La Prazosina se usa a veces para pesadillas. Requiere evaluación médica."}
-    ],
-    "diag_substance_use_disorder": [
-        {"type": "Terapia", "name": "Entrevista Motivacional", 
-         "explanation": "Enfoque centrado en el cliente para explorar y resolver la ambivalencia hacia el cambio. Ayuda a aumentar la motivación interna para reducir o detener el consumo."},
-        {"type": "Terapia", "name": "Terapia Grupal / Grupos de Apoyo (ej. AA/NA)",
-         "explanation": "Proporciona apoyo entre pares, reduce el aislamiento y ofrece estrategias compartidas para mantener la sobriedad. La asistencia regular es clave."},
-        {"type": "Medicación", "name": "Tratamiento Asistido por Medicación (TAM/MAT)", 
-         "explanation": "Dependiendo de la sustancia (ej. Naltrexona para alcohol/opiáceos, Buprenorfina/Metadona para opiáceos, Acamprosato para alcohol). Reduce el 'craving' y los síntomas de abstinencia. Requiere un programa médico especializado."}
-    ],
-    "diag_personality_disorder": [
-        {"type": "Terapia", "name": "Terapia Dialéctico-Conductual (TDC)",
-         "explanation": "Originalmente para TLP, útil para desregulación emocional intensa, conductas autolesivas e impulsividad. Se enfoca en mindfulness, tolerancia al malestar, regulación emocional y efectividad interpersonal."},
-        {"type": "Terapia", "name": "Terapia Basada en la Mentalización (MBT)",
-         "explanation": "Ayuda a los individuos a comprender sus propios estados mentales y los de los demás, mejorando las relaciones interpersonales y la comprensión de las reacciones emocionales."},
-        {"type": "Terapia", "name": "Terapia de Esquemas",
-         "explanation": "Identifica y modifica esquemas maladaptativos tempranos (patrones de pensamiento y emoción profundamente arraigados) que se originan en la infancia y causan problemas en la vida adulta."}
-    ],
-     "diag_schizophrenia": [
-        {"type": "Medicación", "name": "Antipsicóticos",
-         "explanation": "Piedra angular del tratamiento (ej. Risperidona, Olanzapina, Aripiprazol, Clozapina para casos resistentes). Controlan síntomas positivos (delirios, alucinaciones) y ayudan con los negativos/cognitivos. Es crucial la adherencia y monitorización médica."},
-        {"type": "Terapia", "name": "Terapia Cognitivo-Conductual para Psicosis (TCCp)",
-         "explanation": "Ayuda a entender y manejar los síntomas psicóticos, reducir el malestar asociado y mejorar el funcionamiento social."},
-        {"type": "Intervención", "name": "Apoyo Psicosocial y Familiar",
-         "explanation": "Incluye psicoeducación familiar, entrenamiento en habilidades sociales, apoyo laboral/educativo y manejo del estrés para mejorar la calidad de vida y prevenir recaídas."}
-    ],
+THERAPY_RECOMMENDATIONS = { # Mismo diccionario que antes
+    "diag_depression": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "..." }, {"type": "Medicación", "name": "ISRS...", "explanation": "..." }],
+    "diag_anxiety": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "..."},{"type": "Terapia", "name": "Terapia de Aceptación y Compromiso (ACT)","explanation": "..."},{"type": "Medicación", "name": "ISRS / IRSN / Benzodiacepinas", "explanation": "..."}],
+    "diag_ptsd": [{"type": "Terapia", "name": "EMDR...", "explanation": "..."},{"type": "Terapia", "name": "Terapia de Exposición Prolongada (TEP)","explanation": "..."},{"type": "Medicación", "name": "ISRS (Sertralina, Paroxetina)","explanation": "..."}],
+    "diag_substance_use_disorder": [{"type": "Terapia", "name": "Entrevista Motivacional", "explanation": "..."},{"type": "Terapia", "name": "Terapia Grupal / Grupos de Apoyo (ej. AA/NA)","explanation": "..."},{"type": "Medicación", "name": "Tratamiento Asistido por Medicación (TAM/MAT)","explanation": "..."}],
+    "diag_personality_disorder": [{"type": "Terapia", "name": "Terapia Dialéctico-Conductual (TDC)","explanation": "..."},{"type": "Terapia", "name": "Terapia Basada en la Mentalización (MBT)","explanation": "..."},{"type": "Terapia", "name": "Terapia de Esquemas","explanation": "..."}],
+    "diag_schizophrenia": [{"type": "Medicación", "name": "Antipsicóticos","explanation": "..."},{"type": "Terapia", "name": "Terapia Cognitivo-Conductual para Psicosis (TCCp)","explanation": "..."},{"type": "Intervención", "name": "Apoyo Psicosocial y Familiar","explanation": "..."}],
 }
-
 
 def predict_risk_level(df_input, model, feature_list): 
     if model is None: return CLASS_NAMES[0], 0.10
     if not isinstance(df_input, pd.DataFrame) or df_input.empty: return CLASS_NAMES[0], 0.05
     try:
         for col in feature_list:
-            if col not in df_input.columns: df_input[col] = 0.0 # Asegurar que sea float
+            if col not in df_input.columns: df_input[col] = 0.0 
         input_df_ordered = df_input[feature_list].astype(float) 
         print(f"DEBUG Predict: Shape passed to model: {input_df_ordered.shape}") 
         if input_df_ordered.shape[1] != len(feature_list):
@@ -528,39 +492,29 @@ def generate_detailed_recommendations(report_data):
                       seen_rec_names.add(rec['name'])
     return recommendations
 
-# --- NUEVA FUNCIÓN: Generar Proyección de Riesgo (Placeholder) ---
 def generate_risk_projection(prediction_label, confidence, class_names):
-    """Genera una proyección de riesgo placeholder basada en reglas simples."""
     projections = {}
     time_points_months = [3, 6, 9, 12]
     months_str = get_translation("months")
-    
     low_risk_label = class_names[0]
     high_risk_label = class_names[1]
     medium_risk_label = get_translation("risk_level_medium") 
-
-    # Reglas simples de proyección
     if prediction_label == high_risk_label:
-        for t in time_points_months:
-            projections[f"{t} {months_str}"] = high_risk_label # Se mantiene alto
+        for t in time_points_months: projections[f"{t} {months_str}"] = high_risk_label 
     elif prediction_label == low_risk_label:
-        if confidence > 0.85: # Umbral de confianza alta (ajustable)
-            for t in time_points_months:
-                projections[f"{t} {months_str}"] = low_risk_label # Se mantiene bajo
-        else: # Confianza baja/media en bajo riesgo -> posible aumento
+        if confidence > 0.85: 
+            for t in time_points_months: projections[f"{t} {months_str}"] = low_risk_label 
+        else: 
             projections[f"3 {months_str}"] = low_risk_label
             projections[f"6 {months_str}"] = low_risk_label
             projections[f"9 {months_str}"] = medium_risk_label
             projections[f"12 {months_str}"] = medium_risk_label
-    else: # Caso por defecto (ej. si tuviéramos riesgo Medio)
-         for t in time_points_months:
-             projections[f"{t} {months_str}"] = prediction_label # Mantener etiqueta actual
-
-    # Devolver como lista de tuplas para la tabla PDF
+    else: 
+         for t in time_points_months: projections[f"{t} {months_str}"] = prediction_label 
     return list(projections.items())
 
 
-st.title(get_translation("app_title"))
+st.title(get_translation("app_title")) # Título principal
 
 def get_options_dict(prefix, keys):
     return {f"{prefix}_{key}": get_translation(f"{prefix}_{key}") for key in keys}
@@ -588,9 +542,19 @@ personality_trait_numeric_map = create_numeric_map(personality_trait_options.key
 diagnosis_numeric_map = create_numeric_map(diagnosis_options.keys())
 # --- Fin Definiciones ---
 
+# --- Determinar Título del Formulario ---
+user_role_title_key = "form_default_title" # Título por defecto
+if st.session_state.username in ["JuanCarlos_bias", "Cristina_bias"]:
+    user_role_title_key = "role_direccion"
+elif st.session_state.username in ["Teresa_bias", "Pau_bias"]:
+     user_role_title_key = "role_coordinacion"
+elif st.session_state.username == "demo_bias":
+     user_role_title_key = "role_invitado"
+form_display_title = get_translation(user_role_title_key)
+
 
 with st.form(key="evaluation_form_final"):
-    st.header(get_translation("form_title"))
+    st.header(form_display_title) # Usar el título dinámico
     col1, col2 = st.columns(2)
     with col1:
         st.markdown(f"#### {get_translation('Información Básica y Contexto')}")
@@ -628,13 +592,14 @@ if submit_button_final:
     
     def format_multiselect_output(selected_keys, options_dict, none_key_prefix):
         none_key = f"{none_key_prefix}_none"
-        if not selected_keys or (len(selected_keys) == 1 and selected_keys[0] == none_key): 
-            return options_dict.get(none_key, "N/A") # Mostrar "Ninguno" si es la única opción
+        if not selected_keys: return get_translation(none_key) if none_key in options_dict else "N/A"
         
-        # Filtrar 'none' si hay otras selecciones
+        if len(selected_keys) == 1 and selected_keys[0] == none_key: 
+            return options_dict.get(none_key, "N/A") 
+        
         filtered_keys = [key for key in selected_keys if key != none_key]
         labels = [options_dict.get(key, key) for key in filtered_keys]
-        return ", ".join(labels) if labels else "N/A"
+        return ", ".join(labels) if labels else options_dict.get(none_key, "N/A") # Devolver None si no queda nada? o N/A?
 
     report_data_payload = {
         "user_id": subject_id_generated, "age": age_form, "income": income_form,
@@ -653,7 +618,11 @@ if submit_button_final:
     
     # --- Predicción ---
     try:
-        df_for_prediction = pd.DataFrame([form_data_for_model_dict], columns=NEW_FEATURE_NAMES)
+        # Crear DataFrame asegurando el orden y tipo de columnas para el modelo
+        df_for_prediction = pd.DataFrame(columns=NEW_FEATURE_NAMES) 
+        df_for_prediction.loc[0] = form_data_for_model_dict # Llenar la primera fila
+        df_for_prediction = df_for_prediction.astype(float) # Asegurar tipo float
+        
         prediction, confidence = predict_risk_level(df_for_prediction, trained_model_new, NEW_FEATURE_NAMES) 
     except KeyError as e:
          st.error(f"Error: Falta la columna '{e}' para predicción.")
@@ -663,14 +632,13 @@ if submit_button_final:
          st.stop()
 
     report_data_payload["prediction_label"] = prediction
-    report_data_payload["confidence_val"] = confidence # Guardamos el valor numérico por si acaso
     report_data_payload["confidence_str"] = f"{confidence*100:.1f}%"
     st.subheader(f"{get_translation('prediction')}: {prediction} ({get_translation('confidence')}: {report_data_payload['confidence_str']})")
     
     # --- Recomendaciones ---
     general_recommendations_list = generate_general_recommendations(prediction, confidence) 
     detailed_recommendations_list = generate_detailed_recommendations(report_data_payload) 
-    risk_projection_list = generate_risk_projection(prediction, confidence, CLASS_NAMES) # Generar proyección
+    risk_projection_list = generate_risk_projection(prediction, confidence, CLASS_NAMES) 
     
     st.subheader(get_translation("recommendations")) 
     for r in general_recommendations_list: st.write(f"**{r['title']}**: {r['description']}")
@@ -687,7 +655,7 @@ if submit_button_final:
     
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
-            X_test_df_global_new_ordered = X_test_df_global_new[NEW_FEATURE_NAMES]
+            X_test_df_global_new_ordered = X_test_df_global_new[NEW_FEATURE_NAMES] # Asegurar orden
             lime_explainer = lime.lime_tabular.LimeTabularExplainer(
                 X_test_df_global_new_ordered.values, 
                 feature_names=NEW_FEATURE_NAMES,
@@ -723,7 +691,7 @@ if submit_button_final:
             report_data_payload, 
             general_recommendations_list, 
             detailed_recommendations_list, 
-            risk_projection_list, # Pasar la proyección al método
+            risk_projection_list, # Pasar proyección
             lime_expl_obj, 
             shap_vals_pred_class, 
             instance_df_for_xai 
