@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión Final SIN XAI en PDF y con Fix para Predicción y Nombre Variable ---
+# --- Versión Final SIN XAI en PDF y con Fix para Predicción y PDF Output ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -287,6 +287,7 @@ class ProfessionalPDF(FPDF):
             current_y_pos = self.get_y()
             self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
             self.multi_cell(70, 7, field_label, border=0, align='L', fill=fill, new_x="RIGHT", new_y="TOP") 
+            self.set_xy(self.l_margin + 70, current_y_pos) 
             self.set_font(self.PDF_FONT_FAMILY, '', 10)
             self.multi_cell(0, 7, field_value, border=0, align='L', fill=fill, new_x="LMARGIN", new_y="NEXT")
         self.ln(5) 
@@ -317,9 +318,9 @@ class ProfessionalPDF(FPDF):
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.recommendations_section(recommendations)
-        # --- LLAMADA A SECCIÓN XAI COMENTADA ---
+        # --- LLAMADA A SECCIÓN XAI DEFINITIVAMENTE COMENTADA ---
         # if lime_expl or (shap_vals is not None): 
-        #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df) # Esta línea ESTÁ comentada
+        #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
 
 
@@ -340,9 +341,7 @@ def predict_risk_level(df_input, model, feature_list): # CORREGIDO
         return CLASS_NAMES[0], 0.05
 
     try:
-        # Asegurarse de que el DataFrame tiene las columnas correctas y en el orden correcto
         input_df_ordered = df_input[feature_list] 
-        
         print(f"DEBUG Predict: Shape of data passed to model.predict_proba: {input_df_ordered.shape}") 
         
         if input_df_ordered.shape[1] != len(feature_list):
@@ -475,10 +474,12 @@ if submit_button_final:
     
     # --- Cálculo XAI (se ejecuta pero no se añade al PDF) ---
     lime_expl_obj, shap_vals_pred_class = None, None
-    instance_df_for_xai = df_for_prediction.copy() # CORREGIDO Nombre de variable
+    # CORREGIDO Nombre de variable
+    instance_df_for_xai = df_for_prediction.copy() 
     
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
+            # LIME
             lime_explainer = lime.lime_tabular.LimeTabularExplainer(
                 X_test_df_global_new[NEW_FEATURE_NAMES].values, 
                 feature_names=NEW_FEATURE_NAMES,
@@ -490,6 +491,7 @@ if submit_button_final:
                 trained_model_new.predict_proba, num_features=len(NEW_FEATURE_NAMES)
             )
             
+            # SHAP
             if isinstance(trained_model_new, RandomForestClassifier):
                 shap_explainer = shap.TreeExplainer(trained_model_new, X_test_df_global_new[NEW_FEATURE_NAMES]) 
                 # CORREGIDO Nombre de variable
@@ -522,7 +524,8 @@ if submit_button_final:
             instance_df_for_xai 
         )
         pdf_file_name = f"Informe_{report_data_payload['user_id']}_{datetime.now().strftime('%Y%m%d')}.pdf"
-        pdf_bytes = pdf.output(dest='S').encode('latin-1') 
+        # CORREGIDO: pdf.output() ya devuelve bytes/bytearray con dest='S' en fpdf2
+        pdf_bytes = pdf.output(dest='S') 
         st.download_button(get_translation("download_report"), pdf_bytes, pdf_file_name, "application/pdf")
         st.success(get_translation("report_generated"))
     except Exception as e: st.error(f"{get_translation('error_pdf')} {e}\n{traceback.format_exc()}")
