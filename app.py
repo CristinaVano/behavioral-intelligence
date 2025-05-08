@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión con Debug para Login/Idioma ---
+# --- Versión con ELIMINACIÓN COMPLETA de Sección XAI en PDF ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -26,26 +26,22 @@ USER_CREDENTIALS = {
 }
 
 # --- Traducciones ---
+# (Diccionario translations completo como en la versión anterior)
 translations = {
     "es": {
         "app_title": "BIAS", "login_title": "Acceso a la Plataforma",
         "username": "Usuario", "password": "Contraseña", "login_button": "Iniciar Sesión",
         "logout_button": "Cerrar Sesión", "wrong_credentials": "Usuario o contraseña incorrectos.",
         "select_language": "Seleccionar Idioma", "language_en": "Inglés (English)", "language_es": "Español",
-        "form_title": "Formulario de Evaluación de Sujeto", "user_id": "ID de Sujeto", "age": "Edad",
-        "income": "Ingresos Anuales (Opcional)", 
-        "education_level_new": "Nivel de Estudios",
-        "substance_use": "Consumo de Sustancias", "country_origin": "País de Origen", "city_origin": "Ciudad de Origen",
-        "criminal_record": "Antecedentes Penales", "personality_traits": "Rasgos de Personalidad",
-        "previous_diagnoses": "Diagnósticos Previos", "reason_interest": "Motivo de Interés/Caso",
-        "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", 
+        "user_id": "ID de Sujeto", "age": "Edad", "income": "Ingresos Anuales (Opcional)", 
+        "education_level_new": "Nivel de Estudios", "substance_use": "Consumo de Sustancias", 
+        "country_origin": "País de Origen", "city_origin": "Ciudad de Origen", "criminal_record": "Antecedentes Penales", 
+        "personality_traits": "Rasgos de Personalidad", "previous_diagnoses": "Diagnósticos Previos", 
+        "reason_interest": "Motivo de Interés/Caso", "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", 
         "psychological_profile_notes": "Perfil Psicológico (Notas)", "clinical_history_summary": "Historial Clínico (Resumen)", 
-        "section_reason_interest": "Motivo de Interés / Contexto del Caso",
-        "section_family_history": "Antecedentes Familiares Relevantes",
-        "section_psychological_profile": "Notas sobre el Perfil Psicológico",
-        "section_clinical_history": "Resumen del Historial Clínico",
-        "section_detailed_recommendations": "Recomendaciones Detalladas (Intervención)",
-        "section_risk_projection": "Proyección de Riesgo Estimada (Sin Intervención)",
+        "section_reason_interest": "Motivo de Interés / Contexto del Caso", "section_family_history": "Antecedentes Familiares Relevantes",
+        "section_psychological_profile": "Notas sobre el Perfil Psicológico", "section_clinical_history": "Resumen del Historial Clínico",
+        "section_detailed_recommendations": "Recomendaciones Detalladas (Intervención)", "section_risk_projection": "Proyección de Riesgo Estimada (Sin Intervención)",
         "projection_period": "Periodo", "projection_estimated_risk": "Riesgo Estimado",
         "projection_disclaimer": "Nota: Proyección simplificada basada en riesgo y confianza actual. No es predicción formal.", 
         "months": "Meses",
@@ -124,16 +120,10 @@ if 'logged_in' not in st.session_state: st.session_state.logged_in = False
 if 'username' not in st.session_state: st.session_state.username = ""
 if 'lang' not in st.session_state: st.session_state.lang = "es" 
 
-# <<< DEBUG ESTADO AL INICIO DE CADA EJECUCIÓN >>>
-print(f"DEBUG STATE: logged_in = {st.session_state.logged_in}, username = '{st.session_state.username}', lang = '{st.session_state.lang}'")
-# <<< FIN DEBUG >>>
-
 # --- DEFINICIONES DE FUNCIONES AUXILIARES ---
 def get_translation(key):
     current_language = st.session_state.get('lang', 'es') 
-    translation = translations.get(current_language, translations.get("es", {})).get(key, key.replace("_", " ").title())
-    # print(f"DEBUG get_translation: key='{key}', lang='{current_language}', result='{translation}'") # Descomentar para debug detallado de traducción
-    return translation
+    return translations.get(current_language, translations.get("es", {})).get(key, key.replace("_", " ").title())
 
 @st.cache_data
 def load_example_data_for_new_model(): 
@@ -209,6 +199,17 @@ def generate_general_recommendations(pred_label, conf):
          recs.append({"title": "Monitorización Activa", "description": "Seguimiento regular y apoyo preventivo."})
     else: recs.append({"title": "Mantenimiento Preventivo", "description": "Continuar buenas prácticas."})
     return recs
+
+# --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
+# (Igual que antes)
+THERAPY_RECOMMENDATIONS = { 
+    "diag_depression": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "La TCC ayuda a identificar y modificar patrones de pensamiento y comportamiento negativos asociados a la depresión. Se centra en el presente y en la resolución de problemas. Sesiones semanales suelen ser efectivas, enfocándose en la reestructuración cognitiva y la activación conductual." }, {"type": "Medicación", "name": "ISRS (Inhibidores Selectivos de la Recaptación de Serotonina)", "explanation": "Fármacos como Fluoxetina, Sertralina o Escitalopram son comúnmente prescritos. Aumentan los niveles de serotonina en el cerebro. Requieren evaluación médica para dosis y seguimiento de efectos secundarios. Su efecto completo puede tardar varias semanas." }],
+    "diag_anxiety": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "Eficaz para diversos trastornos de ansiedad (TAG, pánico, fobias). Incluye técnicas de exposición gradual, reestructuración cognitiva para manejar preocupaciones y miedos irracionales, y entrenamiento en relajación."},{"type": "Terapia", "name": "Terapia de Aceptación y Compromiso (ACT)","explanation": "Enfocada en aceptar pensamientos y sensaciones difíciles sin luchar contra ellos, y comprometerse con acciones alineadas a los valores personales, incluso en presencia de ansiedad."},{"type": "Medicación", "name": "ISRS / IRSN / Benzodiacepinas", "explanation": "Los ISRS o IRSN suelen ser la primera línea farmacológica a largo plazo. Las Benzodiacepinas (ej. Diazepam, Lorazepam) pueden usarse puntualmente para alivio rápido pero con riesgo de dependencia. Requiere prescripción y supervisión médica estricta."}],
+    "diag_ptsd": [{"type": "Terapia", "name": "EMDR (Desensibilización y Reprocesamiento por Movimientos Oculares)", "explanation": "Terapia especializada para procesar recuerdos traumáticos. Utiliza estimulación bilateral (movimientos oculares, sonidos o toques) para ayudar al cerebro a integrar la experiencia traumática de forma adaptativa."},{"type": "Terapia", "name": "Terapia de Exposición Prolongada (TEP)","explanation": "Consiste en enfrentar gradualmente los recuerdos y situaciones temidas relacionadas con el trauma en un entorno seguro, ayudando a reducir la evitación y la intensidad emocional asociada."},{"type": "Medicación", "name": "ISRS (Sertralina, Paroxetina)","explanation": "Aprobados específicamente para TEPT, pueden ayudar a manejar síntomas de ansiedad, depresión e intrusión. La Prazosina se usa a veces para pesadillas. Requiere evaluación médica."}],
+    "diag_substance_use_disorder": [{"type": "Terapia", "name": "Entrevista Motivacional", "explanation": "Enfoque centrado en el cliente para explorar y resolver la ambivalencia hacia el cambio. Ayuda a aumentar la motivación interna para reducir o detener el consumo."},{"type": "Terapia", "name": "Terapia Grupal / Grupos de Apoyo (ej. AA/NA)","explanation": "Proporciona apoyo entre pares, reduce el aislamiento y ofrece estrategias compartidas para mantener la sobriedad. La asistencia regular es clave."},{"type": "Medicación", "name": "Tratamiento Asistido por Medicación (TAM/MAT)","explanation": "Dependiendo de la sustancia (ej. Naltrexona para alcohol/opiáceos, Buprenorfina/Metadona para opiáceos, Acamprosato para alcohol). Reduce el 'craving' y los síntomas de abstinencia. Requiere un programa médico especializado."}],
+    "diag_personality_disorder": [{"type": "Terapia", "name": "Terapia Dialéctico-Conductual (TDC)","explanation": "Originalmente para TLP, útil para desregulación emocional intensa, conductas autolesivas e impulsividad. Se enfoca en mindfulness, tolerancia al malestar, regulación emocional y efectividad interpersonal."},{"type": "Terapia", "name": "Terapia Basada en la Mentalización (MBT)","explanation": "Ayuda a los individuos a comprender sus propios estados mentales y los de los demás, mejorando las relaciones interpersonales y la comprensión de las reacciones emocionales."},{"type": "Terapia", "name": "Terapia de Esquemas","explanation": "Identifica y modifica esquemas maladaptativos tempranos (patrones de pensamiento y emoción profundamente arraigados) que se originan en la infancia y causan problemas en la vida adulta."}],
+    "diag_schizophrenia": [{"type": "Medicación", "name": "Antipsicóticos","explanation": "Piedra angular del tratamiento (ej. Risperidona, Olanzapina, Aripiprazol, Clozapina para casos resistentes). Controlan síntomas positivos (delirios, alucinaciones) y ayudan con los negativos/cognitivos. Es crucial la adherencia y monitorización médica."},{"type": "Terapia", "name": "Terapia Cognitivo-Conductual para Psicosis (TCCp)","explanation": "Ayuda a entender y manejar los síntomas psicóticos, reducir el malestar asociado y mejorar el funcionamiento social."},{"type": "Intervención", "name": "Apoyo Psicosocial y Familiar","explanation": "Incluye psicoeducación familiar, entrenamiento en habilidades sociales, apoyo laboral/educativo y manejo del estrés para mejorar la calidad de vida y prevenir recaídas."}],
+}
 
 def generate_detailed_recommendations(report_data): 
     recommendations = []
@@ -460,17 +461,13 @@ class ProfessionalPDF(FPDF):
         self.recommendations_section(recommendations) 
         self.detailed_recommendations_section(detailed_recommendations) 
         self.risk_projection_table_section(risk_projection)
-        # --- LLAMADA A SECCIÓN XAI SIGUE COMENTADA ---
+        # --- LLAMADA A SECCIÓN XAI COMENTADA ---
         # if lime_expl or (shap_vals is not None): 
         #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
 
 
 # --- Lógica App Streamlit ---
-# (Las funciones predict_risk_level, generate_general_recommendations, 
-#  generate_detailed_recommendations, generate_risk_projection, 
-#  get_options_dict, create_numeric_map van aquí, sin cambios)
-
 # --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
 # (Igual que antes)
 THERAPY_RECOMMENDATIONS = { # Mismo diccionario que antes
@@ -587,10 +584,10 @@ form_display_title = get_translation(user_role_title_key)
 
 
 with st.form(key="evaluation_form_final"):
-    st.header(form_display_title) 
+    st.header(form_display_title) # Usar título dinámico
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown(f"#### {get_translation('form_subtitle_basic_context')}") 
+        st.markdown(f"#### {get_translation('form_subtitle_basic_context')}") # Usar get_translation
         age_form = st.number_input(get_translation("age"), 18, 100, 30)
         income_form = st.number_input(get_translation("income"), 0, 250000, 30000, 1000, help="Este campo es opcional.")
         education_key_selected = st.selectbox(get_translation("education_level_new"), list(education_options_new.keys()), format_func=lambda x: education_options_new[x])
@@ -598,12 +595,12 @@ with st.form(key="evaluation_form_final"):
         country_origin_form = st.text_input(get_translation("country_origin"))
         city_origin_form = st.text_input(get_translation("city_origin"))
     with col2:
-        st.markdown(f"#### {get_translation('form_subtitle_history_diagnosis')}")
+        st.markdown(f"#### {get_translation('form_subtitle_history_diagnosis')}") # Usar get_translation
         crime_keys_selected = st.multiselect(get_translation("criminal_record"), list(criminal_record_options.keys()), format_func=lambda x: criminal_record_options[x])
         trait_keys_selected = st.multiselect(get_translation("personality_traits"), list(personality_trait_options.keys()), format_func=lambda x: personality_trait_options[x])
         diag_keys_selected = st.multiselect(get_translation("previous_diagnoses"), list(diagnosis_options.keys()), format_func=lambda x: diagnosis_options[x])
     
-    st.markdown(f"#### {get_translation('form_subtitle_qualitative_detail')}")
+    st.markdown(f"#### {get_translation('form_subtitle_qualitative_detail')}") # Usar get_translation
     reason_interest_form = st.text_area(get_translation("reason_interest"), height=75, placeholder="Describa el motivo del análisis...")
     family_terrorism_history_form = st.text_area(get_translation("family_terrorism_history"), height=75, placeholder="Detalles sobre antecedentes familiares...")
     psychological_profile_notes_form = st.text_area(get_translation("psychological_profile_notes"), height=100, placeholder="Observaciones, evaluaciones previas...")
