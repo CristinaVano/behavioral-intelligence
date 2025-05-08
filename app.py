@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión con Fix para Idioma en Login (Selector al Inicio) ---
+# --- Versión con Fix DEFINITIVO para Idioma en Login ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -26,6 +26,7 @@ USER_CREDENTIALS = {
 }
 
 # --- Traducciones ---
+# (Diccionario translations completo como en la versión anterior)
 translations = {
     "es": {
         "app_title": "BIAS", "login_title": "Acceso a la Plataforma",
@@ -77,13 +78,18 @@ translations = {
         "username": "Username", "password": "Password", "login_button": "Login",
         "logout_button": "Logout", "wrong_credentials": "Incorrect username or password.",
         "select_language": "Select Language", "language_en": "English", "language_es": "Spanish (Español)",
-        "user_id": "Subject ID", "age": "Age",
-        "income": "Annual Income (Optional)", "education_level_new": "Education Level",
-        "substance_use": "Substance Use", "country_origin": "Country of Origin", "city_origin": "City of Origin",
-        "criminal_record": "Criminal Record", "personality_traits": "Personality Traits",
-        "previous_diagnoses": "Previous Diagnoses", "reason_interest": "Reason for Interest/Case",
+        "form_title": "Subject Evaluation Form", "user_id": "Subject ID", "age": "Age",
+        "income": "Annual Income (Optional)", 
+        "education_level_new": "Education Level",
+        "substance_use": "Substance Use", 
+        "country_origin": "Country of Origin", "city_origin": "City of Origin",
+        "criminal_record": "Criminal Record", 
+        "personality_traits": "Personality Traits", 
+        "previous_diagnoses": "Previous Diagnoses", 
+        "reason_interest": "Reason for Interest/Case",
         "family_terrorism_history": "Family History Terrorism/Extremism",
-        "psychological_profile_notes": "Psychological Profile (Notes)", "clinical_history_summary": "Clinical History (Summary)", 
+        "psychological_profile_notes": "Psychological Profile (Notes)", 
+        "clinical_history_summary": "Clinical History (Summary)", 
         "section_reason_interest": "Reason for Interest / Case Context",
         "section_family_history": "Relevant Family History",
         "section_psychological_profile": "Notes on Psychological Profile",
@@ -120,31 +126,41 @@ translations = {
 # --- Estado de Sesión ---
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
 if 'username' not in st.session_state: st.session_state.username = ""
-if 'lang' not in st.session_state: st.session_state.lang = "es"
+# Inicializar 'lang' ANTES de que se use en get_translation por primera vez
+if 'lang' not in st.session_state: st.session_state.lang = "es" 
 
 def get_translation(key):
-    return translations.get(st.session_state.lang, translations.get("es", {})).get(key, key.replace("_", " ").title())
+    # Asegurarse de que lang siempre tenga un valor válido antes de buscar
+    current_language = st.session_state.get('lang', 'es') 
+    return translations.get(current_language, translations.get("es", {})).get(key, key.replace("_", " ").title())
 
-# --- Selección de Idioma (AHORA AL PRINCIPIO) ---
+# --- Selección de Idioma (SIEMPRE AL PRINCIPIO) ---
 language_options_map = {"es": get_translation("language_es"), "en": get_translation("language_en")}
+# Usamos el valor actual del session_state como índice para el radio
+# para que refleje el idioma correcto después de un rerun
+current_lang_index = list(language_options_map.keys()).index(st.session_state.lang)
+
 selected_lang_key = st.radio(
     get_translation("select_language"), 
     list(language_options_map.keys()),
+    index=current_lang_index, # Establecer el índice seleccionado
     format_func=lambda x: language_options_map[x], 
-    key="lang_sel_main_TOP", 
+    key="lang_selector_top", # Nueva clave única
     horizontal=True,
     label_visibility="collapsed" 
 )
+# Si el valor seleccionado en el radio es diferente al del estado de sesión,
+# actualiza el estado y fuerza el rerun para aplicar el cambio inmediatamente.
 if selected_lang_key != st.session_state.lang:
     st.session_state.lang = selected_lang_key
     st.rerun() 
 
 # --- Login ---
 if not st.session_state.logged_in:
-    st.title(get_translation("login_title")) # Ahora usa el idioma correcto
+    st.title(get_translation("login_title")) # Ahora usa el idioma correcto establecido arriba
     with st.form("login_form"):
-        username_input = st.text_input(get_translation("username")) # Usa traducción
-        password_input = st.text_input(get_translation("password"), type="password") # Usa traducción
+        username_input = st.text_input(get_translation("username")) # Usa traducción correcta
+        password_input = st.text_input(get_translation("password"), type="password") # Usa traducción correcta
         if st.form_submit_button(get_translation("login_button")):
             if username_input in USER_CREDENTIALS and USER_CREDENTIALS[username_input] == password_input:
                 st.session_state.logged_in = True
@@ -152,7 +168,7 @@ if not st.session_state.logged_in:
                 st.rerun() 
             else: 
                 st.error(get_translation("wrong_credentials"))
-    st.stop()
+    st.stop() # Importante detener aquí para no ejecutar el resto si no está logueado
 
 # --- App Principal ---
 st.sidebar.title(get_translation("app_title")) 
@@ -162,6 +178,8 @@ if st.sidebar.button(get_translation("logout_button")):
     st.rerun() 
 
 # --- Modelo y Features ---
+# (El código del modelo, datos, clase PDF y lógica de la app principal sigue aquí...)
+# --- Modelo y Features (Actualizado para counts de multi-select) ---
 NEW_FEATURE_NAMES = [ 
     'age', 'income', 'education_level_numeric', 
     'substance_use_count', 'criminal_record_count', 
@@ -193,19 +211,20 @@ def train_new_model(df_train):
     
     features_present = [f for f in NEW_FEATURE_NAMES if f in df_train.columns]
     if len(features_present) < len(NEW_FEATURE_NAMES):
-        st.error(f"Faltan columnas para entrenar modelo: {NEW_FEATURE_NAMES}. Encontradas: {features_present}")
+        st.error(f"Faltan columnas para entrenar el modelo. Esperadas: {NEW_FEATURE_NAMES}, Encontradas: {features_present}")
         return None, pd.DataFrame(columns=NEW_FEATURE_NAMES)
 
     X = df_train[features_present].astype(float) 
     y = df_train['risk_target']
     
     if len(np.unique(y)) < 2 : 
-         st.warning("Target con una sola clase. Modelo no entrenado.")
+         st.warning("Target con una sola clase. El modelo no puede entrenar.")
          return None, X 
          
     model = RandomForestClassifier(random_state=42, class_weight='balanced', n_estimators=50, max_depth=10)
     try:
         model.fit(X, y)
+        # model.feature_names_in_ = features_present # Descomentar para sklearn >= 1.0
         return model, X
     except Exception as e:
         st.error(f"Error al entrenar modelo: {e}")
@@ -217,7 +236,6 @@ if trained_model_new is None and st.session_state.logged_in:
     st.warning(get_translation("model_not_trained_warning"))
 
 # --- Clase PDF Profesional con Helvetica (Simplificada) ---
-# (La clase PDF completa va aquí, SIN CAMBIOS respecto a la versión anterior donde ya se eliminó XAI)
 class ProfessionalPDF(FPDF):
     PDF_FONT_FAMILY = 'Helvetica' 
 
@@ -403,7 +421,6 @@ class ProfessionalPDF(FPDF):
         """Sección de explicaciones XAI omitida."""
         pass 
 
-    # --- MÉTODO generate_full_report ACTUALIZADO CON PROYECCIÓN ---
     def generate_full_report(self, report_data, recommendations, detailed_recommendations, risk_projection, lime_expl, shap_vals, x_instance_df): 
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
@@ -413,11 +430,12 @@ class ProfessionalPDF(FPDF):
         self.clinical_history_summary_section(report_data)
         self.recommendations_section(recommendations) 
         self.detailed_recommendations_section(detailed_recommendations) 
-        self.risk_projection_table_section(risk_projection) 
+        self.risk_projection_table_section(risk_projection)
         # --- LLAMADA A SECCIÓN XAI SIGUE COMENTADA ---
         # if lime_expl or (shap_vals is not None): 
         #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
+
 
 # --- Lógica App Streamlit ---
 # --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
@@ -496,7 +514,6 @@ def generate_risk_projection(prediction_label, confidence, class_names):
     else: 
          for t in time_points_months: projections[f"{t} {months_str}"] = prediction_label 
     return list(projections.items())
-
 
 st.title(get_translation("app_title")) # Título principal
 
@@ -578,7 +595,7 @@ if submit_button_final:
         none_key = f"{none_key_prefix}_none"
         other_key = f"{none_key_prefix}_other" 
         
-        if not selected_keys: return options_dict.get(none_key, "N/A") # Devuelve "Ninguno" si está vacío
+        if not selected_keys: return options_dict.get(none_key, "N/A") 
         
         if len(selected_keys) == 1 and selected_keys[0] == none_key: 
             return options_dict.get(none_key, "N/A") 
@@ -590,10 +607,8 @@ if submit_button_final:
         
         labels = [options_dict.get(key, key) for key in filtered_keys]
 
-        # Añadir "Other" al final si estaba seleccionado y había otras selecciones
         if other_key in selected_keys and filtered_keys:
             labels.append(options_dict.get(other_key, "Other"))
-        # Si sólo se seleccionó "Other"
         elif other_key in selected_keys and not filtered_keys:
              return options_dict.get(other_key, "Other")
              
