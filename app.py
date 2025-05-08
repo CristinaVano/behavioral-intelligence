@@ -494,8 +494,8 @@ class ProfessionalPDF(FPDF):
             bar = "█" * int(value/10)
             self.cell(60, 8, f"{factor}:", 0, 0)
             self.cell(0, 8, f"{bar} {value}%", 0, 1)
-
-   def cover_page(self, data):
+            
+    def cover_page(self, data):
        self.add_page()
        self.set_font('Arial', 'B', 16)
        title = get_translation("app_title")
