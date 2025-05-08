@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión con Definiciones de Funciones Movidas Arriba ---
+# --- Versión con Debug para Login/Idioma ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -71,6 +71,9 @@ translations = {
         "input_user_id_warning": "Ingrese ID Sujeto.",
         "role_direccion": "Formulario Dirección", "role_coordinacion": "Formulario Coordinación",
         "role_invitado": "Formulario Invitado", "form_default_title": "Formulario de Evaluación", 
+        "form_subtitle_basic_context": "Información Básica y Contexto",
+        "form_subtitle_history_diagnosis": "Historial y Diagnósticos",
+        "form_subtitle_qualitative_detail": "Información Cualitativa Detallada",
     },
     "en": { 
         "app_title": "BIAS", "login_title": "Platform Access",
@@ -110,6 +113,9 @@ translations = {
         "input_user_id_warning": "Enter Subject ID.",
         "role_direccion": "Management Form", "role_coordinacion": "Coordination Form",
         "role_invitado": "Guest Form", "form_default_title": "Evaluation Form", 
+        "form_subtitle_basic_context": "Basic Information and Context",
+        "form_subtitle_history_diagnosis": "History and Diagnoses",
+        "form_subtitle_qualitative_detail": "Detailed Qualitative Information",
     }
 }
 
@@ -118,11 +124,16 @@ if 'logged_in' not in st.session_state: st.session_state.logged_in = False
 if 'username' not in st.session_state: st.session_state.username = ""
 if 'lang' not in st.session_state: st.session_state.lang = "es" 
 
-# --- DEFINICIONES DE FUNCIONES AUXILIARES (MOVIDAS ARRIBA) ---
+# <<< DEBUG ESTADO AL INICIO DE CADA EJECUCIÓN >>>
+print(f"DEBUG STATE: logged_in = {st.session_state.logged_in}, username = '{st.session_state.username}', lang = '{st.session_state.lang}'")
+# <<< FIN DEBUG >>>
 
+# --- DEFINICIONES DE FUNCIONES AUXILIARES ---
 def get_translation(key):
     current_language = st.session_state.get('lang', 'es') 
-    return translations.get(current_language, translations.get("es", {})).get(key, key.replace("_", " ").title())
+    translation = translations.get(current_language, translations.get("es", {})).get(key, key.replace("_", " ").title())
+    # print(f"DEBUG get_translation: key='{key}', lang='{current_language}', result='{translation}'") # Descomentar para debug detallado de traducción
+    return translation
 
 @st.cache_data
 def load_example_data_for_new_model(): 
@@ -161,7 +172,6 @@ def train_new_model(df_train):
     model = RandomForestClassifier(random_state=42, class_weight='balanced', n_estimators=50, max_depth=10)
     try:
         model.fit(X, y)
-        # model.feature_names_in_ = features_present # Descomentar para sklearn >= 1.0
         return model, X
     except Exception as e:
         st.error(f"Error al entrenar modelo: {e}")
@@ -174,7 +184,7 @@ def predict_risk_level(df_input, model, feature_list):
         for col in feature_list:
             if col not in df_input.columns: df_input[col] = 0.0 
         input_df_ordered = df_input[feature_list].astype(float) 
-        print(f"DEBUG Predict: Shape passed to model: {input_df_ordered.shape}") 
+        # print(f"DEBUG Predict: Shape passed to model: {input_df_ordered.shape}") 
         if input_df_ordered.shape[1] != len(feature_list):
              st.error(f"Error: Discrepancia features. Modelo: {len(feature_list)}, Datos: {input_df_ordered.shape[1]}.")
              return CLASS_NAMES[0], 0.05
@@ -183,7 +193,7 @@ def predict_risk_level(df_input, model, feature_list):
         pred_idx = np.argmax(pred_proba_instance)
         confidence = pred_proba_instance[pred_idx]
         pred_label = CLASS_NAMES[pred_idx]
-        print(f"DEBUG Predict: Label: {pred_label}, Confidence: {confidence:.3f}")
+        # print(f"DEBUG Predict: Label: {pred_label}, Confidence: {confidence:.3f}")
         return pred_label, confidence
     except Exception as e:
         st.error(f"{get_translation('error_prediction')} {e}")
@@ -199,16 +209,6 @@ def generate_general_recommendations(pred_label, conf):
          recs.append({"title": "Monitorización Activa", "description": "Seguimiento regular y apoyo preventivo."})
     else: recs.append({"title": "Mantenimiento Preventivo", "description": "Continuar buenas prácticas."})
     return recs
-
-# --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
-THERAPY_RECOMMENDATIONS = { # Mismo diccionario que antes
-    "diag_depression": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "La TCC ayuda a identificar y modificar patrones de pensamiento y comportamiento negativos asociados a la depresión. Se centra en el presente y en la resolución de problemas. Sesiones semanales suelen ser efectivas, enfocándose en la reestructuración cognitiva y la activación conductual." }, {"type": "Medicación", "name": "ISRS (Inhibidores Selectivos de la Recaptación de Serotonina)", "explanation": "Fármacos como Fluoxetina, Sertralina o Escitalopram son comúnmente prescritos. Aumentan los niveles de serotonina en el cerebro. Requieren evaluación médica para dosis y seguimiento de efectos secundarios. Su efecto completo puede tardar varias semanas." }],
-    "diag_anxiety": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "Eficaz para diversos trastornos de ansiedad (TAG, pánico, fobias). Incluye técnicas de exposición gradual, reestructuración cognitiva para manejar preocupaciones y miedos irracionales, y entrenamiento en relajación."},{"type": "Terapia", "name": "Terapia de Aceptación y Compromiso (ACT)","explanation": "Enfocada en aceptar pensamientos y sensaciones difíciles sin luchar contra ellos, y comprometerse con acciones alineadas a los valores personales, incluso en presencia de ansiedad."},{"type": "Medicación", "name": "ISRS / IRSN / Benzodiacepinas", "explanation": "Los ISRS o IRSN suelen ser la primera línea farmacológica a largo plazo. Las Benzodiacepinas (ej. Diazepam, Lorazepam) pueden usarse puntualmente para alivio rápido pero con riesgo de dependencia. Requiere prescripción y supervisión médica estricta."}],
-    "diag_ptsd": [{"type": "Terapia", "name": "EMDR (Desensibilización y Reprocesamiento por Movimientos Oculares)", "explanation": "Terapia especializada para procesar recuerdos traumáticos. Utiliza estimulación bilateral (movimientos oculares, sonidos o toques) para ayudar al cerebro a integrar la experiencia traumática de forma adaptativa."},{"type": "Terapia", "name": "Terapia de Exposición Prolongada (TEP)","explanation": "Consiste en enfrentar gradualmente los recuerdos y situaciones temidas relacionadas con el trauma en un entorno seguro, ayudando a reducir la evitación y la intensidad emocional asociada."},{"type": "Medicación", "name": "ISRS (Sertralina, Paroxetina)","explanation": "Aprobados específicamente para TEPT, pueden ayudar a manejar síntomas de ansiedad, depresión e intrusión. La Prazosina se usa a veces para pesadillas. Requiere evaluación médica."}],
-    "diag_substance_use_disorder": [{"type": "Terapia", "name": "Entrevista Motivacional", "explanation": "Enfoque centrado en el cliente para explorar y resolver la ambivalencia hacia el cambio. Ayuda a aumentar la motivación interna para reducir o detener el consumo."},{"type": "Terapia", "name": "Terapia Grupal / Grupos de Apoyo (ej. AA/NA)","explanation": "Proporciona apoyo entre pares, reduce el aislamiento y ofrece estrategias compartidas para mantener la sobriedad. La asistencia regular es clave."},{"type": "Medicación", "name": "Tratamiento Asistido por Medicación (TAM/MAT)","explanation": "Dependiendo de la sustancia (ej. Naltrexona para alcohol/opiáceos, Buprenorfina/Metadona para opiáceos, Acamprosato para alcohol). Reduce el 'craving' y los síntomas de abstinencia. Requiere un programa médico especializado."}],
-    "diag_personality_disorder": [{"type": "Terapia", "name": "Terapia Dialéctico-Conductual (TDC)","explanation": "Originalmente para TLP, útil para desregulación emocional intensa, conductas autolesivas e impulsividad. Se enfoca en mindfulness, tolerancia al malestar, regulación emocional y efectividad interpersonal."},{"type": "Terapia", "name": "Terapia Basada en la Mentalización (MBT)","explanation": "Ayuda a los individuos a comprender sus propios estados mentales y los de los demás, mejorando las relaciones interpersonales y la comprensión de las reacciones emocionales."},{"type": "Terapia", "name": "Terapia de Esquemas","explanation": "Identifica y modifica esquemas maladaptativos tempranos (patrones de pensamiento y emoción profundamente arraigados) que se originan en la infancia y causan problemas en la vida adulta."}],
-    "diag_schizophrenia": [{"type": "Medicación", "name": "Antipsicóticos","explanation": "Piedra angular del tratamiento (ej. Risperidona, Olanzapina, Aripiprazol, Clozapina para casos resistentes). Controlan síntomas positivos (delirios, alucinaciones) y ayudan con los negativos/cognitivos. Es crucial la adherencia y monitorización médica."},{"type": "Terapia", "name": "Terapia Cognitivo-Conductual para Psicosis (TCCp)","explanation": "Ayuda a entender y manejar los síntomas psicóticos, reducir el malestar asociado y mejorar el funcionamiento social."},{"type": "Intervención", "name": "Apoyo Psicosocial y Familiar","explanation": "Incluye psicoeducación familiar, entrenamiento en habilidades sociales, apoyo laboral/educativo y manejo del estrés para mejorar la calidad de vida y prevenir recaídas."}],
-}
 
 def generate_detailed_recommendations(report_data): 
     recommendations = []
@@ -265,7 +265,6 @@ if trained_model_new is None and st.session_state.logged_in:
     st.warning(get_translation("model_not_trained_warning"))
 
 # --- Clase PDF Profesional con Helvetica (Simplificada) ---
-# (Pegar aquí la definición COMPLETA de la clase ProfessionalPDF de la respuesta anterior)
 class ProfessionalPDF(FPDF):
     PDF_FONT_FAMILY = 'Helvetica' 
 
@@ -468,6 +467,10 @@ class ProfessionalPDF(FPDF):
 
 
 # --- Lógica App Streamlit ---
+# (Las funciones predict_risk_level, generate_general_recommendations, 
+#  generate_detailed_recommendations, generate_risk_projection, 
+#  get_options_dict, create_numeric_map van aquí, sin cambios)
+
 # --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
 # (Igual que antes)
 THERAPY_RECOMMENDATIONS = { # Mismo diccionario que antes
@@ -486,7 +489,7 @@ def predict_risk_level(df_input, model, feature_list):
         for col in feature_list:
             if col not in df_input.columns: df_input[col] = 0.0 
         input_df_ordered = df_input[feature_list].astype(float) 
-        print(f"DEBUG Predict: Shape passed to model: {input_df_ordered.shape}") 
+        # print(f"DEBUG Predict: Shape passed to model: {input_df_ordered.shape}") 
         if input_df_ordered.shape[1] != len(feature_list):
              st.error(f"Error: Discrepancia features. Modelo: {len(feature_list)}, Datos: {input_df_ordered.shape[1]}.")
              return CLASS_NAMES[0], 0.05
@@ -495,7 +498,7 @@ def predict_risk_level(df_input, model, feature_list):
         pred_idx = np.argmax(pred_proba_instance)
         confidence = pred_proba_instance[pred_idx]
         pred_label = CLASS_NAMES[pred_idx]
-        print(f"DEBUG Predict: Label: {pred_label}, Confidence: {confidence:.3f}")
+        # print(f"DEBUG Predict: Label: {pred_label}, Confidence: {confidence:.3f}")
         return pred_label, confidence
     except Exception as e:
         st.error(f"{get_translation('error_prediction')} {e}")
@@ -546,15 +549,11 @@ def generate_risk_projection(prediction_label, confidence, class_names):
          for t in time_points_months: projections[f"{t} {months_str}"] = prediction_label 
     return list(projections.items())
 
-# Definir estas funciones antes de usarlas en la UI
 def get_options_dict(prefix, keys):
     return {f"{prefix}_{key}": get_translation(f"{prefix}_{key}") for key in keys}
 
 def create_numeric_map(option_keys_list):
     return {key: i for i, key in enumerate(sorted(option_keys_list))} 
-
-# --- UI Streamlit (Formulario Actualizado) ---
-st.title(get_translation("app_title")) 
 
 # --- Definiciones de opciones y mapeos numéricos ---
 education_keys = ["none", "primary", "secondary", "vocational", "bachelor", "master", "phd", "other"]
@@ -563,14 +562,12 @@ crime_keys = ["none", "theft", "assault", "drug_trafficking", "fraud", "public_o
 trait_keys = ["responsible", "impulsive", "introverted", "extroverted", "anxious", "aggressive", "empathetic", "narcissistic", "conscientious", "open_experience", "neurotic", "agreeable", "psychoticism", "manipulative", "other"]
 diag_keys = ["none", "depression", "anxiety", "bipolar", "schizophrenia", "ptsd", "personality_disorder", "adhd", "substance_use_disorder", "eating_disorder", "other"]
 
-# Generar diccionarios de opciones ANTES de usarlos en el formulario
 education_options_new = get_options_dict("studies", education_keys)
 substance_options = get_options_dict("substance", substance_keys)
 criminal_record_options = get_options_dict("crime", crime_keys)
 personality_trait_options = get_options_dict("trait", trait_keys)
 diagnosis_options = get_options_dict("diag", diag_keys)
 
-# Crear los mapeos numéricos
 education_numeric_map = create_numeric_map(education_options_new.keys())
 substance_numeric_map = create_numeric_map(substance_options.keys())
 criminal_record_numeric_map = create_numeric_map(criminal_record_options.keys())
@@ -590,10 +587,9 @@ form_display_title = get_translation(user_role_title_key)
 
 
 with st.form(key="evaluation_form_final"):
-    st.header(form_display_title) # Usar título dinámico
+    st.header(form_display_title) 
     col1, col2 = st.columns(2)
     with col1:
-        # Usar get_translation para los subtítulos
         st.markdown(f"#### {get_translation('form_subtitle_basic_context')}") 
         age_form = st.number_input(get_translation("age"), 18, 100, 30)
         income_form = st.number_input(get_translation("income"), 0, 250000, 30000, 1000, help="Este campo es opcional.")
@@ -602,13 +598,11 @@ with st.form(key="evaluation_form_final"):
         country_origin_form = st.text_input(get_translation("country_origin"))
         city_origin_form = st.text_input(get_translation("city_origin"))
     with col2:
-        # Usar get_translation para los subtítulos
         st.markdown(f"#### {get_translation('form_subtitle_history_diagnosis')}")
         crime_keys_selected = st.multiselect(get_translation("criminal_record"), list(criminal_record_options.keys()), format_func=lambda x: criminal_record_options[x])
         trait_keys_selected = st.multiselect(get_translation("personality_traits"), list(personality_trait_options.keys()), format_func=lambda x: personality_trait_options[x])
         diag_keys_selected = st.multiselect(get_translation("previous_diagnoses"), list(diagnosis_options.keys()), format_func=lambda x: diagnosis_options[x])
     
-    # Usar get_translation para los subtítulos
     st.markdown(f"#### {get_translation('form_subtitle_qualitative_detail')}")
     reason_interest_form = st.text_area(get_translation("reason_interest"), height=75, placeholder="Describa el motivo del análisis...")
     family_terrorism_history_form = st.text_area(get_translation("family_terrorism_history"), height=75, placeholder="Detalles sobre antecedentes familiares...")
