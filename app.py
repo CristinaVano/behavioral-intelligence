@@ -10,7 +10,7 @@ import numpy as np
 # import matplotlib.pyplot as plt # Comentado si no se usan gráficas en PDF
 import base64
 from datetime import datetime
-import os
+import os # Aunque ya no cargaremos fuentes, es buena práctica mantenerlo si se usa en otro lado
 import traceback
 
 # --- Configuración de la Página de Streamlit ---
@@ -23,7 +23,7 @@ USER_CREDENTIALS = {
     "Pau_bias": "coordinacionbias"
 }
 
-# --- Traducciones Completas ---
+# --- Traducciones Completas (con 'income' modificado SIN SÍMBOLO EURO) ---
 translations = {
     "es": {
         "app_title": "Plataforma de Inteligencia Conductual", "login_title": "Acceso a la Plataforma",
@@ -31,76 +31,79 @@ translations = {
         "logout_button": "Cerrar Sesión", "wrong_credentials": "Usuario o contraseña incorrectos.",
         "select_language": "Seleccionar Idioma", "language_en": "Inglés (English)", "language_es": "Español",
         "form_title": "Formulario de Evaluación de Sujeto", "user_id": "ID de Sujeto", "age": "Edad",
-        "income": "Ingresos Anuales (€) (Opcional)", "education_level_new": "Nivel de Estudios",
+        "income": "Ingresos Anuales (Opcional)", # MODIFICADO AQUÍ - SIN SÍMBOLO €
+        "education_level_new": "Nivel de Estudios",
         "substance_use": "Consumo de Sustancias", "country_origin": "País de Origen", "city_origin": "Ciudad de Origen",
-        "criminal_record": "Antecedentes Penales (Tipo Principal)", "personality_traits": "Rasgos de Personalidad (Dominante)",
-        "previous_diagnoses": "Diagnósticos Previos (Principal)", "reason_interest": "Motivo de Interés/Caso",
-        "family_terrorism_history": "Antecedentes Familiares de Terrorismo/Extremismo",
-        "psychological_profile_notes": "Perfil Psicológico (Notas)", "clinical_history_summary": "Historial Clínico (Resumen)",
+        "criminal_record": "Antecedentes Penales", "personality_traits": "Rasgos de Personalidad",
+        "previous_diagnoses": "Diagnósticos Previos", "reason_interest": "Motivo de Interés/Caso",
+        "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", # Acortado para evitar problemas de ancho
+        "psychological_profile_notes": "Perfil Psicológico", "clinical_history_summary": "Historial Clínico",
         "studies_none": "Ninguno", "studies_primary": "Primaria", "studies_secondary": "Secundaria",
-        "studies_vocational": "Formación Profesional", "studies_bachelor": "Grado Universitario", "studies_master": "Máster",
+        "studies_vocational": "FP", "studies_bachelor": "Grado", "studies_master": "Máster", # Acortados
         "studies_phd": "Doctorado", "studies_other": "Otro",
-        "substance_none": "Ninguno conocido", "substance_alcohol": "Alcohol", "substance_cannabis": "Cannabis", "substance_cocaine": "Cocaína",
-        "substance_amphetamines": "Anfetaminas/Metanfetaminas", "substance_opiates": "Opiáceos", "substance_benzodiazepines": "Benzodiacepinas",
+        "substance_none": "Ninguno", "substance_alcohol": "Alcohol", "substance_cannabis": "Cannabis", "substance_cocaine": "Cocaína",
+        "substance_amphetamines": "Anfetaminas", "substance_opiates": "Opiáceos", "substance_benzodiazepines": "Benzodiacepinas",
         "substance_hallucinogens": "Alucinógenos", "substance_tobacco": "Tabaco", "substance_new_psychoactive": "NSP", "substance_other": "Otra",
-        "crime_none": "Ninguno conocido", "crime_theft": "Robo/Hurto", "crime_assault": "Lesiones/Agresión",
-        "crime_drug_trafficking": "Tráfico de Drogas", "crime_fraud": "Fraude/Estafa", "crime_public_order": "Desórdenes Públicos",
-        "crime_domestic_violence": "Violencia Doméstica", "crime_terrorism_related": "Delitos relacionados con Terrorismo",
-        "crime_cybercrime": "Ciberdelincuencia", "crime_homicide": "Homicidio/Asesinato", "crime_other": "Otro",
-        "trait_responsible": "Responsable", "trait_impulsive": "Impulsivo/a", "trait_introverted": "Introvertido/a",
-        "trait_extroverted": "Extrovertido/a", "trait_anxious": "Ansioso/a", "trait_aggressive": "Agresivo/a",
-        "trait_empathetic": "Empático/a", "trait_narcissistic": "Narcisista", "trait_conscientious": "Concienzudo/a",
-        "trait_open_experience": "Abierto/a a la Experiencia", "trait_neurotic": "Neurótico/a", "trait_agreeable": "Amable/Complaciente",
-        "trait_psychoticism": "Psicoticismo", "trait_manipulative": "Manipulador/a", "trait_other": "Otro",
-        "diag_none": "Ninguno conocido", "diag_depression": "Depresión", "diag_anxiety": "Trastorno de Ansiedad",
-        "diag_bipolar": "Trastorno Bipolar", "diag_schizophrenia": "Esquizofrenia", "diag_ptsd": "TEPT",
-        "diag_personality_disorder": "Trastorno de la Personalidad", "diag_adhd": "TDAH",
-        "diag_substance_use_disorder": "Trastorno por Uso de Sustancias", "diag_eating_disorder": "Trastorno Alimentario", "diag_other": "Otro",
+        "crime_none": "Ninguno", "crime_theft": "Robo/Hurto", "crime_assault": "Lesiones",
+        "crime_drug_trafficking": "Tráfico Drogas", "crime_fraud": "Fraude", "crime_public_order": "Desórden Público",
+        "crime_domestic_violence": "Violencia Domést.", "crime_terrorism_related": "Rel. Terrorismo",
+        "crime_cybercrime": "Ciberdelincuencia", "crime_homicide": "Homicidio", "crime_other": "Otro",
+        "trait_responsible": "Responsable", "trait_impulsive": "Impulsivo", "trait_introverted": "Introvertido",
+        "trait_extroverted": "Extrovertido", "trait_anxious": "Ansioso", "trait_aggressive": "Agresivo",
+        "trait_empathetic": "Empático", "trait_narcissistic": "Narcisista", "trait_conscientious": "Concienzudo",
+        "trait_open_experience": "Abierto Exper.", "trait_neurotic": "Neurótico", "trait_agreeable": "Amable",
+        "trait_psychoticism": "Psicoticismo", "trait_manipulative": "Manipulador", "trait_other": "Otro",
+        "diag_none": "Ninguno", "diag_depression": "Depresión", "diag_anxiety": "Ansiedad",
+        "diag_bipolar": "Bipolar", "diag_schizophrenia": "Esquizofrenia", "diag_ptsd": "TEPT",
+        "diag_personality_disorder": "Trast. Personalidad", "diag_adhd": "TDAH",
+        "diag_substance_use_disorder": "Trast. Uso Sust.", "diag_eating_disorder": "Trast. Alimentario", "diag_other": "Otro",
         "yes": "Sí", "no": "No", "submit": "Evaluar y Generar Informes",
-        "download_report": "Descargar Informe PDF", "error_processing": "Error al procesar los datos:",
-        "report_generated": "Informe generado.", "prediction": "Predicción de Riesgo", "confidence": "Confianza",
-        "recommendations": "Recomendaciones", "data_summary": "Resumen de Datos del Sujeto",
-        "cover_page_title": "Informe Confidencial de Inteligencia Conductual", "subject_id_pdf": "ID del Sujeto (Informe)",
-        "report_date": "Fecha del Informe", "lime_report_title": "Informe LIME", "shap_report_title": "Informe SHAP",
-        "xai_explanations_title": "Explicaciones de IA (LIME & SHAP)", "risk_level_low": "Bajo",
+        "download_report": "Descargar Informe PDF", "error_processing": "Error procesando datos:", # Acortado
+        "report_generated": "Informe generado.", "prediction": "Predicción Riesgo", "confidence": "Confianza", # Acortado
+        "recommendations": "Recomendaciones", "data_summary": "Resumen Datos Sujeto", # Acortado
+        "cover_page_title": "Informe Confidencial Inteligencia Conductual", # Acortado
+        "subject_id_pdf": "ID Sujeto (Informe)", # Acortado
+        "report_date": "Fecha Informe", "lime_report_title": "Informe LIME", "shap_report_title": "Informe SHAP", # Acortado
+        "xai_explanations_title": "Explicaciones IA (LIME & SHAP)", "risk_level_low": "Bajo", # Acortado
         "risk_level_medium": "Medio", "risk_level_high": "Alto", "page": "Página", "confidential_footer": "CONFIDENCIAL",
-        "model_not_trained_warning": "Advertencia: Modelo no entrenado o datos insuficientes. Usando lógica de placeholder.",
-        "xai_skipped_warning": "Explicaciones XAI omitidas (modelo o datos de prueba no disponibles).",
-        "error_prediction": "Error en predicción:", "error_xai": "Error en XAI:", "error_pdf": "Error en PDF:",
-        "input_user_id_warning": "Por favor, ingrese un ID de Sujeto.",
+        "model_not_trained_warning": "Advertencia: Modelo no entrenado. Usando datos placeholder.", # Acortado
+        "xai_skipped_warning": "XAI omitido (modelo/datos no disponibles).", # Acortado
+        "error_prediction": "Error predicción:", "error_xai": "Error XAI:", "error_pdf": "Error PDF:", # Acortado
+        "input_user_id_warning": "Ingrese ID Sujeto.", # Acortado
     },
-    "en": { # Traducciones al inglés completadas
+    "en": { # Traducciones al inglés (también sin € y algunas acortadas para consistencia)
         "app_title": "Behavioral Intelligence Platform", "login_title": "Platform Access",
         "username": "Username", "password": "Password", "login_button": "Login",
         "logout_button": "Logout", "wrong_credentials": "Incorrect username or password.",
         "select_language": "Select Language", "language_en": "English", "language_es": "Spanish (Español)",
         "form_title": "Subject Evaluation Form", "user_id": "Subject ID", "age": "Age",
-        "income": "Annual Income (€) (Optional)", "education_level_new": "Education Level",
+        "income": "Annual Income (Optional)", # MODIFICADO AQUÍ - SIN SÍMBOLO €
+        "education_level_new": "Education Level",
         "substance_use": "Substance Use", "country_origin": "Country of Origin", "city_origin": "City of Origin",
-        "criminal_record": "Criminal Record (Main Type)", "personality_traits": "Personality Traits (Dominant)",
-        "previous_diagnoses": "Previous Diagnoses (Main)", "reason_interest": "Reason for Interest/Case",
-        "family_terrorism_history": "Family History of Terrorism/Extremism",
-        "psychological_profile_notes": "Psychological Profile (Notes)", "clinical_history_summary": "Clinical History (Summary)",
+        "criminal_record": "Criminal Record", "personality_traits": "Personality Traits",
+        "previous_diagnoses": "Previous Diagnoses", "reason_interest": "Reason for Interest/Case",
+        "family_terrorism_history": "Family History Terrorism/Extremism",
+        "psychological_profile_notes": "Psychological Profile", "clinical_history_summary": "Clinical History",
         "studies_none": "None", "studies_primary": "Primary", "studies_secondary": "Secondary",
-        "studies_vocational": "Vocational Training", "studies_bachelor": "Bachelor's Degree", "studies_master": "Master's Degree",
+        "studies_vocational": "Vocational", "studies_bachelor": "Bachelor's", "studies_master": "Master's",
         "studies_phd": "PhD", "studies_other": "Other",
-        "substance_none": "None known", "substance_alcohol": "Alcohol", "substance_cannabis": "Cannabis", "substance_cocaine": "Cocaine",
-        "substance_amphetamines": "Amphetamines/Methamphetamines", "substance_opiates": "Opiates", "substance_benzodiazepines": "Benzodiazepines",
+        "substance_none": "None", "substance_alcohol": "Alcohol", "substance_cannabis": "Cannabis", "substance_cocaine": "Cocaine",
+        "substance_amphetamines": "Amphetamines", "substance_opiates": "Opiates", "substance_benzodiazepines": "Benzodiazepines",
         "substance_hallucinogens": "Hallucinogens", "substance_tobacco": "Tobacco", "substance_new_psychoactive": "NPS", "substance_other": "Other",
-        "crime_none": "None known", "crime_theft": "Theft", "crime_assault": "Assault",
-        "crime_drug_trafficking": "Drug Trafficking", "crime_fraud": "Fraud", "crime_public_order": "Public Order Offences",
-        "crime_domestic_violence": "Domestic Violence", "crime_terrorism_related": "Terrorism-related Offences",
-        "crime_cybercrime": "Cybercrime", "crime_homicide": "Homicide/Murder", "crime_other": "Other",
+        "crime_none": "None", "crime_theft": "Theft", "crime_assault": "Assault",
+        "crime_drug_trafficking": "Drug Trafficking", "crime_fraud": "Fraud", "crime_public_order": "Public Order",
+        "crime_domestic_violence": "Domestic Viol.", "crime_terrorism_related": "Terrorism Rel.",
+        "crime_cybercrime": "Cybercrime", "crime_homicide": "Homicide", "crime_other": "Other",
         "trait_responsible": "Responsible", "trait_impulsive": "Impulsive", "trait_introverted": "Introverted",
         "trait_extroverted": "Extroverted", "trait_anxious": "Anxious", "trait_aggressive": "Aggressive",
         "trait_empathetic": "Empathetic", "trait_narcissistic": "Narcissistic", "trait_conscientious": "Conscientious",
-        "trait_open_experience": "Open to Experience", "trait_neurotic": "Neurotic", "trait_agreeable": "Agreeable",
+        "trait_open_experience": "Open to Exp.", "trait_neurotic": "Neurotic", "trait_agreeable": "Agreeable",
         "trait_psychoticism": "Psychoticism", "trait_manipulative": "Manipulative", "trait_other": "Other",
-        "diag_none": "None known", "diag_depression": "Depression", "diag_anxiety": "Anxiety Disorder",
-        "diag_bipolar": "Bipolar Disorder", "diag_schizophrenia": "Schizophrenia", "diag_ptsd": "PTSD",
-        "diag_personality_disorder": "Personality Disorder", "diag_adhd": "ADHD",
-        "diag_substance_use_disorder": "Substance Use Disorder", "diag_eating_disorder": "Eating Disorder", "diag_other": "Other",
-        "yes": "Yes", "no": "No", "submit": "Evaluate and Generate Reports",
+        "diag_none": "None", "diag_depression": "Depression", "diag_anxiety": "Anxiety",
+        "diag_bipolar": "Bipolar", "diag_schizophrenia": "Schizophrenia", "diag_ptsd": "PTSD",
+        "diag_personality_disorder": "Personality Dis.", "diag_adhd": "ADHD",
+        "diag_substance_use_disorder": "Substance Use Dis.", "diag_eating_disorder": "Eating Dis.", "diag_other": "Other",
+        "yes": "Yes", "no": "No", "submit": "Evaluate & Generate Reports",
         "download_report": "Download PDF Report", "error_processing": "Error processing data:",
         "report_generated": "Report generated.", "prediction": "Risk Prediction", "confidence": "Confidence",
         "recommendations": "Recommendations", "data_summary": "Subject Data Summary",
@@ -108,12 +111,16 @@ translations = {
         "report_date": "Report Date", "lime_report_title": "LIME Report", "shap_report_title": "SHAP Report",
         "xai_explanations_title": "AI Explanations (LIME & SHAP)", "risk_level_low": "Low",
         "risk_level_medium": "Medium", "risk_level_high": "High", "page": "Page", "confidential_footer": "CONFIDENTIAL",
-        "model_not_trained_warning": "Warning: Model not trained or insufficient data. Using placeholder logic.",
-        "xai_skipped_warning": "XAI explanations skipped (model or test data unavailable).",
+        "model_not_trained_warning": "Warning: Model not trained. Using placeholder data.",
+        "xai_skipped_warning": "XAI skipped (model/data unavailable).",
         "error_prediction": "Prediction error:", "error_xai": "XAI error:", "error_pdf": "PDF error:",
-        "input_user_id_warning": "Please enter a Subject ID.",
+        "input_user_id_warning": "Enter Subject ID.",
     }
 }
+
+# --- El resto del código (Estado de Sesión, Login, Modelo, Clase PDF, UI) ---
+# --- COPIA EL RESTO DEL CÓDIGO DE LA RESPUESTA ANTERIOR (LA MÁS COMPLETA) ---
+# --- Y SÓLO REEMPLAZA LA CLASE ProfessionalPDF CON LA SIGUIENTE VERSIÓN ---
 
 # --- Estado de Sesión ---
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
@@ -151,36 +158,36 @@ if st.sidebar.button(get_translation("logout_button")):
     st.experimental_rerun()
 
 # --- Modelo y Features (Actualizado) ---
-NEW_FEATURE_NAMES = [ # Features para el modelo placeholder actualizado
+NEW_FEATURE_NAMES = [ 
     'age', 'income', 'education_level_numeric', 'substance_use_numeric',
     'criminal_record_numeric', 'personality_traits_numeric', 'previous_diagnoses_numeric'
 ]
 CLASS_NAMES = [get_translation("risk_level_low"), get_translation("risk_level_high")]
 
 @st.cache_data
-def load_example_data_for_new_model(): # Datos para el modelo con nuevas features
-    num_samples = 40 # Más muestras para estabilidad
+def load_example_data_for_new_model(): 
+    num_samples = 40 
     data = {
         'age': np.random.randint(18, 70, num_samples),
         'income': np.random.randint(15000, 120000, num_samples),
-        'education_level_numeric': np.random.randint(0, 7, num_samples), # 0-6 para 7 opciones
-        'substance_use_numeric': np.random.randint(0, 10, num_samples), # 0-9 para 10 opciones
+        'education_level_numeric': np.random.randint(0, 7, num_samples), 
+        'substance_use_numeric': np.random.randint(0, 10, num_samples), 
         'criminal_record_numeric': np.random.randint(0, 10, num_samples),
         'personality_traits_numeric': np.random.randint(0, 14, num_samples),
         'previous_diagnoses_numeric': np.random.randint(0, 10, num_samples),
-        'risk_target': np.random.randint(0, 2, num_samples) # Target binario aleatorio
+        'risk_target': np.random.randint(0, 2, num_samples) 
     }
     return pd.DataFrame(data)
 
 @st.cache_resource
 def train_new_model(df_train):
-    if df_train.empty or len(df_train) < 20: # Umbral aumentado
+    if df_train.empty or len(df_train) < 20: 
         return None, pd.DataFrame(columns=NEW_FEATURE_NAMES)
     X = df_train[NEW_FEATURE_NAMES]
     y = df_train['risk_target']
-    if len(np.unique(y)) < 2 : # Necesita al menos dos clases para entrenar
+    if len(np.unique(y)) < 2 : 
          st.warning("Target con una sola clase. El modelo no puede entrenar.")
-         return None, X # Devolver X para que X_test_df_global no sea None
+         return None, X 
     model = RandomForestClassifier(random_state=42, class_weight='balanced', n_estimators=50, max_depth=10)
     try:
         model.fit(X, y)
@@ -194,19 +201,24 @@ trained_model_new, X_test_df_global_new = train_new_model(df_training_data_new.c
 if trained_model_new is None and st.session_state.logged_in:
     st.warning(get_translation("model_not_trained_warning"))
 
-# --- Clase PDF (igual que antes, pero asegúrate que los set_font usan PDF_FONT_FAMILY) ---
+# --- Clase PDF Profesional con Helvetica (Simplificada) ---
 class ProfessionalPDF(FPDF):
-    # ... (COPIA LA CLASE ProfessionalPDF COMPLETA DE LA RESPUESTA ANTERIOR QUE USA HELVETICA)
-    # ... (ASEGÚRATE QUE create_data_summary_section ESTÁ ACTUALIZADO COMO ABAJO)
-    PDF_FONT_FAMILY = 'Helvetica' 
+    PDF_FONT_FAMILY = 'Helvetica' # Usar Helvetica como base
 
-    def __init__(self, *args, **kwargs): # Copia de la anterior
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_auto_page_break(auto=True, margin=15)
-        self.set_font(self.PDF_FONT_FAMILY, "", 12) 
+        # No es necesario llamar a add_font para las fuentes base como Helvetica
+        self.set_font(self.PDF_FONT_FAMILY, "", 12) # Establecer Helvetica por defecto
         self.alias_nb_pages()
 
-    def header(self): # Copia de la anterior
+    # Los métodos header, footer, chapter_title, chapter_body, cover_page,
+    # create_data_summary_section, recommendations_section, xai_explanations_section,
+    # y generate_full_report deben usar self.set_font(self.PDF_FONT_FAMILY, ...)
+    # como ya estaban haciendo en la versión anterior que usaba Helvetica.
+    # NO es necesario un método setup_unicode_fonts ni get_current_font_family.
+
+    def header(self):
         if self.page_no() == 1: return 
         self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
         self.cell(0, 10, get_translation("app_title"), 0, 0, 'C') 
@@ -219,7 +231,7 @@ class ProfessionalPDF(FPDF):
         self.line(self.l_margin, self.get_y(), self.w - self.r_margin, self.get_y())
         self.ln(5)
 
-    def footer(self): # Copia de la anterior
+    def footer(self):
         if self.page_no() == 1: return 
         self.set_y(-15)
         self.set_font(self.PDF_FONT_FAMILY, 'I', 8)
@@ -227,18 +239,19 @@ class ProfessionalPDF(FPDF):
         self.cell(0, 10, get_translation("confidential_footer"), 0, 0, 'C')
         self.set_text_color(0)
 
-    def chapter_title(self, title_key): # Copia de la anterior
+    def chapter_title(self, title_key):
         self.set_font(self.PDF_FONT_FAMILY, 'B', 14)
         self.set_fill_color(220, 220, 220) 
         self.cell(0, 10, get_translation(title_key), 0, 1, 'L', True)
         self.ln(5)
 
-    def chapter_body(self, body_text): # Copia de la anterior
+    def chapter_body(self, body_text):
         self.set_font(self.PDF_FONT_FAMILY, '', 11)
+        # FPDF con fuentes base no maneja bien saltos de línea \n dentro de cell. Usar multi_cell.
         self.multi_cell(0, 7, str(body_text)) 
         self.ln(5)
 
-    def cover_page(self, report_data): # Copia de la anterior
+    def cover_page(self, report_data):
         self.add_page()
         self.set_font(self.PDF_FONT_FAMILY, 'B', 22) 
         self.set_y(70)
@@ -252,46 +265,36 @@ class ProfessionalPDF(FPDF):
         self.set_font(self.PDF_FONT_FAMILY, 'I', 10)
         self.cell(0, 10, get_translation("confidential_footer").upper() + " - SOLO PARA USO AUTORIZADO", 0, 0, 'C')
     
-    def create_data_summary_section(self, report_data): # ACTUALIZADO
+    def create_data_summary_section(self, report_data):
         self.chapter_title("data_summary")
-        
-        # Usar directamente las claves de traducción que coinciden con las del formulario
-        # Asegúrate que estas claves existan en `report_data` (lo cual deberían si vienen del formulario)
         fields_to_display_keys = [
             "user_id", "prediction", "confidence", "age", "education_level_new", "substance_use",
             "country_origin", "city_origin", "criminal_record", "personality_traits",
             "previous_diagnoses", "reason_interest", "family_terrorism_history",
             "psychological_profile_notes", "clinical_history_summary", "income"
         ]
-        # Mapeo de la clave de traducción a la clave real en report_data si son diferentes
         key_map = { 
             "user_id": "user_id", "prediction": "prediction_label", "confidence": "confidence_str",
-            "education_level_new": "education_level_str_new", # Usamos la _str_new para el texto
-             # El resto de las claves deberían coincidir directamente o con _str
+            "education_level_new": "education_level_str_new",
             "substance_use": "substance_use_str", "criminal_record": "criminal_record_str",
             "personality_traits": "personality_traits_str", "previous_diagnoses": "previous_diagnoses_str"
         }
-
         for i, label_key in enumerate(fields_to_display_keys):
-            data_key_actual = key_map.get(label_key, label_key) # Usa el mapeo o la clave tal cual
+            data_key_actual = key_map.get(label_key, label_key)
             field_label = get_translation(label_key)
             field_value = str(report_data.get(data_key_actual, "N/A"))
             fill = i % 2 == 0
-            
             page_height_available = self.h - self.b_margin
-            if self.get_y() > page_height_available - 20: # Margen reducido
-                self.add_page()
-
-            current_y = self.get_y()
+            if self.get_y() > page_height_available - 20: self.add_page()
+            current_y_pos = self.get_y()
             self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
-            self.multi_cell(70, 7, field_label, border=0, align='L', fill=fill, ln=0)
-            
-            self.set_xy(self.l_margin + 70, current_y)
+            self.multi_cell(70, 7, field_label, border=0, align='L', fill=fill, ln=0) 
+            self.set_xy(self.l_margin + 70, current_y_pos) 
             self.set_font(self.PDF_FONT_FAMILY, '', 10)
             self.multi_cell(0, 7, field_value, border=0, align='L', fill=fill, ln=1)
         self.ln(5)
 
-    def recommendations_section(self, recommendations_list): # Copia de la anterior
+    def recommendations_section(self, recommendations_list):
         self.chapter_title("recommendations")
         if recommendations_list and isinstance(recommendations_list, list):
             for i, rec in enumerate(recommendations_list):
@@ -300,11 +303,10 @@ class ProfessionalPDF(FPDF):
                 self.set_font(self.PDF_FONT_FAMILY, '', 10)
                 self.multi_cell(0, 7, rec.get('description', 'N/A'))
                 self.ln(3)
-        else:
-            self.chapter_body("No recommendations available.")
+        else: self.chapter_body("No recommendations available.")
         self.ln(5)
 
-    def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df): # Usa NEW_FEATURE_NAMES
+    def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
         self.chapter_title("xai_explanations_title")
         self.set_font(self.PDF_FONT_FAMILY, 'B', 12)
         self.cell(0, 10, get_translation("lime_report_title"), 0, 1, 'L')
@@ -334,15 +336,16 @@ class ProfessionalPDF(FPDF):
         else: self.multi_cell(0, 7, "SHAP values not available.")
         self.ln(5)
 
-    def generate_full_report(self, report_data, recommendations, lime_expl, shap_vals, x_instance_df): # Copia de la anterior
+    def generate_full_report(self, report_data, recommendations, lime_expl, shap_vals, x_instance_df):
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.recommendations_section(recommendations)
         if lime_expl or (shap_vals is not None):
             self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
+# --- Fin de la Clase PDF ---
 
-# --- Lógica App Streamlit ---
-def predict_risk_level(form_input_data_model, model, feature_list): # Sin cambios
+# --- Lógica App Streamlit (sin cambios desde la última versión completa) ---
+def predict_risk_level(form_input_data_model, model, feature_list):
     if model is None: return CLASS_NAMES[0], 0.10
     try:
         input_df = pd.DataFrame([form_input_data_model])[feature_list]
@@ -353,7 +356,7 @@ def predict_risk_level(form_input_data_model, model, feature_list): # Sin cambio
         st.error(f"{get_translation('error_prediction')} {e}")
         return CLASS_NAMES[0], 0.05
 
-def generate_behavioral_recommendations(pred_label, conf): # Sin cambios
+def generate_behavioral_recommendations(pred_label, conf):
     recs = []
     if pred_label == CLASS_NAMES[1]:
         recs.append({"title": get_translation("recommendations") + " - Prioritaria", "description": "Evaluación exhaustiva y apoyo intensivo."})
@@ -363,11 +366,8 @@ def generate_behavioral_recommendations(pred_label, conf): # Sin cambios
     else: recs.append({"title": "Mantenimiento Preventivo", "description": "Continuar buenas prácticas."})
     return recs
 
-# --- UI Streamlit (Formulario Actualizado) ---
 st.title(get_translation("app_title"))
 
-# --- Definición de opciones para desplegables (usando get_translation) ---
-# Se generan dinámicamente para que el idioma se aplique
 def get_options_dict(prefix, keys):
     return {f"{prefix}_{key}": get_translation(f"{prefix}_{key}") for key in keys}
 
@@ -383,8 +383,6 @@ criminal_record_options = get_options_dict("crime", crime_keys)
 personality_trait_options = get_options_dict("trait", trait_keys)
 diagnosis_options = get_options_dict("diag", diag_keys)
 
-# Mapeo para convertir claves de formulario a valores numéricos para el modelo
-# Los valores numéricos son simplemente el índice en la lista de claves (ordenado)
 def create_numeric_map(option_keys_list):
     return {key: i for i, key in enumerate(option_keys_list)}
 
@@ -399,9 +397,9 @@ with st.form(key="evaluation_form_final"):
     st.header(get_translation("form_title"))
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown(f"#### {get_translation('Información Básica y Contexto')}") # Traducción directa
+        st.markdown(f"#### {get_translation('Información Básica y Contexto')}")
         age_form = st.number_input(get_translation("age"), 18, 100, 30)
-        income_form = st.number_input(get_translation("income"), 0, 250000, 30000, 1000, help="Este campo es opcional.")
+        income_form = st.number_input(get_translation("income"), 0, 250000, 30000, 1000, help="Este campo es opcional.") # Etiqueta ya no tiene €
         education_key_selected = st.selectbox(get_translation("education_level_new"), list(education_options_new.keys()), format_func=lambda x: education_options_new[x])
         substance_key_selected = st.selectbox(get_translation("substance_use"), list(substance_options.keys()), format_func=lambda x: substance_options[x])
         country_origin_form = st.text_input(get_translation("country_origin"))
@@ -411,7 +409,8 @@ with st.form(key="evaluation_form_final"):
         crime_key_selected = st.selectbox(get_translation("criminal_record"), list(criminal_record_options.keys()), format_func=lambda x: criminal_record_options[x])
         trait_key_selected = st.selectbox(get_translation("personality_traits"), list(personality_trait_options.keys()), format_func=lambda x: personality_trait_options[x])
         diag_key_selected = st.selectbox(get_translation("previous_diagnoses"), list(diagnosis_options.keys()), format_func=lambda x: diagnosis_options[x])
-    st.markdown(f"#### {get_translation('Información Cualitativa Detallada')}") # Traducción directa
+    
+    st.markdown(f"#### {get_translation('Información Cualitativa Detallada')}")
     reason_interest_form = st.text_area(get_translation("reason_interest"), height=75, placeholder="Describa el motivo del análisis...")
     family_terrorism_history_form = st.text_area(get_translation("family_terrorism_history"), height=75, placeholder="Detalles sobre antecedentes familiares...")
     psychological_profile_notes_form = st.text_area(get_translation("psychological_profile_notes"), height=100, placeholder="Observaciones, evaluaciones previas...")
@@ -421,7 +420,7 @@ with st.form(key="evaluation_form_final"):
 
 if submit_button_final:
     subject_id_generated = f"SID_{st.session_state.username.upper()}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-    form_data_for_model_dict = { # Datos para el NUEVO modelo
+    form_data_for_model_dict = {
         "age": age_form, "income": income_form,
         "education_level_numeric": education_numeric_map.get(education_key_selected, 0),
         "substance_use_numeric": substance_numeric_map.get(substance_key_selected, 0),
@@ -429,7 +428,7 @@ if submit_button_final:
         "personality_traits_numeric": personality_trait_numeric_map.get(trait_key_selected, 0),
         "previous_diagnoses_numeric": diagnosis_numeric_map.get(diag_key_selected, 0),
     }
-    report_data_payload = { # Todos los datos para el informe (incluyendo strings de los selectores)
+    report_data_payload = {
         "user_id": subject_id_generated, "age": age_form, "income": income_form,
         "education_level_str_new": education_options_new.get(education_key_selected, "N/A"),
         "substance_use_str": substance_options.get(substance_key_selected, "N/A"),
@@ -460,7 +459,7 @@ if submit_button_final:
             if isinstance(trained_model_new, RandomForestClassifier):
                 shap_explainer = shap.TreeExplainer(trained_model_new, X_test_df_global_new)
                 shap_values_all = shap_explainer.shap_values(instance_df_xai)
-            else: # KernelExplainer como fallback
+            else:
                 X_test_summary = shap.kmeans(X_test_df_global_new, min(50, len(X_test_df_global_new)))
                 shap_explainer = shap.KernelExplainer(trained_model_new.predict_proba, X_test_summary)
                 shap_values_all = shap_explainer.shap_values(instance_df_xai)
@@ -478,7 +477,7 @@ if submit_button_final:
         pdf = ProfessionalPDF()
         pdf.generate_full_report(report_data_payload, recommendations_list, lime_expl_obj, shap_vals_pred_class, instance_df_xai)
         pdf_file_name = f"Informe_{report_data_payload['user_id']}_{datetime.now().strftime('%Y%m%d')}.pdf"
-        pdf_bytes = pdf.output(dest='S').encode('latin-1')
+        pdf_bytes = pdf.output(dest='S').encode('latin-1') 
         st.download_button(get_translation("download_report"), pdf_bytes, pdf_file_name, "application/pdf")
         st.success(get_translation("report_generated"))
     except Exception as e: st.error(f"{get_translation('error_pdf')} {e}\n{traceback.format_exc()}")
