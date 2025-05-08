@@ -299,45 +299,34 @@ class ProfessionalPDF(FPDF):
             self.chapter_body("No recommendations available.")
         self.ln(5)
 
-    # --- MÉTODO XAI VACÍO ---
+    # --- MÉTODO XAI VACÍO (NO HACE NADA) ---
     def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
-        """Sección de explicaciones XAI omitida temporalmente."""
-        pass 
-        # Si quieres que aparezca algo en el PDF indicando la omisión:
-        # self.chapter_title("xai_explanations_title")
-        # self.set_font(self.PDF_FONT_FAMILY, 'I', 10)
-        # self.multi_cell(0, 7, "(Sección de Explicaciones XAI no incluida en esta versión del informe)")
-        # self.ln(5)
-
+        """Sección de explicaciones XAI omitida."""
+        pass # No se añade nada al PDF desde este método
 
     def generate_full_report(self, report_data, recommendations, lime_expl, shap_vals, x_instance_df):
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.recommendations_section(recommendations)
-        # --- LLAMADA A SECCIÓN XAI COMENTADA (o se puede dejar si el método está vacío) ---
-        # La llamada a un método vacío no hará nada.
-        # Si descomentas la línea de abajo Y el contenido de xai_explanations_section, se incluirá.
+        # --- LLAMADA A SECCIÓN XAI EFECTIVAMENTE COMENTADA ---
+        # Aunque la línea de abajo se ejecute, el método xai_explanations_section está vacío y no hará nada.
         # self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
 
-# --- Lógica App Streamlit ---
+# --- Lógica App Streamlit (sin cambios desde la última versión completa) ---
 def predict_risk_level(form_input_data_model, model, feature_list):
     if model is None: return CLASS_NAMES[0], 0.10
     try:
-        # Asegurar que las columnas estén en el orden correcto
         input_df = pd.DataFrame([form_input_data_model], columns=feature_list)
         pred_proba = model.predict_proba(input_df)[0]
         pred_idx = np.argmax(pred_proba)
         return CLASS_NAMES[pred_idx], pred_proba[pred_idx]
     except Exception as e:
         st.error(f"{get_translation('error_prediction')} {e}")
-        # Imprimir detalles del error en consola para depuración
         print(f"Predict Error Details: {traceback.format_exc()}") 
-        # Verificar el DataFrame de entrada
         print(f"Input DataFrame for prediction:\n{pd.DataFrame([form_input_data_model])}")
         print(f"Expected features: {feature_list}")
         return CLASS_NAMES[0], 0.05
-
 
 def generate_behavioral_recommendations(pred_label, conf):
     recs = []
@@ -433,10 +422,9 @@ if submit_button_final:
     for r in recommendations_list: st.write(f"**{r['title']}**: {r['description']}")
     
     # --- Cálculo XAI (se ejecuta pero no se añade al PDF) ---
-    lime_expl_obj, shap_vals_pred_class, instance_df_xai = None, None, pd.DataFrame([form_data_for_model_dict])[NEW_FEATURE_NAMES]
+    lime_expl_obj, shap_vals_pred_class, instance_df_xai = None, None, pd.DataFrame([form_data_for_model_dict], columns=NEW_FEATURE_NAMES) # Asegurar columnas
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
-            # Asegurarse que el DataFrame para LIME/SHAP tenga las columnas correctas
             instance_df_xai = instance_df_xai[NEW_FEATURE_NAMES]
             lime_explainer = lime.lime_tabular.LimeTabularExplainer(X_test_df_global_new[NEW_FEATURE_NAMES].values, feature_names=NEW_FEATURE_NAMES,
                                                                     class_names=CLASS_NAMES, mode='classification', discretize_continuous=True)
@@ -463,7 +451,7 @@ if submit_button_final:
     # --- Generación del PDF (SIN sección XAI activa) ---
     try:
         pdf = ProfessionalPDF()
-        pdf.generate_full_report( # La función generate_full_report ya NO llama a xai_section
+        pdf.generate_full_report( 
             report_data_payload, 
             recommendations_list, 
             lime_expl_obj, 
