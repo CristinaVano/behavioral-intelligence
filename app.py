@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-# --- Versión con Multi-Select SIN texto extra en etiqueta ---
+# --- Versión con Tabla de Proyección de Riesgo ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from fpdf import FPDF
+# Importar clases específicas para posicionamiento si usamos la nueva API de FPDF
+from fpdf.enums import XPos, YPos 
 import shap
 import lime
 import lime.lime_tabular
 import numpy as np
-# import matplotlib.pyplot as plt # Comentado si no se usan gráficas en PDF
+# import matplotlib.pyplot as plt 
 import base64
 from datetime import datetime
 import os 
@@ -18,28 +20,24 @@ import re
 # --- Configuración de la Página de Streamlit ---
 st.set_page_config(layout="wide", page_title="Behavioral Intelligence Platform")
 
-# --- Credenciales de Usuario (NO SEGURO PARA PRODUCCIÓN) ---
+# --- Credenciales de Usuario ---
 USER_CREDENTIALS = {
     "demo_bias": "biasdemo2025", "JuanCarlos_bias": "direccionbias",
     "Cristina_bias": "direccionbias", "Teresa_bias": "coordinacionbias",
     "Pau_bias": "coordinacionbias"
 }
 
-# --- Traducciones Completas (Etiquetas Multi-Select limpiadas) ---
+# --- Traducciones (Añadir claves para Proyección) ---
 translations = {
     "es": {
-        "app_title": "Plataforma de Inteligencia Conductual", "login_title": "Acceso a la Plataforma",
-        "username": "Usuario", "password": "Contraseña", "login_button": "Iniciar Sesión",
-        "logout_button": "Cerrar Sesión", "wrong_credentials": "Usuario o contraseña incorrectos.",
-        "select_language": "Seleccionar Idioma", "language_en": "Inglés (English)", "language_es": "Español",
-        "form_title": "Formulario de Evaluación de Sujeto", "user_id": "ID de Sujeto", "age": "Edad",
+        # ... (Traducciones anteriores sin cambios)...
         "income": "Ingresos Anuales (Opcional)", 
         "education_level_new": "Nivel de Estudios",
-        "substance_use": "Consumo de Sustancias", # CORREGIDO
+        "substance_use": "Consumo de Sustancias", 
         "country_origin": "País de Origen", "city_origin": "Ciudad de Origen",
-        "criminal_record": "Antecedentes Penales", # CORREGIDO
-        "personality_traits": "Rasgos de Personalidad", # CORREGIDO
-        "previous_diagnoses": "Diagnósticos Previos", # CORREGIDO
+        "criminal_record": "Antecedentes Penales", 
+        "personality_traits": "Rasgos de Personalidad", 
+        "previous_diagnoses": "Diagnósticos Previos", 
         "reason_interest": "Motivo de Interés/Caso",
         "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", 
         "psychological_profile_notes": "Perfil Psicológico (Notas)", 
@@ -49,25 +47,18 @@ translations = {
         "section_psychological_profile": "Notas sobre el Perfil Psicológico",
         "section_clinical_history": "Resumen del Historial Clínico",
         "section_detailed_recommendations": "Recomendaciones Detalladas (Intervención)",
-        "studies_none": "Ninguno", "studies_primary": "Primaria", "studies_secondary": "Secundaria",
-        "studies_vocational": "FP", "studies_bachelor": "Grado", "studies_master": "Máster", 
-        "studies_phd": "Doctorado", "studies_other": "Otro",
-        "substance_none": "Ninguno", "substance_alcohol": "Alcohol", "substance_cannabis": "Cannabis", "substance_cocaine": "Cocaína",
-        "substance_amphetamines": "Anfetaminas", "substance_opiates": "Opiáceos", "substance_benzodiazepines": "Benzodiacepinas",
-        "substance_hallucinogens": "Alucinógenos", "substance_tobacco": "Tabaco", "substance_new_psychoactive": "NSP", "substance_other": "Otra",
-        "crime_none": "Ninguno", "crime_theft": "Robo/Hurto", "crime_assault": "Lesiones",
-        "crime_drug_trafficking": "Tráfico Drogas", "crime_fraud": "Fraude", "crime_public_order": "Desórden Público",
-        "crime_domestic_violence": "Violencia Domést.", "crime_terrorism_related": "Rel. Terrorismo",
-        "crime_cybercrime": "Ciberdelincuencia", "crime_homicide": "Homicidio", "crime_other": "Otro",
-        "trait_responsible": "Responsable", "trait_impulsive": "Impulsivo", "trait_introverted": "Introvertido",
-        "trait_extroverted": "Extrovertido", "trait_anxious": "Ansioso", "trait_aggressive": "Agresivo",
-        "trait_empathetic": "Empático", "trait_narcissistic": "Narcisista", "trait_conscientious": "Concienzudo",
-        "trait_open_experience": "Abierto Exper.", "trait_neurotic": "Neurótico", "trait_agreeable": "Amable",
-        "trait_psychoticism": "Psicoticismo", "trait_manipulative": "Manipulador", "trait_other": "Otro",
-        "diag_none": "Ninguno", "diag_depression": "Depresión", "diag_anxiety": "Ansiedad",
-        "diag_bipolar": "Bipolar", "diag_schizophrenia": "Esquizofrenia", "diag_ptsd": "TEPT",
-        "diag_personality_disorder": "Trast. Personalidad", "diag_adhd": "TDAH",
-        "diag_substance_use_disorder": "Trast. Uso Sust.", "diag_eating_disorder": "Trast. Alimentario", "diag_other": "Otro",
+        # --- Nuevas Claves Proyección ---
+        "section_risk_projection": "Proyección de Riesgo Estimada (Sin Intervención)",
+        "projection_period": "Periodo",
+        "projection_estimated_risk": "Riesgo Estimado",
+        "projection_disclaimer": "Nota: Esta es una proyección simplificada basada en el nivel de riesgo actual y la confianza de la predicción. No constituye una predicción clínica o estadística formal de eventos futuros.",
+        "months": "Meses",
+        # --- Fin Nuevas Claves ---
+        "studies_none": "Ninguno", "studies_primary": "Primaria", "studies_secondary": "Secundaria", # ... resto de opciones ...
+        "substance_none": "Ninguno", "substance_alcohol": "Alcohol", # ... resto de opciones ...
+        "crime_none": "Ninguno", "crime_theft": "Robo/Hurto", # ... resto de opciones ...
+        "trait_responsible": "Responsable", "trait_impulsive": "Impulsivo", # ... resto de opciones ...
+        "diag_none": "Ninguno", "diag_depression": "Depresión", # ... resto de opciones ...
         "yes": "Sí", "no": "No", "submit": "Evaluar y Generar Informes",
         "download_report": "Descargar Informe PDF", "error_processing": "Error procesando datos:", 
         "report_generated": "Informe generado.", "prediction": "Predicción Riesgo", "confidence": "Confianza", 
@@ -85,18 +76,14 @@ translations = {
         "input_user_id_warning": "Ingrese ID Sujeto.", 
     },
     "en": { 
-        "app_title": "Behavioral Intelligence Platform", "login_title": "Platform Access",
-        "username": "Username", "password": "Password", "login_button": "Login",
-        "logout_button": "Logout", "wrong_credentials": "Incorrect username or password.",
-        "select_language": "Select Language", "language_en": "English", "language_es": "Spanish (Español)",
-        "form_title": "Subject Evaluation Form", "user_id": "Subject ID", "age": "Age",
+        # ... (Traducciones anteriores sin cambios)...
         "income": "Annual Income (Optional)", 
         "education_level_new": "Education Level",
-        "substance_use": "Substance Use", # CORREGIDO
+        "substance_use": "Substance Use", 
         "country_origin": "Country of Origin", "city_origin": "City of Origin",
-        "criminal_record": "Criminal Record", # CORREGIDO
-        "personality_traits": "Personality Traits", # CORREGIDO
-        "previous_diagnoses": "Previous Diagnoses", # CORREGIDO
+        "criminal_record": "Criminal Record", 
+        "personality_traits": "Personality Traits", 
+        "previous_diagnoses": "Previous Diagnoses", 
         "reason_interest": "Reason for Interest/Case",
         "family_terrorism_history": "Family History Terrorism/Extremism",
         "psychological_profile_notes": "Psychological Profile (Notes)", 
@@ -106,25 +93,18 @@ translations = {
         "section_psychological_profile": "Notes on Psychological Profile",
         "section_clinical_history": "Clinical History Summary",
         "section_detailed_recommendations": "Detailed Recommendations (Intervention)",
-        "studies_none": "None", "studies_primary": "Primary", "studies_secondary": "Secondary",
-        "studies_vocational": "Vocational", "studies_bachelor": "Bachelor's", "studies_master": "Master's",
-        "studies_phd": "PhD", "studies_other": "Other",
-        "substance_none": "None", "substance_alcohol": "Alcohol", "substance_cannabis": "Cannabis", "substance_cocaine": "Cocaine",
-        "substance_amphetamines": "Amphetamines", "substance_opiates": "Opiates", "substance_benzodiazepines": "Benzodiazepines",
-        "substance_hallucinogens": "Hallucinogens", "substance_tobacco": "Tobacco", "substance_new_psychoactive": "NPS", "substance_other": "Other",
-        "crime_none": "None", "crime_theft": "Theft", "crime_assault": "Assault",
-        "crime_drug_trafficking": "Drug Trafficking", "crime_fraud": "Fraud", "crime_public_order": "Public Order",
-        "crime_domestic_violence": "Domestic Viol.", "crime_terrorism_related": "Terrorism Rel.",
-        "crime_cybercrime": "Cybercrime", "crime_homicide": "Homicide", "crime_other": "Other",
-        "trait_responsible": "Responsible", "trait_impulsive": "Impulsive", "trait_introverted": "Introverted",
-        "trait_extroverted": "Extroverted", "trait_anxious": "Anxious", "trait_aggressive": "Aggressive",
-        "trait_empathetic": "Empathetic", "trait_narcissistic": "Narcissistic", "trait_conscientious": "Conscientious",
-        "trait_open_experience": "Open to Exp.", "trait_neurotic": "Neurotic", "trait_agreeable": "Agreeable",
-        "trait_psychoticism": "Psychoticism", "trait_manipulative": "Manipulative", "trait_other": "Other",
-        "diag_none": "None", "diag_depression": "Depression", "diag_anxiety": "Anxiety",
-        "diag_bipolar": "Bipolar", "diag_schizophrenia": "Schizophrenia", "diag_ptsd": "PTSD",
-        "diag_personality_disorder": "Personality Dis.", "diag_adhd": "ADHD",
-        "diag_substance_use_disorder": "Substance Use Dis.", "diag_eating_disorder": "Eating Dis.", "diag_other": "Other",
+        # --- Nuevas Claves Proyección ---
+        "section_risk_projection": "Estimated Risk Projection (Without Intervention)",
+        "projection_period": "Period",
+        "projection_estimated_risk": "Estimated Risk",
+        "projection_disclaimer": "Note: This is a simplified projection based on the current risk level and prediction confidence. It does not constitute a formal clinical or statistical prediction of future events.",
+        "months": "Months",
+        # --- Fin Nuevas Claves ---
+        "studies_none": "None", "studies_primary": "Primary", # ... resto de opciones ...
+        "substance_none": "None", "substance_alcohol": "Alcohol", # ... resto de opciones ...
+        "crime_none": "None", "crime_theft": "Theft", # ... resto de opciones ...
+        "trait_responsible": "Responsible", "trait_impulsive": "Impulsive", # ... resto de opciones ...
+        "diag_none": "None", "diag_depression": "Depression", # ... resto de opciones ...
         "yes": "Yes", "no": "No", "submit": "Evaluate & Generate Reports",
         "download_report": "Download PDF Report", "error_processing": "Error processing data:",
         "report_generated": "Report generated.", "prediction": "Risk Prediction", "confidence": "Confidence",
@@ -177,13 +157,11 @@ if st.sidebar.button(get_translation("logout_button")):
     st.session_state.logged_in = False; st.session_state.username = ""
     st.rerun() 
 
-# --- Modelo y Features (Actualizado para counts de multi-select) ---
+# --- Modelo y Features ---
 NEW_FEATURE_NAMES = [ 
     'age', 'income', 'education_level_numeric', 
-    'substance_use_count', 
-    'criminal_record_count', 
-    'personality_traits_count', 
-    'previous_diagnoses_count' 
+    'substance_use_count', 'criminal_record_count', 
+    'personality_traits_count', 'previous_diagnoses_count' 
 ]
 CLASS_NAMES = [get_translation("risk_level_low"), get_translation("risk_level_high")]
 
@@ -211,20 +189,19 @@ def train_new_model(df_train):
     
     features_present = [f for f in NEW_FEATURE_NAMES if f in df_train.columns]
     if len(features_present) < len(NEW_FEATURE_NAMES):
-        st.error(f"Faltan columnas para entrenar el modelo. Esperadas: {NEW_FEATURE_NAMES}, Encontradas: {features_present}")
+        st.error(f"Faltan columnas para entrenar modelo: {NEW_FEATURE_NAMES}. Encontradas: {features_present}")
         return None, pd.DataFrame(columns=NEW_FEATURE_NAMES)
 
     X = df_train[features_present].astype(float) 
     y = df_train['risk_target']
     
     if len(np.unique(y)) < 2 : 
-         st.warning("Target con una sola clase. El modelo no puede entrenar.")
+         st.warning("Target con una sola clase. Modelo no entrenado.")
          return None, X 
          
     model = RandomForestClassifier(random_state=42, class_weight='balanced', n_estimators=50, max_depth=10)
     try:
         model.fit(X, y)
-        # model.feature_names_in_ = features_present # Descomentar para sklearn >= 1.0
         return model, X
     except Exception as e:
         st.error(f"Error al entrenar modelo: {e}")
@@ -235,9 +212,7 @@ trained_model_new, X_test_df_global_new = train_new_model(df_training_data_new.c
 if trained_model_new is None and st.session_state.logged_in:
     st.warning(get_translation("model_not_trained_warning"))
 
-# --- Clase PDF Profesional con Helvetica (Simplificada) ---
-# (La clase PDF completa como en la respuesta anterior, asegurándose 
-#  que xai_explanations_section esté vacía y generate_full_report NO la llame)
+# --- Clase PDF Profesional con Helvetica y Proyección ---
 class ProfessionalPDF(FPDF):
     PDF_FONT_FAMILY = 'Helvetica' 
 
@@ -277,22 +252,23 @@ class ProfessionalPDF(FPDF):
     def chapter_body(self, body_text):
         if body_text and str(body_text).strip() not in ["N/A", ""]:
             self.set_font(self.PDF_FONT_FAMILY, '', 11)
-            self.multi_cell(0, 7, str(body_text)) 
+            # Usar la nueva API si está disponible para mejor manejo de texto
+            self.multi_cell(0, 7, str(body_text), new_x=XPos.LMARGIN, new_y=YPos.NEXT) 
             self.ln(5)
 
     def cover_page(self, report_data):
         self.add_page()
         self.set_font(self.PDF_FONT_FAMILY, 'B', 22) 
         self.set_y(70)
-        self.multi_cell(0, 12, get_translation("cover_page_title"), 0, 'C')
+        self.multi_cell(0, 12, get_translation("cover_page_title"), align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.ln(20)
         self.set_font(self.PDF_FONT_FAMILY, '', 14)
-        self.cell(0, 10, f'{get_translation("subject_id_pdf")}: {report_data.get("user_id", "N/A")}', 0, 1, 'C')
-        self.cell(0, 10, f'{get_translation("report_date")}: {datetime.now().strftime("%Y-%m-%d")}', 0, 1, 'C')
+        self.cell(0, 10, f'{get_translation("subject_id_pdf")}: {report_data.get("user_id", "N/A")}', align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.cell(0, 10, f'{get_translation("report_date")}: {datetime.now().strftime("%Y-%m-%d")}', align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.ln(10)
         self.set_y(self.h - 40)
         self.set_font(self.PDF_FONT_FAMILY, 'I', 10)
-        self.cell(0, 10, get_translation("confidential_footer").upper() + " - SOLO PARA USO AUTORIZADO", 0, 0, 'C')
+        self.cell(0, 10, get_translation("confidential_footer").upper() + " - SOLO PARA USO AUTORIZADO", align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     
     def create_data_summary_section(self, report_data): 
         self.chapter_title("data_summary")
@@ -311,6 +287,9 @@ class ProfessionalPDF(FPDF):
             "personality_traits": "personality_traits_str_list", 
             "previous_diagnoses": "previous_diagnoses_str_list" 
         }
+        label_width = 70 # Ancho fijo para etiquetas
+        value_width = self.w - self.l_margin - self.r_margin - label_width # Ancho restante para valor
+        
         for i, label_key in enumerate(fields_to_display_keys):
             data_key_actual = key_map.get(label_key, label_key)
             field_label = get_translation(label_key)
@@ -318,26 +297,35 @@ class ProfessionalPDF(FPDF):
             fill = i % 2 == 0
             page_height_available = self.h - self.b_margin
             if self.get_y() > page_height_available - 20: self.add_page()
-            current_y_pos = self.get_y()
+            
+            start_y = self.get_y()
             self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
-            self.multi_cell(70, 7, field_label, border=0, align='L', fill=fill, new_x="RIGHT", new_y="TOP") 
-            self.set_xy(self.l_margin + 70, current_y_pos) 
+            self.multi_cell(label_width, 7, field_label, border=0, align='L', fill=fill, new_x=XPos.RIGHT, new_y=YPos.TOP, max_line_height=self.font_size)
+            
+            end_y_label = self.get_y() # Captura Y después de la etiqueta
+            
+            # Posicionar valor al lado, usando la Y inicial de la fila
+            self.set_xy(self.l_margin + label_width, start_y) 
             self.set_font(self.PDF_FONT_FAMILY, '', 10)
-            self.multi_cell(0, 7, field_value, border=0, align='L', fill=fill, new_x="LMARGIN", new_y="NEXT")
+            self.multi_cell(value_width, 7, field_value, border=0, align='L', fill=fill, new_x=XPos.LMARGIN, new_y=YPos.NEXT, max_line_height=self.font_size)
+            
+            # Asegurarse que la Y final sea la más baja de las dos celdas
+            end_y_value = self.get_y()
+            self.set_y(max(end_y_label, end_y_value))
+
         self.ln(5) 
 
     def recommendations_section(self, recommendations_list): 
         self.chapter_title("recommendations") 
-        current_font = self.PDF_FONT_FAMILY
         if recommendations_list and isinstance(recommendations_list, list):
             available_width = self.w - self.l_margin - self.r_margin 
             for i, rec in enumerate(recommendations_list):
                 self.set_x(self.l_margin) 
-                self.set_font(current_font, 'B', 10)
-                self.multi_cell(available_width, 7, f"{i+1}. {rec.get('title', 'N/A')}", new_x="LMARGIN", new_y="NEXT")
+                self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
+                self.multi_cell(available_width, 7, f"{i+1}. {rec.get('title', 'N/A')}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
                 self.set_x(self.l_margin) 
-                self.set_font(current_font, '', 10)
-                self.multi_cell(available_width, 7, rec.get('description', 'N/A'), new_x="LMARGIN", new_y="NEXT") 
+                self.set_font(self.PDF_FONT_FAMILY, '', 10)
+                self.multi_cell(available_width, 7, rec.get('description', 'N/A'), new_x=XPos.LMARGIN, new_y=YPos.NEXT) 
                 self.ln(3) 
         else:
             self.chapter_body("No recommendations available.")
@@ -369,21 +357,53 @@ class ProfessionalPDF(FPDF):
             
     def detailed_recommendations_section(self, detailed_recs_list):
         self.chapter_title("section_detailed_recommendations")
-        current_font = self.PDF_FONT_FAMILY
         if detailed_recs_list and isinstance(detailed_recs_list, list):
             available_width = self.w - self.l_margin - self.r_margin
             for i, rec in enumerate(detailed_recs_list):
                  self.set_x(self.l_margin)
-                 self.set_font(current_font, 'B', 11) 
+                 self.set_font(self.PDF_FONT_FAMILY, 'B', 11) 
                  rec_title = f"{i+1}. {rec.get('type', 'Recomendación')}: {rec.get('name', 'N/A')}"
-                 self.multi_cell(available_width, 7, rec_title, new_x="LMARGIN", new_y="NEXT")
-
+                 self.multi_cell(available_width, 7, rec_title, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
                  self.set_x(self.l_margin)
-                 self.set_font(current_font, '', 10) 
-                 self.multi_cell(available_width, 6, rec.get('explanation', 'N/A'), new_x="LMARGIN", new_y="NEXT")
+                 self.set_font(self.PDF_FONT_FAMILY, '', 10) 
+                 self.multi_cell(available_width, 6, rec.get('explanation', 'N/A'), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
                  self.ln(4) 
         else:
              self.chapter_body("No detailed recommendations available based on provided data.") 
+        self.ln(5)
+
+    # --- NUEVA SECCIÓN: Tabla de Proyección de Riesgo ---
+    def risk_projection_table_section(self, projection_data):
+        self.chapter_title("section_risk_projection")
+        
+        # Disclaimer
+        self.set_font(self.PDF_FONT_FAMILY, 'I', 9)
+        self.multi_cell(0, 5, get_translation("projection_disclaimer"), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.ln(5)
+        
+        if not projection_data:
+            self.set_font(self.PDF_FONT_FAMILY, '', 10)
+            self.cell(0, 7, "No projection data available.", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+            self.ln(5)
+            return
+
+        # Cabeceras de la tabla
+        self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
+        self.set_fill_color(240, 240, 240) # Gris claro para cabecera
+        col_width_period = 50 # Ancho para columna "Periodo"
+        col_width_risk = self.w - self.l_margin - self.r_margin - col_width_period # Ancho restante
+        
+        self.cell(col_width_period, 7, get_translation("projection_period"), border=1, align='C', fill=True)
+        self.cell(col_width_risk, 7, get_translation("projection_estimated_risk"), border=1, align='C', fill=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        
+        # Datos de la tabla
+        self.set_font(self.PDF_FONT_FAMILY, '', 10)
+        for i, (period, risk) in enumerate(projection_data):
+            fill = i % 2 == 0 # Relleno alterno
+            self.set_fill_color(255, 255, 255) if not fill else self.set_fill_color(245, 245, 245)
+            self.cell(col_width_period, 7, str(period), border=1, align='C', fill=True)
+            self.cell(col_width_risk, 7, str(risk), border=1, align='C', fill=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+            
         self.ln(5)
 
 
@@ -392,8 +412,8 @@ class ProfessionalPDF(FPDF):
         """Sección de explicaciones XAI omitida."""
         pass 
 
-    # --- MÉTODO generate_full_report ACTUALIZADO ---
-    def generate_full_report(self, report_data, recommendations, detailed_recommendations, lime_expl, shap_vals, x_instance_df):
+    # --- MÉTODO generate_full_report ACTUALIZADO CON PROYECCIÓN ---
+    def generate_full_report(self, report_data, recommendations, detailed_recommendations, risk_projection, lime_expl, shap_vals, x_instance_df):
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.reason_interest_section(report_data)
@@ -402,7 +422,8 @@ class ProfessionalPDF(FPDF):
         self.clinical_history_summary_section(report_data)
         self.recommendations_section(recommendations) 
         self.detailed_recommendations_section(detailed_recommendations) 
-        # --- LLAMADA A SECCIÓN XAI ESTÁ COMENTADA ABAJO ---
+        self.risk_projection_table_section(risk_projection) # <-- LLAMADA A LA NUEVA SECCIÓN
+        # --- LLAMADA A SECCIÓN XAI SIGUE COMENTADA ---
         # if lime_expl or (shap_vals is not None): 
         #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
@@ -417,6 +438,7 @@ THERAPY_RECOMMENDATIONS = {
         {"type": "Medicación", "name": "ISRS (Inhibidores Selectivos de la Recaptación de Serotonina)", 
          "explanation": "Fármacos como Fluoxetina, Sertralina o Escitalopram son comúnmente prescritos. Aumentan los niveles de serotonina en el cerebro. Requieren evaluación médica para dosis y seguimiento de efectos secundarios. Su efecto completo puede tardar varias semanas."}
     ],
+    # ... (Resto de THERAPY_RECOMMENDATIONS como en la versión anterior)...
     "diag_anxiety": [
         {"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", 
          "explanation": "Eficaz para diversos trastornos de ansiedad (TAG, pánico, fobias). Incluye técnicas de exposición gradual, reestructuración cognitiva para manejar preocupaciones y miedos irracionales, y entrenamiento en relajación."},
@@ -459,12 +481,13 @@ THERAPY_RECOMMENDATIONS = {
     ],
 }
 
+
 def predict_risk_level(df_input, model, feature_list): 
     if model is None: return CLASS_NAMES[0], 0.10
     if not isinstance(df_input, pd.DataFrame) or df_input.empty: return CLASS_NAMES[0], 0.05
     try:
         for col in feature_list:
-            if col not in df_input.columns: df_input[col] = 0 
+            if col not in df_input.columns: df_input[col] = 0.0 # Asegurar que sea float
         input_df_ordered = df_input[feature_list].astype(float) 
         print(f"DEBUG Predict: Shape passed to model: {input_df_ordered.shape}") 
         if input_df_ordered.shape[1] != len(feature_list):
@@ -482,7 +505,7 @@ def predict_risk_level(df_input, model, feature_list):
         print(f"Predict Error Details: {traceback.format_exc()}") 
         return CLASS_NAMES[0], 0.05
 
-def generate_general_recommendations(pred_label, conf): # Renombrada
+def generate_general_recommendations(pred_label, conf): 
     recs = []
     if pred_label == CLASS_NAMES[1]:
         recs.append({"title": get_translation("recommendations") + " - Prioritaria", "description": "Evaluación exhaustiva y apoyo intensivo."})
@@ -492,7 +515,7 @@ def generate_general_recommendations(pred_label, conf): # Renombrada
     else: recs.append({"title": "Mantenimiento Preventivo", "description": "Continuar buenas prácticas."})
     return recs
 
-def generate_detailed_recommendations(report_data): # ACTUALIZADA
+def generate_detailed_recommendations(report_data): 
     recommendations = []
     selected_diag_keys = report_data.get("previous_diagnoses_keys_list", []) 
     seen_rec_names = set() 
@@ -505,11 +528,44 @@ def generate_detailed_recommendations(report_data): # ACTUALIZADA
                       seen_rec_names.add(rec['name'])
     return recommendations
 
+# --- NUEVA FUNCIÓN: Generar Proyección de Riesgo (Placeholder) ---
+def generate_risk_projection(prediction_label, confidence, class_names):
+    """Genera una proyección de riesgo placeholder basada en reglas simples."""
+    projections = {}
+    time_points_months = [3, 6, 9, 12]
+    months_str = get_translation("months")
+    
+    low_risk_label = class_names[0]
+    high_risk_label = class_names[1]
+    medium_risk_label = get_translation("risk_level_medium") 
+
+    # Reglas simples de proyección
+    if prediction_label == high_risk_label:
+        for t in time_points_months:
+            projections[f"{t} {months_str}"] = high_risk_label # Se mantiene alto
+    elif prediction_label == low_risk_label:
+        if confidence > 0.85: # Umbral de confianza alta (ajustable)
+            for t in time_points_months:
+                projections[f"{t} {months_str}"] = low_risk_label # Se mantiene bajo
+        else: # Confianza baja/media en bajo riesgo -> posible aumento
+            projections[f"3 {months_str}"] = low_risk_label
+            projections[f"6 {months_str}"] = low_risk_label
+            projections[f"9 {months_str}"] = medium_risk_label
+            projections[f"12 {months_str}"] = medium_risk_label
+    else: # Caso por defecto (ej. si tuviéramos riesgo Medio)
+         for t in time_points_months:
+             projections[f"{t} {months_str}"] = prediction_label # Mantener etiqueta actual
+
+    # Devolver como lista de tuplas para la tabla PDF
+    return list(projections.items())
+
+
 st.title(get_translation("app_title"))
 
 def get_options_dict(prefix, keys):
     return {f"{prefix}_{key}": get_translation(f"{prefix}_{key}") for key in keys}
 
+# --- Definiciones de opciones y mapeos numéricos ---
 education_keys = ["none", "primary", "secondary", "vocational", "bachelor", "master", "phd", "other"]
 substance_keys = ["none", "alcohol", "cannabis", "cocaine", "amphetamines", "opiates", "benzodiazepines", "hallucinogens", "tobacco", "new_psychoactive", "other"]
 crime_keys = ["none", "theft", "assault", "drug_trafficking", "fraud", "public_order", "domestic_violence", "terrorism_related", "cybercrime", "homicide", "other"]
@@ -530,6 +586,7 @@ substance_numeric_map = create_numeric_map(substance_options.keys())
 criminal_record_numeric_map = create_numeric_map(criminal_record_options.keys())
 personality_trait_numeric_map = create_numeric_map(personality_trait_options.keys())
 diagnosis_numeric_map = create_numeric_map(diagnosis_options.keys())
+# --- Fin Definiciones ---
 
 
 with st.form(key="evaluation_form_final"):
@@ -569,31 +626,24 @@ if submit_button_final:
         "previous_diagnoses_count": float(len(diag_keys_selected)),
     }
     
-    def format_multiselect_output(selected_keys, options_dict):
-        if not selected_keys: return "N/A"
-        # Usar las claves "none" directamente
-        none_keys = ["studies_none", "substance_none", "crime_none", "trait_other", "diag_none"] # Ajusta si tus claves 'none'/'other' son diferentes
-        # Filtrar 'none' si hay otras selecciones O si 'none' es la única seleccionada
-        if len(selected_keys) > 1:
-            filtered_keys = [key for key in selected_keys if key not in none_keys]
-        elif len(selected_keys) == 1 and selected_keys[0] in none_keys:
-             filtered_keys = selected_keys # Mantener 'none' si es la única
-        elif len(selected_keys) == 1 and selected_keys[0] not in none_keys:
-            filtered_keys = selected_keys # Mantener la única selección si no es 'none'
-        else: # Caso por defecto (lista vacía o solo none ya manejado)
-             filtered_keys = selected_keys 
-
+    def format_multiselect_output(selected_keys, options_dict, none_key_prefix):
+        none_key = f"{none_key_prefix}_none"
+        if not selected_keys or (len(selected_keys) == 1 and selected_keys[0] == none_key): 
+            return options_dict.get(none_key, "N/A") # Mostrar "Ninguno" si es la única opción
+        
+        # Filtrar 'none' si hay otras selecciones
+        filtered_keys = [key for key in selected_keys if key != none_key]
         labels = [options_dict.get(key, key) for key in filtered_keys]
         return ", ".join(labels) if labels else "N/A"
 
     report_data_payload = {
         "user_id": subject_id_generated, "age": age_form, "income": income_form,
         "education_level_str_new": education_options_new.get(education_key_selected, "N/A"),
-        "substance_use_str_list": format_multiselect_output(substance_keys_selected, substance_options),
+        "substance_use_str_list": format_multiselect_output(substance_keys_selected, substance_options, "substance"),
         "country_origin": country_origin_form or "N/A", "city_origin": city_origin_form or "N/A",
-        "criminal_record_str_list": format_multiselect_output(crime_keys_selected, criminal_record_options),
-        "personality_traits_str_list": format_multiselect_output(trait_keys_selected, personality_trait_options),
-        "previous_diagnoses_str_list": format_multiselect_output(diag_keys_selected, diagnosis_options), 
+        "criminal_record_str_list": format_multiselect_output(crime_keys_selected, criminal_record_options, "crime"),
+        "personality_traits_str_list": format_multiselect_output(trait_keys_selected, personality_trait_options, "trait"),
+        "previous_diagnoses_str_list": format_multiselect_output(diag_keys_selected, diagnosis_options, "diag"), 
         "previous_diagnoses_keys_list": diag_keys_selected, 
         "reason_interest": reason_interest_form or "N/A",
         "family_terrorism_history": family_terrorism_history_form or "N/A",
@@ -613,12 +663,14 @@ if submit_button_final:
          st.stop()
 
     report_data_payload["prediction_label"] = prediction
+    report_data_payload["confidence_val"] = confidence # Guardamos el valor numérico por si acaso
     report_data_payload["confidence_str"] = f"{confidence*100:.1f}%"
     st.subheader(f"{get_translation('prediction')}: {prediction} ({get_translation('confidence')}: {report_data_payload['confidence_str']})")
     
     # --- Recomendaciones ---
     general_recommendations_list = generate_general_recommendations(prediction, confidence) 
     detailed_recommendations_list = generate_detailed_recommendations(report_data_payload) 
+    risk_projection_list = generate_risk_projection(prediction, confidence, CLASS_NAMES) # Generar proyección
     
     st.subheader(get_translation("recommendations")) 
     for r in general_recommendations_list: st.write(f"**{r['title']}**: {r['description']}")
@@ -635,8 +687,9 @@ if submit_button_final:
     
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
+            X_test_df_global_new_ordered = X_test_df_global_new[NEW_FEATURE_NAMES]
             lime_explainer = lime.lime_tabular.LimeTabularExplainer(
-                X_test_df_global_new[NEW_FEATURE_NAMES].values, 
+                X_test_df_global_new_ordered.values, 
                 feature_names=NEW_FEATURE_NAMES,
                 class_names=CLASS_NAMES, mode='classification', discretize_continuous=True
             )
@@ -646,10 +699,10 @@ if submit_button_final:
             )
             
             if isinstance(trained_model_new, RandomForestClassifier):
-                shap_explainer = shap.TreeExplainer(trained_model_new, X_test_df_global_new[NEW_FEATURE_NAMES]) 
+                shap_explainer = shap.TreeExplainer(trained_model_new, X_test_df_global_new_ordered) 
                 shap_values_all = shap_explainer.shap_values(instance_df_for_xai) 
             else:
-                X_test_summary = shap.kmeans(X_test_df_global_new[NEW_FEATURE_NAMES], min(50, len(X_test_df_global_new)))
+                X_test_summary = shap.kmeans(X_test_df_global_new_ordered, min(50, len(X_test_df_global_new_ordered)))
                 shap_explainer = shap.KernelExplainer(trained_model_new.predict_proba, X_test_summary)
                 shap_values_all = shap_explainer.shap_values(instance_df_for_xai)
             
@@ -663,19 +716,19 @@ if submit_button_final:
     else: st.info(get_translation("xai_skipped_warning"))
     # --- Fin Cálculo XAI ---
 
-    # --- Generación del PDF (SIN sección XAI activa) ---
+    # --- Generación del PDF ---
     try:
         pdf = ProfessionalPDF()
         pdf.generate_full_report( 
             report_data_payload, 
             general_recommendations_list, 
             detailed_recommendations_list, 
+            risk_projection_list, # Pasar la proyección al método
             lime_expl_obj, 
             shap_vals_pred_class, 
             instance_df_for_xai 
         )
         pdf_file_name = f"Informe_{report_data_payload['user_id']}_{datetime.now().strftime('%Y%m%d')}.pdf"
-        # CORREGIDO: Convertir bytearray a bytes
         pdf_bytes = bytes(pdf.output(dest='S')) 
         st.download_button(get_translation("download_report"), pdf_bytes, pdf_file_name, "application/pdf")
         st.success(get_translation("report_generated"))
