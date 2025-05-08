@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión con ELIMINACIÓN COMPLETA de Sección XAI en PDF ---
+# --- Versión con Debug para Login/Idioma ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -33,15 +33,20 @@ translations = {
         "username": "Usuario", "password": "Contraseña", "login_button": "Iniciar Sesión",
         "logout_button": "Cerrar Sesión", "wrong_credentials": "Usuario o contraseña incorrectos.",
         "select_language": "Seleccionar Idioma", "language_en": "Inglés (English)", "language_es": "Español",
-        "user_id": "ID de Sujeto", "age": "Edad", "income": "Ingresos Anuales (Opcional)", 
-        "education_level_new": "Nivel de Estudios", "substance_use": "Consumo de Sustancias", 
-        "country_origin": "País de Origen", "city_origin": "Ciudad de Origen", "criminal_record": "Antecedentes Penales", 
-        "personality_traits": "Rasgos de Personalidad", "previous_diagnoses": "Diagnósticos Previos", 
-        "reason_interest": "Motivo de Interés/Caso", "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", 
+        "form_title": "Formulario de Evaluación de Sujeto", "user_id": "ID de Sujeto", "age": "Edad",
+        "income": "Ingresos Anuales (Opcional)", 
+        "education_level_new": "Nivel de Estudios",
+        "substance_use": "Consumo de Sustancias", "country_origin": "País de Origen", "city_origin": "Ciudad de Origen",
+        "criminal_record": "Antecedentes Penales", "personality_traits": "Rasgos de Personalidad",
+        "previous_diagnoses": "Diagnósticos Previos", "reason_interest": "Motivo de Interés/Caso",
+        "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", 
         "psychological_profile_notes": "Perfil Psicológico (Notas)", "clinical_history_summary": "Historial Clínico (Resumen)", 
-        "section_reason_interest": "Motivo de Interés / Contexto del Caso", "section_family_history": "Antecedentes Familiares Relevantes",
-        "section_psychological_profile": "Notas sobre el Perfil Psicológico", "section_clinical_history": "Resumen del Historial Clínico",
-        "section_detailed_recommendations": "Recomendaciones Detalladas (Intervención)", "section_risk_projection": "Proyección de Riesgo Estimada (Sin Intervención)",
+        "section_reason_interest": "Motivo de Interés / Contexto del Caso",
+        "section_family_history": "Antecedentes Familiares Relevantes",
+        "section_psychological_profile": "Notas sobre el Perfil Psicológico",
+        "section_clinical_history": "Resumen del Historial Clínico",
+        "section_detailed_recommendations": "Recomendaciones Detalladas (Intervención)",
+        "section_risk_projection": "Proyección de Riesgo Estimada (Sin Intervención)",
         "projection_period": "Periodo", "projection_estimated_risk": "Riesgo Estimado",
         "projection_disclaimer": "Nota: Proyección simplificada basada en riesgo y confianza actual. No es predicción formal.", 
         "months": "Meses",
@@ -116,14 +121,25 @@ translations = {
 }
 
 # --- Estado de Sesión ---
-if 'logged_in' not in st.session_state: st.session_state.logged_in = False
-if 'username' not in st.session_state: st.session_state.username = ""
-if 'lang' not in st.session_state: st.session_state.lang = "es" 
+if 'logged_in' not in st.session_state: 
+    print("DEBUG: Initializing 'logged_in' state to False")
+    st.session_state.logged_in = False
+if 'username' not in st.session_state: 
+    print("DEBUG: Initializing 'username' state to empty string")
+    st.session_state.username = ""
+if 'lang' not in st.session_state: 
+    print("DEBUG: Initializing 'lang' state to 'es'")
+    st.session_state.lang = "es" 
+
+# <<< DEBUG ESTADO AL INICIO DE CADA EJECUCIÓN >>>
+print(f"DEBUG STATE AT SCRIPT START: logged_in = {st.session_state.logged_in}, username = '{st.session_state.username}', lang = '{st.session_state.lang}'")
+# <<< FIN DEBUG >>>
 
 # --- DEFINICIONES DE FUNCIONES AUXILIARES ---
 def get_translation(key):
     current_language = st.session_state.get('lang', 'es') 
-    return translations.get(current_language, translations.get("es", {})).get(key, key.replace("_", " ").title())
+    translation = translations.get(current_language, translations.get("es", {})).get(key, key.replace("_", " ").title())
+    return translation
 
 @st.cache_data
 def load_example_data_for_new_model(): 
@@ -202,7 +218,7 @@ def generate_general_recommendations(pred_label, conf):
 
 # --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
 # (Igual que antes)
-THERAPY_RECOMMENDATIONS = { 
+THERAPY_RECOMMENDATIONS = { # Mismo diccionario que antes
     "diag_depression": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "La TCC ayuda a identificar y modificar patrones de pensamiento y comportamiento negativos asociados a la depresión. Se centra en el presente y en la resolución de problemas. Sesiones semanales suelen ser efectivas, enfocándose en la reestructuración cognitiva y la activación conductual." }, {"type": "Medicación", "name": "ISRS (Inhibidores Selectivos de la Recaptación de Serotonina)", "explanation": "Fármacos como Fluoxetina, Sertralina o Escitalopram son comúnmente prescritos. Aumentan los niveles de serotonina en el cerebro. Requieren evaluación médica para dosis y seguimiento de efectos secundarios. Su efecto completo puede tardar varias semanas." }],
     "diag_anxiety": [{"type": "Terapia", "name": "Terapia Cognitivo-Conductual (TCC)", "explanation": "Eficaz para diversos trastornos de ansiedad (TAG, pánico, fobias). Incluye técnicas de exposición gradual, reestructuración cognitiva para manejar preocupaciones y miedos irracionales, y entrenamiento en relajación."},{"type": "Terapia", "name": "Terapia de Aceptación y Compromiso (ACT)","explanation": "Enfocada en aceptar pensamientos y sensaciones difíciles sin luchar contra ellos, y comprometerse con acciones alineadas a los valores personales, incluso en presencia de ansiedad."},{"type": "Medicación", "name": "ISRS / IRSN / Benzodiacepinas", "explanation": "Los ISRS o IRSN suelen ser la primera línea farmacológica a largo plazo. Las Benzodiacepinas (ej. Diazepam, Lorazepam) pueden usarse puntualmente para alivio rápido pero con riesgo de dependencia. Requiere prescripción y supervisión médica estricta."}],
     "diag_ptsd": [{"type": "Terapia", "name": "EMDR (Desensibilización y Reprocesamiento por Movimientos Oculares)", "explanation": "Terapia especializada para procesar recuerdos traumáticos. Utiliza estimulación bilateral (movimientos oculares, sonidos o toques) para ayudar al cerebro a integrar la experiencia traumática de forma adaptativa."},{"type": "Terapia", "name": "Terapia de Exposición Prolongada (TEP)","explanation": "Consiste en enfrentar gradualmente los recuerdos y situaciones temidas relacionadas con el trauma en un entorno seguro, ayudando a reducir la evitación y la intensidad emocional asociada."},{"type": "Medicación", "name": "ISRS (Sertralina, Paroxetina)","explanation": "Aprobados específicamente para TEPT, pueden ayudar a manejar síntomas de ansiedad, depresión e intrusión. La Prazosina se usa a veces para pesadillas. Requiere evaluación médica."}],
@@ -468,6 +484,9 @@ class ProfessionalPDF(FPDF):
 
 
 # --- Lógica App Streamlit ---
+# (Las funciones auxiliares como predict_risk_level, recommendations, etc. van aquí)
+# (Igual que en la versión anterior)
+
 # --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
 # (Igual que antes)
 THERAPY_RECOMMENDATIONS = { # Mismo diccionario que antes
@@ -660,7 +679,11 @@ if submit_button_final:
     
     # --- Predicción ---
     try:
-        df_for_prediction = pd.DataFrame([form_data_for_model_dict], columns=NEW_FEATURE_NAMES)
+        # Crear DataFrame asegurando el orden y tipo de columnas para el modelo
+        df_for_prediction = pd.DataFrame(columns=NEW_FEATURE_NAMES) 
+        df_for_prediction.loc[0] = form_data_for_model_dict # Llenar la primera fila
+        df_for_prediction = df_for_prediction.astype(float) # Asegurar tipo float
+        
         prediction, confidence = predict_risk_level(df_for_prediction, trained_model_new, NEW_FEATURE_NAMES) 
     except KeyError as e:
          st.error(f"Error: Falta la columna '{e}' para predicción.")
