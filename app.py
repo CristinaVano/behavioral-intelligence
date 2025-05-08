@@ -299,35 +299,45 @@ class ProfessionalPDF(FPDF):
             self.chapter_body("No recommendations available.")
         self.ln(5)
 
-    # --- SECCIÓN XAI COMPLETAMENTE COMENTADA ---
-    # def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
-    #     self.chapter_title("xai_explanations_title")
-    #     # ... (Todo el contenido de LIME y SHAP estaría aquí)
-    #     # ... (Pero lo dejamos fuera por ahora para evitar el error)
-    #     self.set_font(self.PDF_FONT_FAMILY, 'I', 10)
-    #     self.multi_cell(0, 7, "(XAI Explanations section omitted in this version due to rendering issues)")
-    #     self.ln(5)
+    # --- MÉTODO XAI VACÍO ---
+    def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
+        """Sección de explicaciones XAI omitida temporalmente."""
+        pass 
+        # Si quieres que aparezca algo en el PDF indicando la omisión:
+        # self.chapter_title("xai_explanations_title")
+        # self.set_font(self.PDF_FONT_FAMILY, 'I', 10)
+        # self.multi_cell(0, 7, "(Sección de Explicaciones XAI no incluida en esta versión del informe)")
+        # self.ln(5)
+
 
     def generate_full_report(self, report_data, recommendations, lime_expl, shap_vals, x_instance_df):
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.recommendations_section(recommendations)
-        # --- LLAMADA A SECCIÓN XAI COMENTADA ---
-        # if lime_expl or (shap_vals is not None): 
-        #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
+        # --- LLAMADA A SECCIÓN XAI COMENTADA (o se puede dejar si el método está vacío) ---
+        # La llamada a un método vacío no hará nada.
+        # Si descomentas la línea de abajo Y el contenido de xai_explanations_section, se incluirá.
+        # self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
 
 # --- Lógica App Streamlit ---
 def predict_risk_level(form_input_data_model, model, feature_list):
     if model is None: return CLASS_NAMES[0], 0.10
     try:
-        input_df = pd.DataFrame([form_input_data_model])[feature_list]
+        # Asegurar que las columnas estén en el orden correcto
+        input_df = pd.DataFrame([form_input_data_model], columns=feature_list)
         pred_proba = model.predict_proba(input_df)[0]
         pred_idx = np.argmax(pred_proba)
         return CLASS_NAMES[pred_idx], pred_proba[pred_idx]
     except Exception as e:
         st.error(f"{get_translation('error_prediction')} {e}")
+        # Imprimir detalles del error en consola para depuración
+        print(f"Predict Error Details: {traceback.format_exc()}") 
+        # Verificar el DataFrame de entrada
+        print(f"Input DataFrame for prediction:\n{pd.DataFrame([form_input_data_model])}")
+        print(f"Expected features: {feature_list}")
         return CLASS_NAMES[0], 0.05
+
 
 def generate_behavioral_recommendations(pred_label, conf):
     recs = []
@@ -426,7 +436,9 @@ if submit_button_final:
     lime_expl_obj, shap_vals_pred_class, instance_df_xai = None, None, pd.DataFrame([form_data_for_model_dict])[NEW_FEATURE_NAMES]
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
-            lime_explainer = lime.lime_tabular.LimeTabularExplainer(X_test_df_global_new.values, feature_names=NEW_FEATURE_NAMES,
+            # Asegurarse que el DataFrame para LIME/SHAP tenga las columnas correctas
+            instance_df_xai = instance_df_xai[NEW_FEATURE_NAMES]
+            lime_explainer = lime.lime_tabular.LimeTabularExplainer(X_test_df_global_new[NEW_FEATURE_NAMES].values, feature_names=NEW_FEATURE_NAMES,
                                                                     class_names=CLASS_NAMES, mode='classification', discretize_continuous=True)
             lime_expl_obj = lime_explainer.explain_instance(instance_df_xai.iloc[0].values, trained_model_new.predict_proba, num_features=len(NEW_FEATURE_NAMES))
             
@@ -448,15 +460,15 @@ if submit_button_final:
     else: st.info(get_translation("xai_skipped_warning"))
     # --- Fin Cálculo XAI ---
 
-    # --- Generación del PDF (SIN sección XAI) ---
+    # --- Generación del PDF (SIN sección XAI activa) ---
     try:
         pdf = ProfessionalPDF()
-        pdf.generate_full_report( # La función generate_full_report ahora no llama a xai_section
+        pdf.generate_full_report( # La función generate_full_report ya NO llama a xai_section
             report_data_payload, 
             recommendations_list, 
-            lime_expl_obj, # Se pasan pero no se usan en esta versión del PDF
-            shap_vals_pred_class, # Se pasan pero no se usan en esta versión del PDF
-            instance_df_xai # Se pasan pero no se usan en esta versión del PDF
+            lime_expl_obj, 
+            shap_vals_pred_class, 
+            instance_df_xai 
         )
         pdf_file_name = f"Informe_{report_data_payload['user_id']}_{datetime.now().strftime('%Y%m%d')}.pdf"
         pdf_bytes = pdf.output(dest='S').encode('latin-1') 
