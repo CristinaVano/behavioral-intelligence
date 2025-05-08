@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión con Multi-Select y Recomendaciones Detalladas ---
+# --- Versión con Multi-Select SIN texto extra en etiqueta ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -25,7 +25,7 @@ USER_CREDENTIALS = {
     "Pau_bias": "coordinacionbias"
 }
 
-# --- Traducciones (sin cambios estructurales aquí) ---
+# --- Traducciones Completas (Etiquetas Multi-Select limpiadas) ---
 translations = {
     "es": {
         "app_title": "Plataforma de Inteligencia Conductual", "login_title": "Acceso a la Plataforma",
@@ -35,11 +35,11 @@ translations = {
         "form_title": "Formulario de Evaluación de Sujeto", "user_id": "ID de Sujeto", "age": "Edad",
         "income": "Ingresos Anuales (Opcional)", 
         "education_level_new": "Nivel de Estudios",
-        "substance_use": "Consumo de Sustancias (Selección Múltiple)", # Actualizado
+        "substance_use": "Consumo de Sustancias", # CORREGIDO
         "country_origin": "País de Origen", "city_origin": "Ciudad de Origen",
-        "criminal_record": "Antecedentes Penales (Selección Múltiple)", # Actualizado
-        "personality_traits": "Rasgos de Personalidad (Selección Múltiple)", # Actualizado
-        "previous_diagnoses": "Diagnósticos Previos (Selección Múltiple)", # Actualizado
+        "criminal_record": "Antecedentes Penales", # CORREGIDO
+        "personality_traits": "Rasgos de Personalidad", # CORREGIDO
+        "previous_diagnoses": "Diagnósticos Previos", # CORREGIDO
         "reason_interest": "Motivo de Interés/Caso",
         "family_terrorism_history": "Antecedentes Familiares Terrorismo/Extremismo", 
         "psychological_profile_notes": "Perfil Psicológico (Notas)", 
@@ -92,11 +92,11 @@ translations = {
         "form_title": "Subject Evaluation Form", "user_id": "Subject ID", "age": "Age",
         "income": "Annual Income (Optional)", 
         "education_level_new": "Education Level",
-        "substance_use": "Substance Use (Multi-Select)", # Updated
+        "substance_use": "Substance Use", # CORREGIDO
         "country_origin": "Country of Origin", "city_origin": "City of Origin",
-        "criminal_record": "Criminal Record (Multi-Select)", # Updated
-        "personality_traits": "Personality Traits (Multi-Select)", # Updated
-        "previous_diagnoses": "Previous Diagnoses (Multi-Select)", # Updated
+        "criminal_record": "Criminal Record", # CORREGIDO
+        "personality_traits": "Personality Traits", # CORREGIDO
+        "previous_diagnoses": "Previous Diagnoses", # CORREGIDO
         "reason_interest": "Reason for Interest/Case",
         "family_terrorism_history": "Family History Terrorism/Extremism",
         "psychological_profile_notes": "Psychological Profile (Notes)", 
@@ -180,28 +180,27 @@ if st.sidebar.button(get_translation("logout_button")):
 # --- Modelo y Features (Actualizado para counts de multi-select) ---
 NEW_FEATURE_NAMES = [ 
     'age', 'income', 'education_level_numeric', 
-    'substance_use_count', # Cambiado a count
-    'criminal_record_count', # Cambiado a count
-    'personality_traits_count', # Cambiado a count
-    'previous_diagnoses_count' # Cambiado a count
+    'substance_use_count', 
+    'criminal_record_count', 
+    'personality_traits_count', 
+    'previous_diagnoses_count' 
 ]
 CLASS_NAMES = [get_translation("risk_level_low"), get_translation("risk_level_high")]
 
 @st.cache_data
 def load_example_data_for_new_model(): 
-    num_samples = 50 # Aumentar muestras un poco
+    num_samples = 50 
     data = {
         'age': np.random.randint(18, 70, num_samples),
         'income': np.random.randint(15000, 120000, num_samples),
-        'education_level_numeric': np.random.randint(0, 8, num_samples), # 8 opciones de estudios
-        'substance_use_count': np.random.randint(0, 4, num_samples), # Max 3 sustancias + 'none'
-        'criminal_record_count': np.random.randint(0, 3, num_samples), # Max 2 tipos + 'none'
-        'personality_traits_count': np.random.randint(1, 5, num_samples), # Al menos 1 rasgo, max 4
-        'previous_diagnoses_count': np.random.randint(0, 3, num_samples), # Max 2 diagnósticos + 'none'
+        'education_level_numeric': np.random.randint(0, 8, num_samples), 
+        'substance_use_count': np.random.randint(0, 4, num_samples), 
+        'criminal_record_count': np.random.randint(0, 3, num_samples), 
+        'personality_traits_count': np.random.randint(1, 5, num_samples), 
+        'previous_diagnoses_count': np.random.randint(0, 3, num_samples), 
         'risk_target': np.random.randint(0, 2, num_samples) 
     }
     df = pd.DataFrame(data)
-    # Asegurar que 'income' sea float
     df['income'] = df['income'].astype(float)
     return df
 
@@ -215,7 +214,7 @@ def train_new_model(df_train):
         st.error(f"Faltan columnas para entrenar el modelo. Esperadas: {NEW_FEATURE_NAMES}, Encontradas: {features_present}")
         return None, pd.DataFrame(columns=NEW_FEATURE_NAMES)
 
-    X = df_train[features_present].astype(float) # Asegurar que todo sea float para el modelo
+    X = df_train[features_present].astype(float) 
     y = df_train['risk_target']
     
     if len(np.unique(y)) < 2 : 
@@ -225,8 +224,7 @@ def train_new_model(df_train):
     model = RandomForestClassifier(random_state=42, class_weight='balanced', n_estimators=50, max_depth=10)
     try:
         model.fit(X, y)
-        # Guardar las features usadas para entrenar con el modelo puede ser útil
-        # model.feature_names_in_ = features_present # sklearn <1.0 no lo tiene
+        # model.feature_names_in_ = features_present # Descomentar para sklearn >= 1.0
         return model, X
     except Exception as e:
         st.error(f"Error al entrenar modelo: {e}")
@@ -238,6 +236,8 @@ if trained_model_new is None and st.session_state.logged_in:
     st.warning(get_translation("model_not_trained_warning"))
 
 # --- Clase PDF Profesional con Helvetica (Simplificada) ---
+# (La clase PDF completa como en la respuesta anterior, asegurándose 
+#  que xai_explanations_section esté vacía y generate_full_report NO la llame)
 class ProfessionalPDF(FPDF):
     PDF_FONT_FAMILY = 'Helvetica' 
 
@@ -294,43 +294,33 @@ class ProfessionalPDF(FPDF):
         self.set_font(self.PDF_FONT_FAMILY, 'I', 10)
         self.cell(0, 10, get_translation("confidential_footer").upper() + " - SOLO PARA USO AUTORIZADO", 0, 0, 'C')
     
-    def create_data_summary_section(self, report_data): # ACTUALIZADO para multi-select strings
+    def create_data_summary_section(self, report_data): 
         self.chapter_title("data_summary")
-        fields_to_display_keys = [ # Claves de traducción
+        fields_to_display_keys = [
             "user_id", "prediction", "confidence", "age", "income", 
             "education_level_new", "substance_use", "country_origin", "city_origin", 
             "criminal_record", "personality_traits", "previous_diagnoses"
         ]
-        # Mapeo de clave de traducción a clave en report_data (donde los strings formateados están)
         key_map = { 
             "user_id": "user_id", "prediction": "prediction_label", "confidence": "confidence_str",
             "age": "age", "income": "income",
-            "education_level_new": "education_level_str_new", # Sigue siendo selección única
-            "substance_use": "substance_use_str_list", # Clave para string multi-select
+            "education_level_new": "education_level_str_new", 
+            "substance_use": "substance_use_str_list", 
             "country_origin": "country_origin", "city_origin": "city_origin",
-            "criminal_record": "criminal_record_str_list", # Clave para string multi-select
-            "personality_traits": "personality_traits_str_list", # Clave para string multi-select
-            "previous_diagnoses": "previous_diagnoses_str_list" # Clave para string multi-select
+            "criminal_record": "criminal_record_str_list", 
+            "personality_traits": "personality_traits_str_list", 
+            "previous_diagnoses": "previous_diagnoses_str_list" 
         }
         for i, label_key in enumerate(fields_to_display_keys):
-            data_key_actual = key_map.get(label_key, label_key) # Usa mapeo o la clave tal cual si coincide
+            data_key_actual = key_map.get(label_key, label_key)
             field_label = get_translation(label_key)
-            field_value = str(report_data.get(data_key_actual, "N/A")) # Obtener valor formateado
-            
-            # Omitir N/A si se prefiere no mostrar campos vacíos en el resumen
-            # if field_value == "N/A": 
-            #     continue 
-
+            field_value = str(report_data.get(data_key_actual, "N/A"))
             fill = i % 2 == 0
             page_height_available = self.h - self.b_margin
             if self.get_y() > page_height_available - 20: self.add_page()
-            
             current_y_pos = self.get_y()
             self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
-            # Usar multi_cell para etiqueta por si es larga
             self.multi_cell(70, 7, field_label, border=0, align='L', fill=fill, new_x="RIGHT", new_y="TOP") 
-            
-            # Mover X, mantener Y para el valor
             self.set_xy(self.l_margin + 70, current_y_pos) 
             self.set_font(self.PDF_FONT_FAMILY, '', 10)
             self.multi_cell(0, 7, field_value, border=0, align='L', fill=fill, new_x="LMARGIN", new_y="NEXT")
@@ -353,7 +343,6 @@ class ProfessionalPDF(FPDF):
             self.chapter_body("No recommendations available.")
         self.ln(5)
 
-    # --- NUEVOS MÉTODOS PARA SECCIONES CUALITATIVAS ---
     def reason_interest_section(self, report_data):
         text = report_data.get("reason_interest", "")
         if text and text != "N/A":
@@ -397,6 +386,7 @@ class ProfessionalPDF(FPDF):
              self.chapter_body("No detailed recommendations available based on provided data.") 
         self.ln(5)
 
+
     # --- MÉTODO XAI VACÍO ---
     def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
         """Sección de explicaciones XAI omitida."""
@@ -412,14 +402,13 @@ class ProfessionalPDF(FPDF):
         self.clinical_history_summary_section(report_data)
         self.recommendations_section(recommendations) 
         self.detailed_recommendations_section(detailed_recommendations) 
-        # --- LLAMADA A SECCIÓN XAI SIGUE COMENTADA ---
+        # --- LLAMADA A SECCIÓN XAI ESTÁ COMENTADA ABAJO ---
         # if lime_expl or (shap_vals is not None): 
         #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
 
 
 # --- Lógica App Streamlit ---
-
 # --- Base de Conocimiento para Recomendaciones Detalladas (EJEMPLO) ---
 THERAPY_RECOMMENDATIONS = {
     "diag_depression": [
@@ -468,19 +457,15 @@ THERAPY_RECOMMENDATIONS = {
         {"type": "Intervención", "name": "Apoyo Psicosocial y Familiar",
          "explanation": "Incluye psicoeducación familiar, entrenamiento en habilidades sociales, apoyo laboral/educativo y manejo del estrés para mejorar la calidad de vida y prevenir recaídas."}
     ],
-    # Añadir más si es necesario
 }
 
 def predict_risk_level(df_input, model, feature_list): 
     if model is None: return CLASS_NAMES[0], 0.10
     if not isinstance(df_input, pd.DataFrame) or df_input.empty: return CLASS_NAMES[0], 0.05
     try:
-        # Asegurar que todas las columnas esperadas estén presentes y en orden, rellenando con 0 si falta alguna (aunque no debería pasar)
         for col in feature_list:
-            if col not in df_input.columns:
-                df_input[col] = 0 # Añadir columna faltante con 0
-        input_df_ordered = df_input[feature_list].astype(float) # Asegurar orden y tipo
-        
+            if col not in df_input.columns: df_input[col] = 0 
+        input_df_ordered = df_input[feature_list].astype(float) 
         print(f"DEBUG Predict: Shape passed to model: {input_df_ordered.shape}") 
         if input_df_ordered.shape[1] != len(feature_list):
              st.error(f"Error: Discrepancia features. Modelo: {len(feature_list)}, Datos: {input_df_ordered.shape[1]}.")
@@ -507,35 +492,24 @@ def generate_general_recommendations(pred_label, conf): # Renombrada
     else: recs.append({"title": "Mantenimiento Preventivo", "description": "Continuar buenas prácticas."})
     return recs
 
-def generate_detailed_recommendations(report_data): # ACTUALIZADA para lista de diagnósticos
-    """Genera recomendaciones detalladas basadas en diagnósticos seleccionados."""
+def generate_detailed_recommendations(report_data): # ACTUALIZADA
     recommendations = []
-    # Obtener la LISTA de claves de diagnóstico seleccionadas
-    selected_diag_keys = report_data.get("previous_diagnoses_keys_list", []) # Espera una lista de claves
-    
-    seen_rec_names = set() # Para evitar duplicados si varias diags sugieren lo mismo
-    
-    if not selected_diag_keys or "diag_none" in selected_diag_keys:
-         return [] # No hay recomendaciones específicas si no hay diagnóstico o es 'none'
-
+    selected_diag_keys = report_data.get("previous_diagnoses_keys_list", []) 
+    seen_rec_names = set() 
+    if not selected_diag_keys or "diag_none" in selected_diag_keys: return [] 
     for diagnosis_key in selected_diag_keys:
         if diagnosis_key in THERAPY_RECOMMENDATIONS:
             for rec in THERAPY_RECOMMENDATIONS[diagnosis_key]:
                  if rec['name'] not in seen_rec_names:
                       recommendations.append(rec)
                       seen_rec_names.add(rec['name'])
-            
-    # Podrías añadir lógica adicional basada en keywords aquí si quisieras
-    
     return recommendations
-
 
 st.title(get_translation("app_title"))
 
 def get_options_dict(prefix, keys):
     return {f"{prefix}_{key}": get_translation(f"{prefix}_{key}") for key in keys}
 
-# --- Definiciones de opciones y mapeos numéricos ---
 education_keys = ["none", "primary", "secondary", "vocational", "bachelor", "master", "phd", "other"]
 substance_keys = ["none", "alcohol", "cannabis", "cocaine", "amphetamines", "opiates", "benzodiazepines", "hallucinogens", "tobacco", "new_psychoactive", "other"]
 crime_keys = ["none", "theft", "assault", "drug_trafficking", "fraud", "public_order", "domestic_violence", "terrorism_related", "cybercrime", "homicide", "other"]
@@ -556,7 +530,6 @@ substance_numeric_map = create_numeric_map(substance_options.keys())
 criminal_record_numeric_map = create_numeric_map(criminal_record_options.keys())
 personality_trait_numeric_map = create_numeric_map(personality_trait_options.keys())
 diagnosis_numeric_map = create_numeric_map(diagnosis_options.keys())
-# --- Fin Definiciones ---
 
 
 with st.form(key="evaluation_form_final"):
@@ -566,19 +539,14 @@ with st.form(key="evaluation_form_final"):
         st.markdown(f"#### {get_translation('Información Básica y Contexto')}")
         age_form = st.number_input(get_translation("age"), 18, 100, 30)
         income_form = st.number_input(get_translation("income"), 0, 250000, 30000, 1000, help="Este campo es opcional.")
-        # Educación sigue siendo selectbox (no multi)
         education_key_selected = st.selectbox(get_translation("education_level_new"), list(education_options_new.keys()), format_func=lambda x: education_options_new[x])
-        # Cambiado a multiselect
         substance_keys_selected = st.multiselect(get_translation("substance_use"), list(substance_options.keys()), format_func=lambda x: substance_options[x])
         country_origin_form = st.text_input(get_translation("country_origin"))
         city_origin_form = st.text_input(get_translation("city_origin"))
     with col2:
         st.markdown(f"#### {get_translation('Historial y Diagnósticos')}")
-        # Cambiado a multiselect
         crime_keys_selected = st.multiselect(get_translation("criminal_record"), list(criminal_record_options.keys()), format_func=lambda x: criminal_record_options[x])
-        # Cambiado a multiselect
         trait_keys_selected = st.multiselect(get_translation("personality_traits"), list(personality_trait_options.keys()), format_func=lambda x: personality_trait_options[x])
-        # Cambiado a multiselect
         diag_keys_selected = st.multiselect(get_translation("previous_diagnoses"), list(diagnosis_options.keys()), format_func=lambda x: diagnosis_options[x])
     
     st.markdown(f"#### {get_translation('Información Cualitativa Detallada')}")
@@ -591,38 +559,42 @@ with st.form(key="evaluation_form_final"):
 
 if submit_button_final:
     subject_id_generated = f"SID_{st.session_state.username.upper()}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-    
-    # --- Crear datos para el MODELO (con counts para multi-select) ---
     form_data_for_model_dict = {
-        "age": float(age_form), # Asegurar float
-        "income": float(income_form), # Asegurar float
-        "education_level_numeric": float(education_numeric_map.get(education_key_selected, 0)), # Usar float
-        # Usar len() para obtener el count de selecciones. Restar 1 si 'none' está seleccionado y es la única opción? No, más simple contar todo.
+        "age": float(age_form), 
+        "income": float(income_form), 
+        "education_level_numeric": float(education_numeric_map.get(education_key_selected, 0)), 
         "substance_use_count": float(len(substance_keys_selected)), 
         "criminal_record_count": float(len(crime_keys_selected)),
         "personality_traits_count": float(len(trait_keys_selected)),
         "previous_diagnoses_count": float(len(diag_keys_selected)),
     }
     
-    # --- Crear datos para el INFORME (con strings formateados para multi-select) ---
     def format_multiselect_output(selected_keys, options_dict):
         if not selected_keys: return "N/A"
-        labels = [options_dict.get(key, key) for key in selected_keys]
-        # Filtrar "Ninguno" si hay otras selecciones
-        if len(labels) > 1:
-            labels = [l for l in labels if l not in [get_translation("substance_none"), get_translation("crime_none"), get_translation("trait_other"), get_translation("diag_none")]] # Adaptar a tus claves "none"
+        # Usar las claves "none" directamente
+        none_keys = ["studies_none", "substance_none", "crime_none", "trait_other", "diag_none"] # Ajusta si tus claves 'none'/'other' son diferentes
+        # Filtrar 'none' si hay otras selecciones O si 'none' es la única seleccionada
+        if len(selected_keys) > 1:
+            filtered_keys = [key for key in selected_keys if key not in none_keys]
+        elif len(selected_keys) == 1 and selected_keys[0] in none_keys:
+             filtered_keys = selected_keys # Mantener 'none' si es la única
+        elif len(selected_keys) == 1 and selected_keys[0] not in none_keys:
+            filtered_keys = selected_keys # Mantener la única selección si no es 'none'
+        else: # Caso por defecto (lista vacía o solo none ya manejado)
+             filtered_keys = selected_keys 
+
+        labels = [options_dict.get(key, key) for key in filtered_keys]
         return ", ".join(labels) if labels else "N/A"
 
     report_data_payload = {
         "user_id": subject_id_generated, "age": age_form, "income": income_form,
         "education_level_str_new": education_options_new.get(education_key_selected, "N/A"),
-        # Formatear listas para el informe
         "substance_use_str_list": format_multiselect_output(substance_keys_selected, substance_options),
         "country_origin": country_origin_form or "N/A", "city_origin": city_origin_form or "N/A",
         "criminal_record_str_list": format_multiselect_output(crime_keys_selected, criminal_record_options),
         "personality_traits_str_list": format_multiselect_output(trait_keys_selected, personality_trait_options),
         "previous_diagnoses_str_list": format_multiselect_output(diag_keys_selected, diagnosis_options), 
-        "previous_diagnoses_keys_list": diag_keys_selected, # Guardar las claves para la lógica de recomendación
+        "previous_diagnoses_keys_list": diag_keys_selected, 
         "reason_interest": reason_interest_form or "N/A",
         "family_terrorism_history": family_terrorism_history_form or "N/A",
         "psychological_profile_notes": psychological_profile_notes_form or "N/A",
@@ -646,7 +618,7 @@ if submit_button_final:
     
     # --- Recomendaciones ---
     general_recommendations_list = generate_general_recommendations(prediction, confidence) 
-    detailed_recommendations_list = generate_detailed_recommendations(report_data_payload) # Usa la función actualizada
+    detailed_recommendations_list = generate_detailed_recommendations(report_data_payload) 
     
     st.subheader(get_translation("recommendations")) 
     for r in general_recommendations_list: st.write(f"**{r['title']}**: {r['description']}")
@@ -662,11 +634,9 @@ if submit_button_final:
     instance_df_for_xai = df_for_prediction.copy() 
     
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
-        # Asegurarse de que X_test_df_global_new tenga las columnas correctas
-        X_test_df_global_new_ordered = X_test_df_global_new[NEW_FEATURE_NAMES]
         try:
             lime_explainer = lime.lime_tabular.LimeTabularExplainer(
-                X_test_df_global_new_ordered.values, 
+                X_test_df_global_new[NEW_FEATURE_NAMES].values, 
                 feature_names=NEW_FEATURE_NAMES,
                 class_names=CLASS_NAMES, mode='classification', discretize_continuous=True
             )
@@ -676,10 +646,10 @@ if submit_button_final:
             )
             
             if isinstance(trained_model_new, RandomForestClassifier):
-                shap_explainer = shap.TreeExplainer(trained_model_new, X_test_df_global_new_ordered) 
+                shap_explainer = shap.TreeExplainer(trained_model_new, X_test_df_global_new[NEW_FEATURE_NAMES]) 
                 shap_values_all = shap_explainer.shap_values(instance_df_for_xai) 
             else:
-                X_test_summary = shap.kmeans(X_test_df_global_new_ordered, min(50, len(X_test_df_global_new_ordered)))
+                X_test_summary = shap.kmeans(X_test_df_global_new[NEW_FEATURE_NAMES], min(50, len(X_test_df_global_new)))
                 shap_explainer = shap.KernelExplainer(trained_model_new.predict_proba, X_test_summary)
                 shap_values_all = shap_explainer.shap_values(instance_df_for_xai)
             
@@ -699,13 +669,14 @@ if submit_button_final:
         pdf.generate_full_report( 
             report_data_payload, 
             general_recommendations_list, 
-            detailed_recommendations_list, # Pasar las recomendaciones detalladas
+            detailed_recommendations_list, 
             lime_expl_obj, 
             shap_vals_pred_class, 
             instance_df_for_xai 
         )
         pdf_file_name = f"Informe_{report_data_payload['user_id']}_{datetime.now().strftime('%Y%m%d')}.pdf"
-        pdf_bytes = bytes(pdf.output(dest='S')) # Convertir a bytes
+        # CORREGIDO: Convertir bytearray a bytes
+        pdf_bytes = bytes(pdf.output(dest='S')) 
         st.download_button(get_translation("download_report"), pdf_bytes, pdf_file_name, "application/pdf")
         st.success(get_translation("report_generated"))
     except Exception as e: st.error(f"{get_translation('error_pdf')} {e}\n{traceback.format_exc()}")
