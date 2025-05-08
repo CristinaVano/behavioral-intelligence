@@ -532,13 +532,13 @@ class ProfessionalPDF(FPDF):
             print(f"Error procesando la imagen: {e}")
 
     def subject_data_table(self, data):
-    self.add_page()
-    self.set_font('Arial', 'B', 16)
-    self.cell(0, 10, get_translation("profile_section"), 0, 1, 'C')
-    self.ln(5)
-    self.set_fill_color(220, 220, 220)
-    self.set_font('Arial', 'B', 12)
-    fields = [
+       self.add_page()
+       self.set_font('Arial', 'B', 16)
+       self.cell(0, 10, get_translation("profile_section"), 0, 1, 'C')
+       self.ln(5)
+       self.set_fill_color(220, 220, 220)
+       self.set_font('Arial', 'B', 12)
+       fields = [
         (get_translation("name"), data.get('name', 'N/A')),
         (get_translation("id_number"), data.get('id_number', 'N/A')),
         (get_translation("age"), str(data.get('age', 'N/A'))),
