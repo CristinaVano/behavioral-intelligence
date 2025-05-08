@@ -590,28 +590,28 @@ class ProfessionalPDF(FPDF):
         self.set_font('Arial', '', 10)
         self.cell(0, 10, get_translation("confidential"), 0, 1)
         
-def director_report_extension(self):
-    self.add_page()
-    self.set_font('Arial', 'B', 16)
-    self.cell(0, 10, get_translation("download_director"), 0, 1, 'C')
-    self.ln(5)
-    self.set_font('Arial', 'B', 14)
-    self.cell(0, 10, get_translation("risk_level"), 0, 1)
-    self.set_fill_color(220, 220, 220)
-    self.set_font('Arial', 'B', 11)
-    self.set_x(self.l_margin)
-    self.cell(60, 10, get_translation("criminal_record"), 1, 0, 'L', True)
-    self.cell(40, 10, "Puntuación", 1, 0, 'C', True)
-    self.cell(80, 10, get_translation("risk_explanation"), 1, 1, 'L', True)
-    data = [
-        (get_translation("criminal_record"), "85/100", get_translation("risk_explanation")),
-        (get_translation("personality_traits"), "70/100", get_translation("risk_explanation")),
-        (get_translation("substances"), "60/100", get_translation("risk_explanation")),
-        (get_translation("social_isolation"), "40/100", get_translation("risk_explanation")),
-        ("PUNTUACIÓN GLOBAL", "73/100", get_translation("risk_explanation"))
+    def director_report_extension(self):
+        self.add_page()
+        self.set_font('Arial', 'B', 16)
+        self.cell(0, 10, get_translation("download_director"), 0, 1, 'C')
+        self.ln(5)
+        self.set_font('Arial', 'B', 14)
+        self.cell(0, 10, get_translation("risk_level"), 0, 1)
+        self.set_fill_color(220, 220, 220)
+        self.set_font('Arial', 'B', 11)
+        self.set_x(self.l_margin)
+        self.cell(60, 10, get_translation("criminal_record"), 1, 0, 'L', True)
+        self.cell(40, 10, "Puntuación", 1, 0, 'C', True)
+        self.cell(80, 10, get_translation("risk_explanation"), 1, 1, 'L', True)
+        data = [
+           (get_translation("criminal_record"), "85/100", get_translation("risk_explanation")),
+           (get_translation("personality_traits"), "70/100", get_translation("risk_explanation")),
+           (get_translation("substances"), "60/100", get_translation("risk_explanation")),
+           (get_translation("social_isolation"), "40/100", get_translation("risk_explanation")),
+           ("PUNTUACIÓN GLOBAL", "73/100", get_translation("risk_explanation"))
     ]
-    self.set_font('Arial', '', 10)
-    for i, (factor, score, method) in enumerate(data):
+       self.set_font('Arial', '', 10)
+       for i, (factor, score, method) in enumerate(data):
         fill = i % 2 == 1
         if factor == "PUNTUACIÓN GLOBAL":
             self.set_font('Arial', 'B', 10)
@@ -620,13 +620,66 @@ def director_report_extension(self):
         self.cell(40, 10, score, 1, 0, 'C', fill)
         self.multi_cell(80, 10, method, 1, 'L', fill)
         self.set_font('Arial', '', 10)
-    self.ln(10)
-    self.set_font('Arial', 'B', 14)
+        self.ln(10)
+     self.set_font('Arial', 'B', 14)
     self.set_x(self.l_margin)
     self.cell(180, 10, get_translation("executive_summary"), 0, 1)
     self.set_font('Arial', '', 11)
     self.set_x(self.l_margin)
     self.multi_cell(180, 8, get_translation("risk_explanation"))
+
+def create_data_summary_section(self, data):
+        self.set_font('Arial', 'B', 12)
+        title_text = "Data Summary" 
+        if 'get_translation' in globals() and callable(get_translation): 
+            title_text = get_translation("data_summary")
+        self.cell(0, 10, title_text, 0, 1, 'L')
+        self.ln(5)
+    
+        fields_data = {
+            "user_id": data.get("user_id", "N/A"),
+            "prediction": data.get("prediction_label", "N/A"),
+            "confidence": f"{data.get('confidence', 0)*100:.2f}%" if data.get('confidence') is not None else "N/A",
+            "therapy_date": str(data.get("therapy_date", 'N/A')),
+            "alarm_date": str(data.get("alarm_year", 'N/A')), 
+            "interest_profile": data.get("interest_profile", 'N/A'),
+            "family_extremism": data.get("family_extremism", 'N/A'),
+            "additional_comments": data.get("additional_comments", 'N/A')
+        }
+        fields = []
+        translation_map = {
+            "user_id": "User ID",
+            "prediction": "Prediction",
+            "confidence": "Confidence",
+            "therapy_date": "Therapy Date",
+            "alarm_date": "Alarm Date",
+            "interest_profile": "Interest Profile",
+            "family_extremism": "Family Extremism",
+            "additional_comments": "Additional Comments"
+        }
+        if 'get_translation' in globals() and callable(get_translation):
+            translation_map = {k: get_translation(k) for k in fields_data.keys()}
+
+        for key, default_label in translation_map.items():
+            label = default_label
+            if 'get_translation' in globals() and callable(get_translation):
+                try:
+                    label = get_translation(key)
+                except: 
+                    pass 
+            fields.append((label, fields_data.get(key, "N/A")))
+
+
+        for i, (field_label, field_value) in enumerate(fields):
+            fill = i % 2 == 0 
+
+            self.set_font('Arial', 'B', 10)
+            self.cell(60, 7, str(field_label), border=0, ln=0, align='L', fill=fill)
+
+            self.set_font('Arial', '', 10)
+            self.multi_cell(0, 7, str(field_value), border=0, align='L', fill=fill, ln=1)
+
+        self.ln(10)
 
 def main():
     if 'lang' not in st.session_state:
