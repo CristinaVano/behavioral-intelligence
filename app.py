@@ -303,15 +303,20 @@ class ProfessionalPDF(FPDF):
             self.chapter_body("No recommendations available.")
         self.ln(5)
 
-    def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
+        def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
         self.chapter_title("xai_explanations_title")
         current_font = self.PDF_FONT_FAMILY
-        available_width = self.w - self.l_margin - self.r_margin # Ancho disponible en la página
+        
+        # --- DEBUGGING ---
+        # print(f"DEBUG XAI: Page Width (w): {self.w}, Left Margin (l_margin): {self.l_margin}, Right Margin (r_margin): {self.r_margin}")
+        available_width = self.w - self.l_margin - self.r_margin
+        # print(f"DEBUG XAI: Calculated available_width: {available_width}")
+        # --- END DEBUGGING ---
 
         # LIME Section
-        self.set_x(self.l_margin) # Reset X
+        self.set_x(self.l_margin) 
         self.set_font(current_font, 'B', 12)
-        self.cell(0, 10, get_translation("lime_report_title"), 0, 1, 'L') # ln=1 para bajar
+        self.cell(0, 10, get_translation("lime_report_title"), 0, 1, 'L') 
         
         self.set_font(current_font, '', 10)
         if lime_expl:
@@ -320,23 +325,54 @@ class ProfessionalPDF(FPDF):
                 pred_idx = CLASS_NAMES.index(pred_label) if pred_label in CLASS_NAMES else 0
                 explanation_list = lime_expl.as_list(label=pred_idx)
                 
-                self.set_x(self.l_margin) # Reset X
-                self.multi_cell(available_width, 7, f"LIME (Predicted: {pred_label}):")
+                self.set_x(self.l_margin) 
+                # print(f"DEBUG LIME title get_x(): {self.get_x()}")
+                self.multi_cell(max(10, available_width), 7, f"LIME (Predicted: {pred_label}):")
                 
                 for feature_idx_str, weight in explanation_list:
                     try: 
                         feature_name = NEW_FEATURE_NAMES[int(feature_idx_str)]
-                    except (ValueError, IndexError, TypeError): # TypeError si feature_idx_str no es convertible a int
-                        feature_name = str(feature_idx_str) # Usar tal cual si no es un índice numérico válido
+                    except (ValueError, IndexError, TypeError): 
+                        feature_name = str(feature_idx_str) 
                     
-                    self.set_x(self.l_margin) # Reset X para cada línea de feature
-                    self.multi_cell(available_width, 7, f"- {feature_name}: {weight:.3f}")
+                    self.set_x(self.l_margin) 
+                    # print(f"DEBUG LIME feature get_x(): {self.get_x()}")
+                    self.multi_cell(max(10, available_width), 7, f"- {feature_name}: {weight:.3f}")
             except Exception as e:
-                self.set_x(self.l_margin) # Reset X para el mensaje de error
-                self.multi_cell(available_width, 7, f"Error generating LIME details: {str(e)[:200]}") # Limitar longitud del mensaje de error
+                self.set_x(self.l_margin) 
+                # print(f"DEBUG LIME error get_x(): {self.get_x()}")
+                self.multi_cell(max(10, available_width), 7, f"Error LIME: {str(e)[:150]}") 
         else:
-            self.set_x(self.l_margin) # Reset X
-            self.multi_cell(available_width, 7, "LIME explanation not available.")
+            self.set_x(self.l_margin) 
+            # print(f"DEBUG LIME N/A get_x(): {self.get_x()}")
+            self.multi_cell(max(10, available_width), 7, "LIME explanation not available.")
+        self.ln(5)
+
+        # SHAP Section
+        self.set_x(self.l_margin) 
+        self.set_font(current_font, 'B', 12)
+        self.cell(0, 10, get_translation("shap_report_title"), 0, 1, 'L') 
+        
+        self.set_font(current_font, '', 10)
+        if shap_vals is not None and x_instance_df is not None:
+            try:
+                self.set_x(self.l_margin) 
+                # print(f"DEBUG SHAP title get_x(): {self.get_x()}")
+                self.multi_cell(max(10, available_width), 7, f"SHAP (Predicted: {report_data.get('prediction_label', 'N/A')}):")
+                
+                for i, feature_name in enumerate(NEW_FEATURE_NAMES):
+                    if i < len(shap_vals):
+                        self.set_x(self.l_margin) 
+                        # print(f"DEBUG SHAP feature get_x(): {self.get_x()}, available_width: {available_width}")
+                        self.multi_cell(max(10, available_width), 7, f"- {feature_name}: {shap_vals[i]:.3f}") # Línea del error
+            except Exception as e:
+                self.set_x(self.l_margin)
+                # print(f"DEBUG SHAP error get_x(): {self.get_x()}") 
+                self.multi_cell(max(10, available_width), 7, f"Error SHAP: {str(e)[:150]}") 
+        else:
+            self.set_x(self.l_margin) 
+            # print(f"DEBUG SHAP N/A get_x(): {self.get_x()}")
+            self.multi_cell(max(10, available_width), 7, "SHAP values not available.")
         self.ln(5)
 
         # SHAP Section
