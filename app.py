@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# --- Versión Definitiva SIN XAI en PDF ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -299,21 +300,28 @@ class ProfessionalPDF(FPDF):
             self.chapter_body("No recommendations available.")
         self.ln(5)
 
-    # --- MÉTODO XAI VACÍO (NO HACE NADA) ---
+    # --- MÉTODO XAI VACÍO ---
     def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
         """Sección de explicaciones XAI omitida."""
-        pass # No se añade nada al PDF desde este método
+        # print("DEBUG: xai_explanations_section fue llamada, pero está vacía (pass).") # Puedes descomentar esto para verificar
+        pass 
+        # Si quieres que aparezca algo en el PDF indicando la omisión:
+        # self.chapter_title("xai_explanations_title")
+        # self.set_font(self.PDF_FONT_FAMILY, 'I', 10)
+        # self.multi_cell(0, 7, "(Sección de Explicaciones XAI no incluida en esta versión del informe)")
+        # self.ln(5)
 
     def generate_full_report(self, report_data, recommendations, lime_expl, shap_vals, x_instance_df):
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.recommendations_section(recommendations)
-        # --- LLAMADA A SECCIÓN XAI EFECTIVAMENTE COMENTADA ---
-        # Aunque la línea de abajo se ejecute, el método xai_explanations_section está vacío y no hará nada.
+        # --- LLAMADA A SECCIÓN XAI COMENTADA ---
+        # La línea de abajo está comentada. El método xai_explanations_section NO será llamado.
         # self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
 
-# --- Lógica App Streamlit (sin cambios desde la última versión completa) ---
+
+# --- Lógica App Streamlit ---
 def predict_risk_level(form_input_data_model, model, feature_list):
     if model is None: return CLASS_NAMES[0], 0.10
     try:
@@ -422,10 +430,10 @@ if submit_button_final:
     for r in recommendations_list: st.write(f"**{r['title']}**: {r['description']}")
     
     # --- Cálculo XAI (se ejecuta pero no se añade al PDF) ---
-    lime_expl_obj, shap_vals_pred_class, instance_df_xai = None, None, pd.DataFrame([form_data_for_model_dict], columns=NEW_FEATURE_NAMES) # Asegurar columnas
+    lime_expl_obj, shap_vals_pred_class, instance_df_xai = None, None, pd.DataFrame([form_data_for_model_dict], columns=NEW_FEATURE_NAMES) 
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
-            instance_df_xai = instance_df_xai[NEW_FEATURE_NAMES]
+            instance_df_xai = instance_df_xai[NEW_FEATURE_NAMES] # Reasegurar orden columnas
             lime_explainer = lime.lime_tabular.LimeTabularExplainer(X_test_df_global_new[NEW_FEATURE_NAMES].values, feature_names=NEW_FEATURE_NAMES,
                                                                     class_names=CLASS_NAMES, mode='classification', discretize_continuous=True)
             lime_expl_obj = lime_explainer.explain_instance(instance_df_xai.iloc[0].values, trained_model_new.predict_proba, num_features=len(NEW_FEATURE_NAMES))
