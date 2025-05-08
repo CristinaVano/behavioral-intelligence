@@ -306,32 +306,60 @@ class ProfessionalPDF(FPDF):
     def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
         self.chapter_title("xai_explanations_title")
         current_font = self.PDF_FONT_FAMILY
+        available_width = self.w - self.l_margin - self.r_margin # Ancho disponible en la página
+
+        # LIME Section
+        self.set_x(self.l_margin) # Reset X
         self.set_font(current_font, 'B', 12)
-        self.cell(0, 10, get_translation("lime_report_title"), 0, 1, 'L')
+        self.cell(0, 10, get_translation("lime_report_title"), 0, 1, 'L') # ln=1 para bajar
+        
         self.set_font(current_font, '', 10)
         if lime_expl:
             try:
                 pred_label = report_data.get('prediction_label', CLASS_NAMES[0])
                 pred_idx = CLASS_NAMES.index(pred_label) if pred_label in CLASS_NAMES else 0
                 explanation_list = lime_expl.as_list(label=pred_idx)
-                self.multi_cell(0, 7, f"LIME (Predicted: {pred_label}):")
+                
+                self.set_x(self.l_margin) # Reset X
+                self.multi_cell(available_width, 7, f"LIME (Predicted: {pred_label}):")
+                
                 for feature_idx_str, weight in explanation_list:
-                    try: feature_name = NEW_FEATURE_NAMES[int(feature_idx_str)]
-                    except: feature_name = feature_idx_str
-                    self.multi_cell(0, 7, f"- {feature_name}: {weight:.3f}")
-            except Exception as e: self.multi_cell(0, 7, f"Error LIME: {e}")
-        else: self.multi_cell(0, 7, "LIME explanation not available.")
+                    try: 
+                        feature_name = NEW_FEATURE_NAMES[int(feature_idx_str)]
+                    except (ValueError, IndexError, TypeError): # TypeError si feature_idx_str no es convertible a int
+                        feature_name = str(feature_idx_str) # Usar tal cual si no es un índice numérico válido
+                    
+                    self.set_x(self.l_margin) # Reset X para cada línea de feature
+                    self.multi_cell(available_width, 7, f"- {feature_name}: {weight:.3f}")
+            except Exception as e:
+                self.set_x(self.l_margin) # Reset X para el mensaje de error
+                self.multi_cell(available_width, 7, f"Error generating LIME details: {str(e)[:200]}") # Limitar longitud del mensaje de error
+        else:
+            self.set_x(self.l_margin) # Reset X
+            self.multi_cell(available_width, 7, "LIME explanation not available.")
         self.ln(5)
+
+        # SHAP Section
+        self.set_x(self.l_margin) # Reset X
         self.set_font(current_font, 'B', 12)
-        self.cell(0, 10, get_translation("shap_report_title"), 0, 1, 'L')
+        self.cell(0, 10, get_translation("shap_report_title"), 0, 1, 'L') # ln=1 para bajar
+        
         self.set_font(current_font, '', 10)
         if shap_vals is not None and x_instance_df is not None:
             try:
-                self.multi_cell(0, 7, f"SHAP (Predicted: {report_data.get('prediction_label', 'N/A')}):")
+                self.set_x(self.l_margin) # Reset X
+                self.multi_cell(available_width, 7, f"SHAP (Predicted: {report_data.get('prediction_label', 'N/A')}):")
+                
                 for i, feature_name in enumerate(NEW_FEATURE_NAMES):
-                    if i < len(shap_vals): self.multi_cell(0, 7, f"- {feature_name}: {shap_vals[i]:.3f}")
-            except Exception as e: self.multi_cell(0, 7, f"Error SHAP: {e}")
-        else: self.multi_cell(0, 7, "SHAP values not available.")
+                    if i < len(shap_vals):
+                        self.set_x(self.l_margin) # Reset X para cada línea de feature
+                        self.multi_cell(available_width, 7, f"- {feature_name}: {shap_vals[i]:.3f}") # Esta era la línea del error
+            except Exception as e:
+                self.set_x(self.l_margin) # Reset X para el mensaje de error
+                self.multi_cell(available_width, 7, f"Error generating SHAP details: {str(e)[:200]}") # Limitar longitud del mensaje de error
+        else:
+            self.set_x(self.l_margin) # Reset X
+            self.multi_cell(available_width, 7, "SHAP values not available.")
         self.ln(5)
 
     def generate_full_report(self, report_data, recommendations, lime_expl, shap_vals, x_instance_df):
