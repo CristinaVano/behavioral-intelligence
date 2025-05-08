@@ -253,7 +253,7 @@ class ProfessionalPDF(FPDF):
         self.set_font(self.PDF_FONT_FAMILY, 'I', 10)
         self.cell(0, 10, get_translation("confidential_footer").upper() + " - SOLO PARA USO AUTORIZADO", 0, 0, 'C')
     
-    def create_data_summary_section(self, report_data):
+    def create_data_summary_section(self, report_data): 
         self.chapter_title("data_summary")
         fields_to_display_keys = [
             "user_id", "prediction", "confidence", "age", "education_level_new", "substance_use",
@@ -299,85 +299,25 @@ class ProfessionalPDF(FPDF):
             self.chapter_body("No recommendations available.")
         self.ln(5)
 
-    def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df): # CON DEPURACIÓN
-        self.chapter_title("xai_explanations_title")
-        current_font = self.PDF_FONT_FAMILY
-        
-        # --- DEBUGGING INICIAL DEL ESTADO DE LA PÁGINA ---
-        print(f"DEBUG XAI ENTRY: PageNo: {self.page_no()}, X: {self.get_x():.2f}, Y: {self.get_y():.2f}")
-        print(f"DEBUG XAI ENTRY: W: {self.w:.2f}, H: {self.h:.2f}, LMargin: {self.l_margin:.2f}, RMargin: {self.r_margin:.2f}, TMargin: {self.t_margin:.2f}, BMargin: {self.b_margin:.2f}")
-        available_width = self.w - self.l_margin - self.r_margin
-        print(f"DEBUG XAI ENTRY: Calculated available_width: {available_width:.2f}")
-        # --- FIN DEBUGGING INICIAL ---
-
-        # --- PRUEBA DE ESCRITURA SIMPLE ---
-        self.set_x(self.l_margin)
-        self.set_font(current_font, '', 10)
-        test_text = "Esto es una prueba de escritura simple en XAI section."
-        print(f"DEBUG XAI: Intentando escribir texto de prueba. X: {self.get_x():.2f}, available_width: {available_width:.2f}")
-        try:
-            self.multi_cell(max(10, available_width), 7, test_text, border=1, ln=1)
-            print("DEBUG XAI: Texto de prueba escrito con éxito.")
-        except Exception as e_test:
-            print(f"DEBUG XAI: FALLÓ la escritura del texto de prueba: {e_test}")
-            self.ln(5) 
-            self.set_font(current_font, 'B', 10)
-            self.set_text_color(255,0,0) 
-            error_msg_simple_fail = f"FALLO PDF: No se pudo escribir. W={self.w:.1f}, L_M={self.l_margin:.1f}, X={self.get_x():.1f}"
-            # Intentar escribir el error con un ancho fijo más pequeño si available_width es el problema
-            self.multi_cell(max(10, self.w - 20), 7, error_msg_simple_fail, border=1) # Usar self.w -20 como fallback
-            self.set_text_color(0) 
-            return 
-        self.ln(5) 
-        # --- FIN PRUEBA DE ESCRITURA SIMPLE ---
-
-        # LIME Section (Comentado temporalmente)
-        # self.set_x(self.l_margin) 
-        # self.set_font(current_font, 'B', 12)
-        # self.cell(0, 10, get_translation("lime_report_title"), 0, 1, 'L') 
-        # self.set_font(current_font, '', 10)
-        # if lime_expl:
-        #     # ... (código LIME completo como antes) ...
-        # else:
-        #     self.set_x(self.l_margin) 
-        #     self.multi_cell(max(10, available_width), 7, "LIME explanation not available.")
-        # self.ln(5)
-
-        # SHAP Section
-        self.set_x(self.l_margin) 
-        self.set_font(current_font, 'B', 12)
-        self.cell(0, 10, get_translation("shap_report_title"), 0, 1, 'L') 
-        
-        self.set_font(current_font, '', 10)
-        if shap_vals is not None and x_instance_df is not None:
-            try:
-                self.set_x(self.l_margin) 
-                self.multi_cell(max(10, available_width), 7, f"SHAP (Predicted: {report_data.get('prediction_label', 'N/A')}):")
-                
-                for i, feature_name in enumerate(NEW_FEATURE_NAMES):
-                    if i < len(shap_vals):
-                        self.set_x(self.l_margin) 
-                        shap_feature_text = f"- {feature_name}: {shap_vals[i]:.3f}"
-                        # print(f"DEBUG SHAP feature: X={self.get_x():.2f}, W={available_width:.2f}, Text='{shap_feature_text}'")
-                        self.multi_cell(max(10, available_width), 7, shap_feature_text, border=0) 
-            except Exception as e:
-                self.set_x(self.l_margin)
-                error_shap_details = f"Error generating SHAP details: {str(e)[:150]}"
-                self.multi_cell(max(10, available_width), 7, error_shap_details) 
-        else:
-            self.set_x(self.l_margin) 
-            self.multi_cell(max(10, available_width), 7, "SHAP values not available.")
-        self.ln(5)
+    # --- SECCIÓN XAI COMPLETAMENTE COMENTADA ---
+    # def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
+    #     self.chapter_title("xai_explanations_title")
+    #     # ... (Todo el contenido de LIME y SHAP estaría aquí)
+    #     # ... (Pero lo dejamos fuera por ahora para evitar el error)
+    #     self.set_font(self.PDF_FONT_FAMILY, 'I', 10)
+    #     self.multi_cell(0, 7, "(XAI Explanations section omitted in this version due to rendering issues)")
+    #     self.ln(5)
 
     def generate_full_report(self, report_data, recommendations, lime_expl, shap_vals, x_instance_df):
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.recommendations_section(recommendations)
-        if lime_expl or (shap_vals is not None): # Solo llama a la sección XAI si hay algo que mostrar
-            self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
+        # --- LLAMADA A SECCIÓN XAI COMENTADA ---
+        # if lime_expl or (shap_vals is not None): 
+        #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
 
-# --- Lógica App Streamlit (sin cambios desde la última versión completa) ---
+# --- Lógica App Streamlit ---
 def predict_risk_level(form_input_data_model, model, feature_list):
     if model is None: return CLASS_NAMES[0], 0.10
     try:
@@ -482,6 +422,7 @@ if submit_button_final:
     st.subheader(get_translation("recommendations"))
     for r in recommendations_list: st.write(f"**{r['title']}**: {r['description']}")
     
+    # --- Cálculo XAI (se ejecuta pero no se añade al PDF) ---
     lime_expl_obj, shap_vals_pred_class, instance_df_xai = None, None, pd.DataFrame([form_data_for_model_dict])[NEW_FEATURE_NAMES]
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
@@ -505,10 +446,18 @@ if submit_button_final:
             else: shap_vals_pred_class = np.zeros(len(NEW_FEATURE_NAMES))
         except Exception as e: st.error(f"{get_translation('error_xai')} {e}\n{traceback.format_exc()}")
     else: st.info(get_translation("xai_skipped_warning"))
+    # --- Fin Cálculo XAI ---
 
+    # --- Generación del PDF (SIN sección XAI) ---
     try:
         pdf = ProfessionalPDF()
-        pdf.generate_full_report(report_data_payload, recommendations_list, lime_expl_obj, shap_vals_pred_class, instance_df_xai)
+        pdf.generate_full_report( # La función generate_full_report ahora no llama a xai_section
+            report_data_payload, 
+            recommendations_list, 
+            lime_expl_obj, # Se pasan pero no se usan en esta versión del PDF
+            shap_vals_pred_class, # Se pasan pero no se usan en esta versión del PDF
+            instance_df_xai # Se pasan pero no se usan en esta versión del PDF
+        )
         pdf_file_name = f"Informe_{report_data_payload['user_id']}_{datetime.now().strftime('%Y%m%d')}.pdf"
         pdf_bytes = pdf.output(dest='S').encode('latin-1') 
         st.download_button(get_translation("download_report"), pdf_bytes, pdf_file_name, "application/pdf")
