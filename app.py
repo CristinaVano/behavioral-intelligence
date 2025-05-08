@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# --- Versión Final SIN XAI en PDF y con Fix para Feature Names Warning ---
+# --- Versión Final SIN XAI en PDF y con Fix para Predicción ---
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -134,7 +134,7 @@ if not st.session_state.logged_in:
                                  format_func=lambda x: language_options_map[x], key="lang_sel_main", horizontal=True)
     if selected_lang_key != st.session_state.lang:
         st.session_state.lang = selected_lang_key
-        st.rerun() # Usar st.rerun en lugar de st.experimental_rerun
+        st.rerun() 
     st.title(get_translation("login_title"))
     with st.form("login_form"):
         username_input = st.text_input(get_translation("username"))
@@ -143,7 +143,7 @@ if not st.session_state.logged_in:
             if username_input in USER_CREDENTIALS and USER_CREDENTIALS[username_input] == password_input:
                 st.session_state.logged_in = True
                 st.session_state.username = username_input
-                st.rerun() # Usar st.rerun
+                st.rerun() 
             else: st.error(get_translation("wrong_credentials"))
     st.stop()
 
@@ -152,7 +152,7 @@ st.sidebar.title(get_translation("app_title"))
 st.sidebar.subheader(f"{get_translation('username')}: {st.session_state.username}")
 if st.sidebar.button(get_translation("logout_button")):
     st.session_state.logged_in = False; st.session_state.username = ""
-    st.rerun() # Usar st.rerun
+    st.rerun() 
 
 # --- Modelo y Features (Actualizado) ---
 NEW_FEATURE_NAMES = [ 
@@ -176,30 +176,26 @@ def load_example_data_for_new_model():
     }
     return pd.DataFrame(data)
 
-@st.cache_resource # _resource para objetos no serializables como modelos
+@st.cache_resource 
 def train_new_model(df_train):
     if df_train.empty or len(df_train) < 20: 
-        return None, pd.DataFrame(columns=NEW_FEATURE_NAMES) # Devolver DF vacío consistente
+        return None, pd.DataFrame(columns=NEW_FEATURE_NAMES) 
     
-    # Asegurar que las columnas existen en df_train antes de usarlas
     features_present = [f for f in NEW_FEATURE_NAMES if f in df_train.columns]
     if len(features_present) < len(NEW_FEATURE_NAMES):
         st.error(f"Faltan columnas para entrenar el modelo. Esperadas: {NEW_FEATURE_NAMES}, Encontradas: {features_present}")
         return None, pd.DataFrame(columns=NEW_FEATURE_NAMES)
 
-    X = df_train[features_present] # Usar solo las columnas presentes
+    X = df_train[features_present] 
     y = df_train['risk_target']
     
     if len(np.unique(y)) < 2 : 
          st.warning("Target con una sola clase. El modelo no puede entrenar.")
-         # Devolver X para que X_test_df_global_new no sea None y evitar errores posteriores
-         # aunque el modelo sea None
          return None, X 
          
     model = RandomForestClassifier(random_state=42, class_weight='balanced', n_estimators=50, max_depth=10)
     try:
         model.fit(X, y)
-        # Guardar las features usadas para entrenar con el modelo
         model.feature_names_in_ = features_present 
         return model, X
     except Exception as e:
@@ -207,7 +203,6 @@ def train_new_model(df_train):
         return None, X
 
 df_training_data_new = load_example_data_for_new_model()
-# Pasar una copia para evitar modificar el DataFrame cacheado
 trained_model_new, X_test_df_global_new = train_new_model(df_training_data_new.copy()) 
 if trained_model_new is None and st.session_state.logged_in:
     st.warning(get_translation("model_not_trained_warning"))
@@ -291,14 +286,10 @@ class ProfessionalPDF(FPDF):
             if self.get_y() > page_height_available - 20: self.add_page()
             current_y_pos = self.get_y()
             self.set_font(self.PDF_FONT_FAMILY, 'B', 10)
-            self.multi_cell(70, 7, field_label, border=0, align='L', fill=fill, new_x="RIGHT", new_y="TOP") # Usando new_x/new_y
-            
-            # No necesitamos set_xy si usamos new_x/new_y correctamente
-            # self.set_xy(self.l_margin + 70, current_y_pos) 
+            self.multi_cell(70, 7, field_label, border=0, align='L', fill=fill, new_x="RIGHT", new_y="TOP") 
             self.set_font(self.PDF_FONT_FAMILY, '', 10)
-            # Usamos new_x=XPos.LMARGIN para volver al margen izquierdo y bajar
             self.multi_cell(0, 7, field_value, border=0, align='L', fill=fill, new_x="LMARGIN", new_y="NEXT")
-        self.ln(5) # Espacio extra al final
+        self.ln(5) 
 
     def recommendations_section(self, recommendations_list): 
         self.chapter_title("recommendations")
@@ -308,46 +299,79 @@ class ProfessionalPDF(FPDF):
             for i, rec in enumerate(recommendations_list):
                 self.set_x(self.l_margin) 
                 self.set_font(current_font, 'B', 10)
-                # Usar new_x/new_y en lugar de ln
                 self.multi_cell(available_width, 7, f"{i+1}. {rec.get('title', 'N/A')}", new_x="LMARGIN", new_y="NEXT")
-                
                 self.set_x(self.l_margin) 
                 self.set_font(current_font, '', 10)
                 self.multi_cell(available_width, 7, rec.get('description', 'N/A'), new_x="LMARGIN", new_y="NEXT") 
-                self.ln(3) # Mantener espacio pequeño entre items
+                self.ln(3) 
         else:
             self.chapter_body("No recommendations available.")
         self.ln(5)
 
-    # --- MÉTODO XAI VACÍO Y NO LLAMADO ---
+    # --- MÉTODO XAI VACÍO ---
     def xai_explanations_section(self, report_data, lime_expl, shap_vals, x_instance_df):
         """Sección de explicaciones XAI omitida."""
-        pass 
+        pass # No se añade nada al PDF desde este método
 
     def generate_full_report(self, report_data, recommendations, lime_expl, shap_vals, x_instance_df):
         self.cover_page(report_data)
         self.create_data_summary_section(report_data)
         self.recommendations_section(recommendations)
-        # --- LLAMADA A SECCIÓN XAI DEFINITIVAMENTE COMENTADA ---
+        # --- LLAMADA A SECCIÓN XAI COMENTADA ---
         # if lime_expl or (shap_vals is not None): 
         #     self.xai_explanations_section(report_data, lime_expl, shap_vals, x_instance_df)
 # --- Fin de la Clase PDF ---
 
 
 # --- Lógica App Streamlit ---
-def predict_risk_level(form_input_data_model, model, feature_list):
-    if model is None: return CLASS_NAMES[0], 0.10
+def predict_risk_level(df_input, model, feature_list): # CORREGIDO: Espera DataFrame
+    """Realiza la predicción usando el modelo entrenado."""
+    if model is None: 
+        print("DEBUG: Modelo no entrenado, devolviendo placeholder.")
+        return CLASS_NAMES[0], 0.10
+    
+    if not isinstance(df_input, pd.DataFrame):
+         st.error("Error interno: Se esperaba un DataFrame en predict_risk_level.")
+         print(f"DEBUG Predict: df_input NO es DataFrame, es tipo {type(df_input)}")
+         return CLASS_NAMES[0], 0.05
+         
+    if df_input.shape[0] == 0:
+        st.error("Error interno: DataFrame vacío pasado a predict_risk_level.")
+        return CLASS_NAMES[0], 0.05
+
     try:
-        input_df = pd.DataFrame([form_input_data_model], columns=feature_list)
-        pred_proba = model.predict_proba(input_df)[0]
-        pred_idx = np.argmax(pred_proba)
-        return CLASS_NAMES[pred_idx], pred_proba[pred_idx]
+        # Asegurarse de que el DataFrame tiene las columnas correctas y en el orden correcto
+        input_df_ordered = df_input[feature_list] 
+        
+        # Verificar la forma ANTES de predecir
+        print(f"DEBUG Predict: Shape of data passed to model.predict_proba: {input_df_ordered.shape}") # Debería ser (1, 7)
+        
+        if input_df_ordered.shape[1] != len(feature_list):
+             st.error(f"Error: Discrepancia en número de features. Modelo espera {len(feature_list)}, datos tienen {input_df_ordered.shape[1]}.")
+             # Añadir más detalles para depuración
+             print(f"DEBUG Predict: Columns expected by model: {feature_list}")
+             print(f"DEBUG Predict: Columns in DataFrame passed: {input_df_ordered.columns.tolist()}")
+             return CLASS_NAMES[0], 0.05
+
+        # Realizar la predicción
+        pred_proba = model.predict_proba(input_df_ordered) 
+        
+        pred_proba_instance = pred_proba[0] 
+        
+        pred_idx = np.argmax(pred_proba_instance)
+        confidence = pred_proba_instance[pred_idx]
+        pred_label = CLASS_NAMES[pred_idx]
+        
+        print(f"DEBUG Predict: Prediction Label: {pred_label}, Confidence: {confidence:.3f}")
+        return pred_label, confidence
+        
     except Exception as e:
         st.error(f"{get_translation('error_prediction')} {e}")
         print(f"Predict Error Details: {traceback.format_exc()}") 
-        print(f"Input DataFrame for prediction:\n{pd.DataFrame([form_input_data_model])}")
+        print(f"Input DataFrame causing prediction error:\n{df_input}") # Imprimir el DataFrame original pasado
         print(f"Expected features: {feature_list}")
         return CLASS_NAMES[0], 0.05
+
 
 def generate_behavioral_recommendations(pred_label, conf):
     recs = []
@@ -377,11 +401,8 @@ personality_trait_options = get_options_dict("trait", trait_keys)
 diagnosis_options = get_options_dict("diag", diag_keys)
 
 def create_numeric_map(option_keys_list):
-    # Asegurarse que las claves estén ordenadas consistentemente antes de asignar índices
-    # Usar sorted() para garantizar el mismo orden siempre.
     return {key: i for i, key in enumerate(sorted(option_keys_list))} 
 
-# Crear los mapeos usando las claves ordenadas
 education_numeric_map = create_numeric_map(education_options_new.keys())
 substance_numeric_map = create_numeric_map(substance_options.keys())
 criminal_record_numeric_map = create_numeric_map(criminal_record_options.keys())
@@ -438,14 +459,15 @@ if submit_button_final:
         "clinical_history_summary": clinical_history_summary_form or "N/A",
     }
     
-    # --- Predicción ---
-    # Asegurar explícitamente el orden de columnas para la predicción
+    # --- Predicción (Usa la función corregida) ---
     try:
         df_for_prediction = pd.DataFrame([form_data_for_model_dict], columns=NEW_FEATURE_NAMES)
         prediction, confidence = predict_risk_level(df_for_prediction, trained_model_new, NEW_FEATURE_NAMES) 
     except KeyError as e:
          st.error(f"Error: Falta la columna '{e}' requerida por el modelo en los datos del formulario.")
-         st.stop() # Detener si faltan datos esenciales para la predicción
+         print(f"DEBUG Predict Keys: Keys in form_data_for_model_dict: {list(form_data_for_model_dict.keys())}")
+         print(f"DEBUG Predict Keys: Expected features: {NEW_FEATURE_NAMES}")
+         st.stop() 
     except Exception as e:
          st.error(f"Error inesperado durante la preparación de datos para predicción: {e}")
          st.stop()
@@ -459,7 +481,7 @@ if submit_button_final:
     
     # --- Cálculo XAI (se ejecuta pero no se añade al PDF) ---
     lime_expl_obj, shap_vals_pred_class = None, None
-    instance_df_for_xai = df_for_prediction.copy() # Usar el df ya ordenado y validado
+    instance_df_for_xai = df_for_prediction.copy() 
     
     if trained_model_new and X_test_df_global_new is not None and not X_test_df_global_new.empty:
         try:
@@ -499,7 +521,7 @@ if submit_button_final:
         pdf.generate_full_report( 
             report_data_payload, 
             recommendations_list, 
-            lime_expl_obj, # Se pasan pero generate_full_report ya no los usa
+            lime_expl_obj, 
             shap_vals_pred_class, 
             instance_df_xai 
         )
